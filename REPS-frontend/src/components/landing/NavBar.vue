@@ -1,5 +1,8 @@
 <script setup lang="ts">
 import { ref } from 'vue';
+import { useRouter } from 'vue-router';
+
+const router = useRouter();
 
 const emit = defineEmits(['open-signup']);
 
@@ -7,13 +10,24 @@ const emit = defineEmits(['open-signup']);
 const isMenuOpen = ref(false);
 
 
-const handleNavigation = (view: string) => {
-    // Implement navigation logic if needed, or just scrolling
-    if (view === 'about') {
-        const el = document.getElementById('about');
-        if (el) el.scrollIntoView({ behavior: 'smooth' });
-    }
+
+
+const handleSectionClick = async (sectionId: string) => {
     isMenuOpen.value = false;
+    
+    if (router.currentRoute.value.name === 'home') {
+        // We are already on home, just scroll
+        const el = document.getElementById(sectionId);
+        if (el) el.scrollIntoView({ behavior: 'smooth' });
+    } else {
+        // We are on another page, go to home
+        await router.push('/');
+        // Wait for DOM to update then scroll
+        setTimeout(() => {
+            const el = document.getElementById(sectionId);
+            if (el) el.scrollIntoView({ behavior: 'smooth' });
+        }, 100);
+    }
 };
 
 const openSignUp = () => {
@@ -28,18 +42,18 @@ const openSignUp = () => {
             <!-- Logo and Desktop Navigation -->
             <div class="flex items-center gap-8">
                 <!-- Real Logo -->
-                <a href="#" class="d-flex align-center text-decoration-none">
+                <router-link to="/" class="d-flex align-center text-decoration-none">
                      <img src="/potential_logo_2.png" alt="REPS Logo" style="height: 48px; width: auto;" />
-                </a>
+                </router-link>
                 
                 <!-- Desktop Navigation -->
                 <div class="hidden md:flex items-center gap-8">
-                    <a href="#home" class="text-sm font-medium text-white hover:text-red-600 transition-colors">Inicio</a>
-                    <a href="#features" class="text-sm font-medium text-white hover:text-red-600 transition-colors">Características</a>
-                    <a href="#how-it-works" class="text-sm font-medium text-white hover:text-red-600 transition-colors">Cómo Funciona</a>
-                    <a href="#pricing" class="text-sm font-medium text-white hover:text-red-600 transition-colors">Precios</a>
-                    <button @click="handleNavigation('communityInfo')" class="text-sm font-medium text-white hover:text-red-600 transition-colors">Comunidad</button>
-                    <button @click="handleNavigation('about')" class="text-sm font-medium text-white hover:text-red-600 transition-colors">Quiénes Somos</button>
+                    <button @click="handleSectionClick('home')" class="text-sm font-medium text-white hover:text-red-600 transition-colors">Inicio</button>
+                    <button @click="handleSectionClick('features')" class="text-sm font-medium text-white hover:text-red-600 transition-colors">Características</button>
+                    <button @click="handleSectionClick('how-it-works')" class="text-sm font-medium text-white hover:text-red-600 transition-colors">Cómo Funciona</button>
+                    <button @click="handleSectionClick('pricing')" class="text-sm font-medium text-white hover:text-red-600 transition-colors">Precios</button>
+                    <button @click="router.push('/community')" class="text-sm font-medium text-white hover:text-red-600 transition-colors">Comunidad</button>
+                    <button @click="router.push('/about')" class="text-sm font-medium text-white hover:text-red-600 transition-colors">Quiénes Somos</button>
                 </div>
             </div>
 
@@ -64,12 +78,12 @@ const openSignUp = () => {
         <!-- Mobile Menu -->
         <div v-if="isMenuOpen" class="md:hidden bg-black/98 border-t border-gray-800">
             <div class="container mx-auto px-6 py-4 flex flex-col gap-4">
-                <a href="#home" @click="isMenuOpen = false" class="text-white hover:text-red-600 transition-colors py-2">Inicio</a>
-                <a href="#features" @click="isMenuOpen = false" class="text-white hover:text-red-600 transition-colors py-2">Características</a>
-                <a href="#how-it-works" @click="isMenuOpen = false" class="text-white hover:text-red-600 transition-colors py-2">Cómo Funciona</a>
-                <a href="#pricing" @click="isMenuOpen = false" class="text-white hover:text-red-600 transition-colors py-2">Precios</a>
-                <button @click="handleNavigation('communityInfo')" class="text-left text-white hover:text-red-600 transition-colors py-2">Comunidad</button>
-                <button @click="handleNavigation('about')" class="text-left text-white hover:text-red-600 transition-colors py-2">Quiénes Somos</button>
+                <button @click="handleSectionClick('home')" class="text-left text-white hover:text-red-600 transition-colors py-2">Inicio</button>
+                <button @click="handleSectionClick('features')" class="text-left text-white hover:text-red-600 transition-colors py-2">Características</button>
+                <button @click="handleSectionClick('how-it-works')" class="text-left text-white hover:text-red-600 transition-colors py-2">Cómo Funciona</button>
+                <button @click="handleSectionClick('pricing')" class="text-left text-white hover:text-red-600 transition-colors py-2">Precios</button>
+                <button @click="router.push('/community'); isMenuOpen = false" class="text-left text-white hover:text-red-600 transition-colors py-2">Comunidad</button>
+                <button @click="router.push('/about'); isMenuOpen = false" class="text-left text-white hover:text-red-600 transition-colors py-2">Quiénes Somos</button>
                 <button 
                     @click="openSignUp"
                     class="bg-red-600 hover:bg-red-700 w-full rounded-full py-2 text-white font-medium transition-colors"

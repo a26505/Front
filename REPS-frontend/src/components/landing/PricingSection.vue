@@ -1,6 +1,4 @@
 <script setup lang="ts">
-defineEmits(['open-signup']);
-
 const freeFeatures = [
     "Rutinas básicas",
     "Seguimiento de progreso",
@@ -20,85 +18,290 @@ const proFeatures = [
 </script>
 
 <template>
-    <section id="pricing" class="py-16" style="padding-top: 96px !important; padding-bottom: 96px !important; background: linear-gradient(to bottom, #111827, #000000);">
-        <v-container>
-            <div class="text-center mb-16">
-                <h2 class="text-h4 text-md-h3 text-lg-h2 font-weight-bold mb-4">
+    <section id="pricing" class="pricing-section">
+        <div class="container">
+            <!-- Header -->
+            <div class="header-container text-center">
+                <h2 class="section-title">
                     Elige tu <span class="text-red">Plan</span>
                 </h2>
-                <p class="text-h6 text-grey-lighten-1 font-weight-regular" style="color: #9CA3AF !important;">
+                <p class="section-subtitle">
                     Empieza gratis, evoluciona cuando quieras
                 </p>
             </div>
 
-            <div class="d-flex flex-column flex-md-row justify-center gap-8 mx-auto" style="max-width: 900px;">
+            <!-- Plans Grid -->
+            <div class="plans-grid">
                 <!-- Free Plan -->
-                <div class="pricing-card rounded-xl pa-8 w-100 bg-grey-darken-4 border-grey">
-                    <div class="text-center mb-6">
-                        <h3 class="text-h5 font-weight-regular mb-2">Gratis</h3>
-                        <div class="text-h3 font-weight-bold mb-2">$0</div>
-                        <p class="text-grey text-body-2">Para empezar tu viaje</p>
+                <div class="plan-card free-card">
+                    <div class="card-header">
+                        <h3 class="plan-name">Gratis</h3>
+                        <div class="plan-price">$0</div>
+                        <p class="plan-description">Para empezar tu viaje</p>
                     </div>
 
-                    <div class="d-flex flex-column gap-3 mb-8">
-                        <div v-for="(feature, i) in freeFeatures" :key="i" class="d-flex align-center gap-3">
-                            <v-icon icon="mdi-star" color="red" size="small"></v-icon>
-                            <span class="text-body-1">{{ feature }}</span>
+                    <div class="features-list">
+                        <div v-for="(feature, i) in freeFeatures" :key="i" class="feature-item">
+                            <!-- Star Outline Icon -->
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#DC2626" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                            </svg>
+                            <span class="feature-text">{{ feature }}</span>
                         </div>
                     </div>
 
-                    <v-btn block variant="outlined" class="border-2" size="x-large" rounded="xl" @click="$emit('open-signup')">
+                    <button class="cta-button free-button">
                         EMPEZAR GRATIS
-                    </v-btn>
+                    </button>
                 </div>
 
                 <!-- Pro Plan -->
-                <div class="pricing-card rounded-xl pa-8 w-100 position-relative border-red overflow-hidden" 
-                     style="background: linear-gradient(135deg, rgba(220, 38, 38, 0.2), rgba(127, 29, 29, 0.2));">
+                <div class="plan-card pro-card">
+                    <!-- Crown Icon -->
+                    <div class="crown-icon">
+                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#EAB308" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="m2 4 3 12h14l3-12-6 7-4-7-4 7-6-7zm3 16h14"></path>
+                        </svg>
+                    </div>
                     
-                    <div class="position-absolute top-0 right-0 ma-4">
-                        <v-icon icon="mdi-crown" color="yellow" size="large"></v-icon>
-                    </div>
-
-                    <div class="text-center mb-6">
-                        <h3 class="text-h5 font-weight-regular mb-2">Pro</h3>
-                        <div class="d-flex align-baseline justify-center gap-1 mb-2">
-                            <span class="text-h3 font-weight-bold">$9.99</span>
-                            <span class="text-h6 font-weight-regular">/mes</span>
+                    <div class="card-header">
+                        <h3 class="plan-name text-red">Pro</h3>
+                        <div class="price-container">
+                            <span class="plan-price">$9.99</span>
+                            <span class="plan-period">/mes</span>
                         </div>
-                        <p class="text-grey text-body-2">Para resultados profesionales</p>
+                        <p class="plan-description">Para resultados profesionales</p>
                     </div>
 
-                    <div class="d-flex flex-column gap-3 mb-8">
-                        <div v-for="(feature, i) in proFeatures" :key="i" class="d-flex align-center gap-3">
-                            <v-icon icon="mdi-star" color="red" size="small"></v-icon>
-                            <span class="text-body-1">{{ feature }}</span>
+                    <div class="features-list">
+                        <div v-for="(feature, i) in proFeatures" :key="i" class="feature-item">
+                            <!-- Star Fill Icon -->
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="#DC2626" stroke="#DC2626" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                            </svg>
+                            <span class="feature-text">{{ feature }}</span>
                         </div>
                     </div>
 
-                    <v-btn block color="red" size="x-large" rounded="xl" @click="$emit('open-signup')">
+                    <button class="cta-button pro-button">
                         HAZTE PRO
-                    </v-btn>
+                    </button>
                 </div>
             </div>
-        </v-container>
+
+            <!-- Footer Note -->
+            <p class="footer-note">
+                Puedes cambiar o cancelar tu plan en cualquier momento
+            </p>
+        </div>
     </section>
 </template>
 
 <style scoped>
+/* Reset & Base */
+.pricing-section {
+    /* Blend from HowItWorks (#111827) to pure black (#000000) quickly */
+    /* The gradient should finish well before the cards, so we fade to black by 20% */
+    background: linear-gradient(to bottom, #111827 0%, #000000 20%, #000000 100%);
+    padding-top: 128px;
+    padding-bottom: 128px;
+    width: 100%;
+}
+
+.container {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding-left: 48px;
+    padding-right: 48px;
+}
+
+/* Header */
+.header-container {
+    margin-bottom: 64px;
+}
+
+.section-title {
+    font-size: 56px;
+    font-weight: 700;
+    color: #FFFFFF;
+    line-height: 1.1;
+    margin-bottom: 16px;
+}
+
 .text-red {
     color: #DC2626 !important;
 }
 
-.border-grey {
-    border: 1px solid #1F2937 !important;
+.section-subtitle {
+    font-size: 20px;
+    font-weight: 400;
+    color: #9CA3AF;
 }
 
-.border-red {
-    border: 1px solid #DC2626 !important;
+/* Plans Grid */
+.plans-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 32px;
+    max-width: 900px;
+    margin: 0 auto;
 }
 
-.bg-grey-darken-4 {
-    background-color: rgba(17, 24, 39, 0.5) !important;
+@media (min-width: 768px) {
+    .plans-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
 }
+
+/* Cards Common */
+.plan-card {
+    background-color: #0A0A0A;
+    border-radius: 20px;
+    padding: 40px;
+    position: relative;
+    transition: all 300ms ease;
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* Center everything */
+    text-align: center;
+}
+
+.card-header {
+    margin-bottom: 24px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.plan-name {
+    font-size: 24px;
+    font-weight: 400;
+    color: #FFFFFF;
+    margin-bottom: 8px;
+}
+
+.plan-price {
+    font-size: 48px;
+    font-weight: 700;
+    color: #FFFFFF;
+    line-height: 1;
+    margin-bottom: 4px;
+}
+
+.plan-description {
+    font-size: 14px;
+    font-weight: 400;
+    color: #9CA3AF;
+}
+
+.features-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin-bottom: 32px;
+    flex-grow: 1;
+    width: 100%;
+    align-items: flex-start; /* List items align left relative to container? No, screenshot shows left-aligned list content but centered in card? Or simply left aligned? Screenshot shows stars aligned. */
+    /* Screenshot: Stars are aligned left, text is left. The BLOCK is centered or left? */
+    /* Screenshot shows items aligned to the left side of the card content area. */
+    align-items: flex-start; 
+    padding-left: 12px;
+}
+
+.feature-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    text-align: left;
+}
+
+.feature-text {
+    font-size: 15px;
+    color: #D1D5DB;
+    font-weight: 400;
+}
+
+.cta-button {
+    width: 100%;
+    font-size: 15px;
+    font-weight: 700;
+    padding: 14px 24px;
+    border-radius: 8px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 300ms ease;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Free Card Specifics */
+.free-card {
+    /* Stronger Blue Border */
+    border: 2px solid #2563EB;
+    /* Dark Blue background for Free Card only */
+    background: linear-gradient(180deg, #0f172a 0%, #020617 100%);
+}
+
+.free-button {
+    background: transparent;
+    border: 1px solid #374151;
+    color: #FFFFFF;
+}
+
+.free-button:hover {
+    background: #1F2937;
+    border-color: #1F2937;
+}
+
+/* Pro Card Specifics */
+.pro-card {
+    border: 1px solid #DC2626;
+    background: linear-gradient(180deg, rgba(220, 38, 38, 0.1) 0%, rgba(0, 0, 0, 0) 100%); /* Subtle red gradient top */
+    box-shadow: 0 0 20px rgba(220, 38, 38, 0.1);
+}
+
+.pro-card:hover {
+    box-shadow: 0 0 30px rgba(220, 38, 38, 0.2);
+}
+
+.crown-icon {
+    position: absolute;
+    top: 24px;
+    right: 24px;
+}
+
+.price-container {
+    display: flex;
+    align-items: baseline;
+    gap: 4px;
+    justify-content: center;
+}
+
+.plan-period {
+    font-size: 18px;
+    font-weight: 400;
+    color: #9CA3AF;
+}
+
+.pro-button {
+    background: #DC2626;
+    border: none;
+    color: #FFFFFF;
+}
+
+.pro-button:hover {
+    background: #B91C1C;
+}
+
+/* Footer Note */
+.footer-note {
+    font-size: 14px;
+    color: #6B7280;
+    text-align: center;
+    margin-top: 48px;
+}
+
+/* Layout adjustments */
+.divider { display: none; }
+
 </style>

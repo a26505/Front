@@ -3,7 +3,7 @@
 </script>
 
 <template>
-    <v-footer color="black" class="py-16 border-t border-grey-darken-3">
+    <v-footer id="about" color="black" class="py-16 border-t border-grey-darken-3">
       <v-container>
         <v-row>
           <v-col cols="12" md="4">

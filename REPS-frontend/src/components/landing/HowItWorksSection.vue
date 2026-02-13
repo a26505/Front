@@ -108,7 +108,7 @@ const steps = [
 /* Step Items */
 .step-number {
     font-size: 60px; /* 3.75rem */
-    color: rgba(220, 38, 38, 0.3);
+    color: #DC2626;
     line-height: 1;
 }
 

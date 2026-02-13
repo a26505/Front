@@ -10,8 +10,8 @@ const emit = defineEmits(['open-signup']);
         
         <!-- DECORATION LAYER (Z-INDEX 1) -->
         <!-- Red circle decorations - Positioned behind athlete -->
-        <div class="absolute right-[5%] top-1/2 -translate-y-1/2 w-[500px] h-[500px] md:w-[700px] md:h-[700px] lg:w-[850px] lg:h-[850px] rounded-full border border-red-600/20 pointer-events-none z-1 circle-large"></div>
-        <div class="absolute right-[8%] top-1/2 -translate-y-1/2 w-[400px] h-[400px] md:w-[600px] md:h-[600px] lg:w-[750px] lg:h-[750px] rounded-full border border-red-600/15 pointer-events-none z-1 circle-medium"></div>
+        <div class="absolute right-[5%] top-1/2 -translate-y-1/2 w-[500px] h-[500px] md:w-[700px] md:h-[700px] lg:w-[850px] lg:h-[850px] rounded-full border circle-decoration pointer-events-none z-1 circle-large"></div>
+        <div class="absolute right-[8%] top-1/2 -translate-y-1/2 w-[400px] h-[400px] md:w-[600px] md:h-[600px] lg:w-[750px] lg:h-[750px] rounded-full border circle-decoration pointer-events-none z-1 circle-medium"></div>
 
         <div class="container mx-auto px-6 py-12 lg:py-12 relative z-10 w-full h-full"> 
             <!-- GRID LAYER (Z-INDEX 10 for text, Z-INDEX 20 for image) -->
@@ -118,6 +118,8 @@ const emit = defineEmits(['open-signup']);
 .bg-red-600 { background-color: #DC2626; }
 .border-red-600\/20 { border-color: rgba(220, 38, 38, 0.2); }
 .border-red-600\/15 { border-color: rgba(220, 38, 38, 0.15); }
+.border-red-900\/30 { border-color: rgba(127, 29, 29, 0.3); }
+.border-red-900\/20 { border-color: rgba(127, 29, 29, 0.2); }
 .border-white { border-color: #FFFFFF; }
 .hover\:bg-red-700:hover { background-color: #B91C1C; }
 .hover\:bg-white\/10:hover { background-color: rgba(255, 255, 255, 0.1); }
@@ -199,6 +201,11 @@ const emit = defineEmits(['open-signup']);
 .pb-0 { padding-bottom: 0px; }
 
 /* Custom Circles */
+.circle-decoration {
+    border-width: 8px;
+    border-color: rgba(220, 38, 38, 0.2) !important;
+}
+
 .circle-large {
     width: 500px; height: 500px;
 }
