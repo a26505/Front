@@ -1,223 +1,121 @@
-﻿using REPS_backend.DTOs.Rutinas;
-using REPS_backend.DTOs.Ejercicios;
+using REPS_backend.DTOs.Rutinas;
 using REPS_backend.Models;
-using REPS_backend.Repositories;
+using REPS_backend.Repositories; // <-- Importamos Repositories
 
 namespace REPS_backend.Services
 {
     public class RutinaService : IRutinaService
     {
-        private readonly IRutinaRepository _rutinaRepository;
-        private readonly IEjercicioRepository _ejercicioRepository;
-        private readonly IEntrenamientoRepository _entrenamientoRepository;
+        private readonly IRutinaRepository _repository;
 
-        public RutinaService(
-            IRutinaRepository rutinaRepository,
-            IEjercicioRepository ejercicioRepository,
-            IEntrenamientoRepository entrenamientoRepository)
+        public RutinaService(IRutinaRepository repository)
         {
-            _rutinaRepository = rutinaRepository;
-            _ejercicioRepository = ejercicioRepository;
-            _entrenamientoRepository = entrenamientoRepository;
+            _repository = repository;
         }
 
         public async Task<RutinaDetalleDto> CrearRutinaAsync(RutinaCreateDto dto, int usuarioId)
         {
+            // 1. Mapear DTO a Entidad
             var nuevaRutina = new Rutina
             {
                 Nombre = dto.Nombre,
-                UsuarioId = usuarioId,
-                EsPublica = false,
+                Nivel = dto.Nivel,
                 Estado = EstadoRutina.Privada,
                 Ejercicios = new List<RutinaEjercicio>()
             };
 
-            if (dto.EjerciciosIds != null && dto.EjerciciosIds.Any())
+            // 2. Lógica interna (Smart Weight y Ejercicios)
+            foreach (var ejDto in dto.Ejercicios)
             {
-                int orden = 1;
-                foreach (var ejercicioId in dto.EjerciciosIds)
+                var ejercicioDominio = new RutinaEjercicio
                 {
-                    var ejercicio = await _ejercicioRepository.GetByIdAsync(ejercicioId);
-                    if (ejercicio != null)
-                    {
-                        nuevaRutina.Ejercicios.Add(new RutinaEjercicio
-                        {
-                            EjercicioId = ejercicioId,
-                            Orden = orden++,
-                            Series = 3,
-                            Repeticiones = "10-12",
-                            DescansoSegundos = 60,
-                            Tipo = TipoSerie.Normal
-                        });
-                    }
-                }
+                    Series = ejDto.Series,
+                    DescansoSegundos = ejDto.DescansoSegundos,
+                    Tipo = ejDto.Tipo,
+                    PorcentajeDelPeso = CalcularPorcentajeSmart(ejDto.Tipo),
+                    PesoSugerido = 0
+                };
+                nuevaRutina.Ejercicios.Add(ejercicioDominio);
             }
 
-            nuevaRutina.CalcularDuracionEstimada();
+            // 3. Calcular duración
+            nuevaRutina.DuracionMinutos = CalcularDuracionInterna(nuevaRutina.Ejercicios);
 
-            await _rutinaRepository.AddAsync(nuevaRutina);
-
-            return await ObtenerDetalleRutinaAsync(nuevaRutina.Id) ?? new RutinaDetalleDto();
-        }
-
-        public async Task<bool> ActualizarRutinaAsync(int id, RutinaUpdateDto dto, int usuarioId)
-        {
-            var rutina = await _rutinaRepository.GetByIdSimpleAsync(id);
-            if (rutina == null) return false;
-
-            if (rutina.UsuarioId != usuarioId) return false;
-
-            if (rutina.Estado == EstadoRutina.Publicada || rutina.Estado == EstadoRutina.EnRevision)
-            {
-                rutina.Estado = EstadoRutina.Privada;
-                rutina.EsPublica = false;
-            }
-
-            rutina.Nombre = dto.Nombre;
-            rutina.Descripcion = dto.Descripcion;
-
-            await _rutinaRepository.UpdateAsync(rutina);
-            return true;
+            // 4. USAR EL REPOSITORIO (Como en tu proyecto anterior)
+            await _repository.AddAsync(nuevaRutina); 
+            
+            // 5. Devolver DTO
+            return MapToDetalleDto(nuevaRutina);
         }
 
         public async Task<List<RutinaItemDto>> ObtenerRutinasPublicasAsync()
         {
-            var rutinas = await _rutinaRepository.GetAllPublicasAsync();
+            // Pedimos los datos al repositorio real
+            var rutinas = await _repository.GetAllPublicasAsync();
+
+            // Convertimos a DTO
             return rutinas.Select(r => new RutinaItemDto
             {
                 Id = r.Id,
                 Nombre = r.Nombre,
-                CreadorNombre = r.Usuario != null ? r.Usuario.Nombre : "Desconocido",
-                TotalEjercicios = r.Ejercicios.Count,
-                Likes = r.Likes
+                Nivel = r.Nivel.ToString(),
+                DuracionMinutos = r.DuracionMinutos,
+                CantidadEjercicios = r.Ejercicios.Count
             }).ToList();
         }
 
-        public async Task<RutinaDetalleDto?> ObtenerDetalleRutinaAsync(int id)
+        public async Task<RutinaDetalleDto> ObtenerDetalleRutinaAsync(int rutinaId)
         {
-            var r = await _rutinaRepository.GetByIdWithEjerciciosAsync(id);
-            if (r == null) return null;
+            var rutina = await _repository.GetByIdAsync(rutinaId);
 
+            if (rutina == null) return null;
+
+            return MapToDetalleDto(rutina);
+        }
+
+        // --- MÉTODOS PRIVADOS (Los mismos de antes) ---
+        private decimal CalcularPorcentajeSmart(TipoSerie tipo)
+        {
+             return tipo switch
+            {
+                TipoSerie.Calentamiento => 0.50m,
+                TipoSerie.Aproximacion => 0.75m, 
+                TipoSerie.DropSet => 0.60m,      
+                TipoSerie.AlFallo => 0.85m,      
+                _ => 1.0m                        
+            };
+        }
+
+        private int CalcularDuracionInterna(List<RutinaEjercicio> ejercicios)
+        {
+            if (ejercicios == null || !ejercicios.Any()) return 0;
+            double segundosTotales = 0;
+            foreach (var ej in ejercicios)
+            {
+                segundosTotales += (ej.Series * 60);
+                if (ej.Series > 1) segundosTotales += (ej.Series - 1) * ej.DescansoSegundos;
+            }
+            segundosTotales += (ejercicios.Count * 120);
+            return (int)Math.Ceiling(segundosTotales / 60);
+        }
+
+        private RutinaDetalleDto MapToDetalleDto(Rutina r)
+        {
             return new RutinaDetalleDto
             {
                 Id = r.Id,
                 Nombre = r.Nombre,
-                CreadorNombre = r.Usuario != null ? r.Usuario.Nombre : "Desconocido",
-                Likes = r.Likes,
-                Ejercicios = r.Ejercicios.Select(re => new EjercicioEnRutinaDto
+                Nivel = r.Nivel.ToString(),
+                DuracionMinutos = r.DuracionMinutos,
+                Estado = r.Estado.ToString(),
+                Ejercicios = r.Ejercicios?.Select(e => new RutinaEjercicioDto
                 {
-                    EjercicioId = re.EjercicioId,
-                    Nombre = re.Ejercicio?.Nombre ?? "Ejercicio no encontrado",
-                    Series = re.Series,
-                    Repeticiones = re.Repeticiones
-                }).ToList()
+                    EjercicioId = 0, 
+                    Series = e.Series,
+                    DescansoSegundos = e.DescansoSegundos,
+                    Tipo = e.Tipo
+                }).ToList() ?? new List<RutinaEjercicioDto>()
             };
-        }
-
-        public async Task<bool> BorrarRutinaAsync(int id, int usuarioId)
-        {
-            var rutina = await _rutinaRepository.GetByIdSimpleAsync(id);
-            if (rutina == null) return false;
-
-            if (rutina.UsuarioId != usuarioId) return false;
-
-            await _rutinaRepository.DeleteAsync(id);
-            return true;
-        }
-
-        public async Task<bool> EnviarARevisionAsync(int rutinaId, int usuarioId)
-        {
-            var rutina = await _rutinaRepository.GetByIdSimpleAsync(rutinaId);
-
-            if (rutina == null) return false;
-            if (rutina.UsuarioId != usuarioId) return false;
-
-            if (rutina.Estado == EstadoRutina.Baneada) return false;
-
-            if (rutina.Estado == EstadoRutina.Publicada || rutina.Estado == EstadoRutina.EnRevision) return false;
-
-            rutina.Estado = EstadoRutina.EnRevision;
-            await _rutinaRepository.UpdateAsync(rutina);
-            return true;
-        }
-
-        public async Task<IEnumerable<Rutina>> ObtenerRutinasPendientesAsync()
-        {
-            var todas = await _rutinaRepository.GetAllAsync();
-            return todas.Where(r => r.Estado == EstadoRutina.EnRevision).ToList();
-        }
-
-        public async Task<bool> ValidarRutinaAsync(int rutinaId, bool aprobar)
-        {
-            var rutina = await _rutinaRepository.GetByIdSimpleAsync(rutinaId);
-            if (rutina == null) return false;
-
-            if (aprobar)
-            {
-                rutina.Estado = EstadoRutina.Publicada;
-                rutina.EsPublica = true;
-            }
-            else
-            {
-                rutina.Estado = EstadoRutina.Rechazada;
-                rutina.EsPublica = false;
-            }
-
-            await _rutinaRepository.UpdateAsync(rutina);
-            return true;
-        }
-
-        public async Task<bool> BanearRutinaAsync(int rutinaId)
-        {
-            var rutina = await _rutinaRepository.GetByIdSimpleAsync(rutinaId);
-            if (rutina == null) return false;
-
-            rutina.Estado = EstadoRutina.Baneada;
-            rutina.EsPublica = false;
-
-            await _rutinaRepository.UpdateAsync(rutina);
-            return true;
-        }
-
-        public async Task<List<RutinaItemDto>> ObtenerRutinasDeUsuarioAsync(int usuarioId, NivelDificultad? nivel = null, GrupoMuscular? musculo = null)
-        {
-            var rutinas = await _rutinaRepository.GetByUsuarioIdAsync(usuarioId, nivel, musculo);
-
-            if (!rutinas.Any()) return new List<RutinaItemDto>();
-
-            var rutinaIds = rutinas.Select(r => r.Id).ToList();
-            var ultimasFechas = await _entrenamientoRepository.ObtenerUltimasFechasRutinasAsync(usuarioId, rutinaIds);
-
-            return rutinas.Select(r => new RutinaItemDto
-            {
-                Id = r.Id,
-                Nombre = r.Nombre,
-                CreadorNombre = "Tú",
-                Likes = r.Likes,
-                TotalEjercicios = r.Ejercicios?.Count ?? 0,
-                UltimaVezRealizada = ultimasFechas.ContainsKey(r.Id) ? ultimasFechas[r.Id] : null
-            }).ToList();
-        }
-        public async Task<bool> ToggleLikeAsync(int rutinaId, int usuarioId)
-        {
-            var existingLike = await _rutinaRepository.ObtenerLikeAsync(rutinaId, usuarioId);
-
-            if (existingLike != null)
-            {
-                await _rutinaRepository.RemoveLikeAsync(existingLike);
-                return false;
-            }
-            else
-            {
-                var newLike = new Like
-                {
-                    RutinaId = rutinaId,
-                    UsuarioId = usuarioId,
-                    FechaLike = DateTime.UtcNow
-                };
-                await _rutinaRepository.AddLikeAsync(newLike);
-                return true;
-            }
         }
     }
 }

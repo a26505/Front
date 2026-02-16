@@ -3,6 +3,7 @@ import LandingPage from '../components/LandingPage.vue'
 import CommunityPage from '../components/CommunityPage.vue'
 import AboutPage from '../components/AboutPage.vue'
 
+
 const router = createRouter({
     history: createWebHistory(import.meta.env.BASE_URL),
     routes: [
@@ -21,6 +22,12 @@ const router = createRouter({
             name: 'about',
             component: AboutPage,
         },
+        // Login route removed as it is now integrated into LandingPage
+        // {
+        //     path: '/login',
+        //     name: 'login',
+        //     component: LoginRegister,
+        // },
         // Add more routes here later (login, dashboard, etc)
     ],
 })

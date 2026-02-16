@@ -6,7 +6,7 @@ import AboutMission from './about/AboutMission.vue';
 import AboutTeam from './about/AboutTeam.vue';
 import AboutContactInfo from './about/AboutContactInfo.vue';
 import AboutContactForm from './about/AboutContactForm.vue';
-import SignUpDialog from '@/components/landing/SignUpDialog.vue';
+import AuthDialog from '@/components/landing/AuthDialog.vue';
 import { ref } from 'vue';
 
 const showSignUp = ref(false);
@@ -49,7 +49,7 @@ const showSignUp = ref(false);
 
     <FooterSection />
     
-    <SignUpDialog v-model="showSignUp" />
+    <AuthDialog v-model="showSignUp" />
   </v-app>
 </template>
 

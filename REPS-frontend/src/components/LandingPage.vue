@@ -7,7 +7,7 @@ import HowItWorksSection from './landing/HowItWorksSection.vue';
 import PricingSection from './landing/PricingSection.vue';
 import CTASection from './landing/CTASection.vue';
 import FooterSection from './landing/FooterSection.vue';
-import SignUpDialog from './landing/SignUpDialog.vue';
+import AuthDialog from './landing/AuthDialog.vue';
 
 const showSignUp = ref(false);
 
@@ -39,8 +39,8 @@ const openSignUp = () => {
     <!-- Footer -->
     <FooterSection />
 
-    <!-- Sign Up Dialog -->
-    <SignUpDialog v-model="showSignUp" />
+    <!-- Auth Dialog (Login/Register) -->
+    <AuthDialog v-model="showSignUp" />
 
   </v-main>
 </template>

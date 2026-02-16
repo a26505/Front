@@ -7,7 +7,7 @@ import CommunityStats from './community/CommunityStats.vue';
 import CommunityCTA from './community/CommunityCTA.vue';
 import NavBar from './landing/NavBar.vue';
 import FooterSection from './landing/FooterSection.vue';
-import SignUpDialog from './landing/SignUpDialog.vue'; // Reuse signup dialog
+import AuthDialog from './landing/AuthDialog.vue'; // Reuse auth dialog
 
 const showSignUp = ref(false);
 const openSignUp = () => {
@@ -43,8 +43,8 @@ const openSignUp = () => {
     <!-- Footer -->
     <FooterSection />
 
-    <!-- Sign Up Dialog -->
-    <SignUpDialog v-model="showSignUp" />
+    <!-- Auth Dialog -->
+    <AuthDialog v-model="showSignUp" />
   </v-main>
 </template>
 
