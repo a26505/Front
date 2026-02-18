@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, watch, computed } from 'vue';
+import { ref, watch } from 'vue';
 import { useAuthStore } from '../../stores/auth'; // Adjust path if necessary
 import { useRouter } from 'vue-router'
 
@@ -55,7 +55,13 @@ const handleSubmit = async () => {
         }
         // Success
         dialog.value = false; // Close dialog
-        router.push('/') // Ensure we are on home/dashboard (or reload to update state)
+        
+        if (!isLogin.value) {
+            router.push('/select-plan')
+        } else {
+            router.push('/') // Ensure we are on home/dashboard (or reload to update state)
+        }
+        
         // Optionally show success message
     } catch (error: any) {
         errorMessage.value = error.message || 'Ocurrió un error. Verifica tus datos.'

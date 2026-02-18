@@ -178,6 +178,26 @@ namespace REPS_backend.Services
             return true;
         }
 
+        public async Task<bool> ActualizarPlanAsync(int userId, PlanSuscripcion nuevoPlan)
+        {
+            var usuario = await _repository.GetByIdAsync(userId);
+            if (usuario == null) return false;
+
+            usuario.PlanActual = nuevoPlan;
+
+            if (nuevoPlan == PlanSuscripcion.ProMensual)
+            {
+                usuario.FechaFinSuscripcion = DateTime.Now.AddDays(30);
+            }
+            else
+            {
+                usuario.FechaFinSuscripcion = DateTime.MinValue;
+            }
+
+            await _repository.UpdateUsuarioAsync(usuario);
+            return true;
+        }
+
         
     }
 }
