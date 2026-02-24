@@ -27,6 +27,11 @@ const router = createRouter({
             name: 'select-plan',
             component: () => import('../components/SelectPlan.vue')
         },
+        {
+            path: '/dashboard',
+            name: 'dashboard',
+            component: () => import('../components/Dashboard.vue')
+        },
         // Login route removed as it is now integrated into LandingPage
         // {
         //     path: '/login',
