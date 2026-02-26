@@ -92,16 +92,22 @@
       <!-- HEADER -->
       <header class="sticky top-0 z-40 w-full h-[89px] bg-[rgba(0,0,0,0.95)] border-b border-[#1E2939] backdrop-blur-[10px] py-[16px] px-[24px] flex items-center justify-between">
         <div class="flex flex-col gap-0">
-          <h1 class="text-[30px] leading-[36px] font-normal text-white">¡Hola, Carlos! 👋</h1>
+          <div class="flex items-center gap-2">
+            <h1 class="text-[30px] leading-[36px] font-normal text-white">¡Hola, Carlos!</h1>
+            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="#F97316" class="animate-[wave_2s_ease-in-out_infinite] origin-[70%_70%] drop-shadow-md">
+              <path d="M12.92,10.51C12.35,10.22 11.83,9.85 11.39,9.41C10.74,8.76 10.37,7.92 10.37,7C10.37,6.83 10.38,6.66 10.42,6.5L8.91,6.86C8.61,6.93 8.35,7.11 8.16,7.36L6.96,9H4.5A2.5,2.5 0 0,0 2,11.5A2.5,2.5 0 0,0 4.5,14H6V17C6,18.11 6.9,19 8,19V22H11C11.39,22 11.75,21.89 12.04,21.69L14.71,19.92H17.5A2.5,2.5 0 0,0 20,17.42A2.5,2.5 0 0,0 17.5,14.92H15V13A2.5,2.5 0 0,0 12.92,10.51Z"/>
+            </svg>
+          </div>
           <p class="text-[14px] leading-[20px] text-[#9CA3AF]">Listo para superar tus límites hoy</p>
         </div>
 
-        <button class="bg-[#E7000B] rounded-[8px] h-[36px] w-[142px] flex items-center justify-center gap-[8px] cursor-pointer px-[12px] transition-transform duration-200 hover:scale-105 active:scale-95 hover:bg-[#B91C1C]">
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-            <path d="M2 11.3333L3.33333 3.33333L6.66667 6.66667L8 1.33333L9.33333 6.66667L12.6667 3.33333L14 11.3333H2Z" stroke="white" stroke-width="1.33" stroke-linecap="round" stroke-linejoin="round"/>
-            <path d="M2 11.3333H14V13.3333C14 13.7 13.7 14 13.3333 14H2.66667C2.3 14 2 13.7 2 13.3333V11.3333Z" stroke="white" stroke-width="1.33" stroke-linecap="round" stroke-linejoin="round"/>
+        <button class="relative bg-gradient-to-r from-[#EAB308] to-[#A16207] rounded-[8px] h-[36px] px-[16px] flex items-center justify-center gap-[8px] cursor-pointer transition-all duration-300 hover:scale-105 active:scale-95 shadow-[0_0_15px_rgba(234,179,8,0.4)] border border-[#FEF08A] overflow-hidden group">
+          <div class="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out"></div>
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" class="relative z-10">
+            <path d="M2 11.3333L3.33333 3.33333L6.66667 6.66667L8 1.33333L9.33333 6.66667L12.6667 3.33333L14 11.3333H2Z" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M2 11.3333H14V13.3333C14 13.7 13.7 14 13.3333 14H2.66667C2.3 14 2 13.7 2 13.3333V11.3333Z" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
           </svg>
-          <span class="text-white text-[14px] font-medium">Mejorar a Pro</span>
+          <span class="text-white text-[14px] font-bold tracking-wide relative z-10 drop-shadow-md whitespace-nowrap">Mejorar a Pro</span>
         </button>
       </header>
 
@@ -111,7 +117,7 @@
         <!-- CARDS DE ESTADÍSTICAS -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-[24px] mb-[24px]">
           <!-- CARD 1: RACHA -->
-          <div class="h-[206px] rounded-[14px] p-[25px] relative transition-all duration-300 hover:brightness-110 border border-[rgba(245,73,0,0.3)]" style="background: linear-gradient(152.983deg, rgba(245, 73, 0, 0.2) 0%, rgba(126, 42, 12, 0.2) 100%)">
+          <div class="h-[206px] rounded-[14px] p-[25px] relative transition-all duration-300 hover:brightness-110 border border-[rgba(245,73,0,0.8)]" style="background: linear-gradient(152.983deg, rgba(245, 73, 0, 0.3) 0%, rgba(126, 42, 12, 0.3) 100%)">
             <div class="flex justify-between items-center mb-[40px]">
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="#F97316" class="w-8 h-8">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M15.362 5.214A8.252 8.252 0 0 1 12 21 8.25 8.25 0 0 1 6.038 7.047 8.287 8.287 0 0 0 9 9.601a8.983 8.983 0 0 1 3.361-6.867 8.21 8.21 0 0 0 3 2.48Z" />
@@ -121,12 +127,12 @@
                 Activo
               </div>
             </div>
-            <div class="text-[30px] leading-[36px] text-white font-normal mb-[28px]">12 días</div>
+            <div class="text-[30px] leading-[36px] text-[#FF8533] font-bold mb-[28px]">12 días</div>
             <div class="text-[14px] leading-[20px] text-[#9CA3AF]">Racha actual</div>
           </div>
 
           <!-- CARD 2: RANGO -->
-          <div class="h-[206px] rounded-[14px] p-[25px] relative transition-all duration-300 hover:brightness-110 border border-[rgba(234,179,8,0.3)]" style="background: linear-gradient(152.983deg, rgba(234, 179, 8, 0.2) 0%, rgba(161, 98, 7, 0.2) 100%)">
+          <div class="h-[206px] rounded-[14px] p-[25px] relative transition-all duration-300 hover:brightness-110 border border-[rgba(234,179,8,0.8)]" style="background: linear-gradient(152.983deg, rgba(234, 179, 8, 0.3) 0%, rgba(161, 98, 7, 0.3) 100%)">
             <div class="flex justify-between items-center mb-[40px]">
               <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#EAB308" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6" />
@@ -136,16 +142,16 @@
                 <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22" />
                 <path d="M18 2H6v7a6 6 0 0 0 12 0V2Z" />
               </svg>
-              <div class="bg-[#E7000B] rounded-[8px] py-[3px] px-[9px] text-[12px] font-medium text-white h-[22px] flex items-center">
+              <div class="bg-[#A16207] rounded-[8px] py-[3px] px-[9px] text-[12px] font-medium text-[#FEF08A] h-[22px] flex items-center">
                 Actual
               </div>
             </div>
-            <div class="text-[30px] leading-[36px] text-[#EAB308] font-bold mb-[28px]">Oro</div>
+            <div class="text-[30px] leading-[36px] text-[#FDE047] font-bold mb-[28px]">Oro</div>
             <div class="text-[14px] leading-[20px] text-[#9CA3AF]">Rango actual</div>
           </div>
 
           <!-- CARD 3: LOGROS -->
-          <div class="h-[206px] rounded-[14px] p-[25px] relative transition-all duration-300 hover:brightness-110 border border-[rgba(152,16,250,0.3)]" style="background: linear-gradient(152.983deg, rgba(152, 16, 250, 0.2) 0%, rgba(89, 22, 139, 0.2) 100%)">
+          <div class="h-[206px] rounded-[14px] p-[25px] relative transition-all duration-300 hover:brightness-110 border border-[rgba(152,16,250,0.8)]" style="background: linear-gradient(152.983deg, rgba(152, 16, 250, 0.3) 0%, rgba(89, 22, 139, 0.3) 100%)">
              <div class="flex justify-between items-center mb-[40px]">
               <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#A855F7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <circle cx="12" cy="8" r="6"/>
@@ -155,13 +161,13 @@
                 +3 nuevos
               </div>
             </div>
-            <div class="text-[30px] leading-[36px] text-white font-normal mb-[28px]">27</div>
+            <div class="text-[30px] leading-[36px] text-[#D8B4FE] font-bold mb-[28px]">27</div>
             <div class="text-[14px] leading-[20px] text-[#9CA3AF]">Logros desbloqueados</div>
           </div>
         </div>
 
         <!-- 4️⃣ CARD ENTRENAMIENTO DE HOY -->
-        <div class="w-full flex flex-col md:flex-row justify-between items-start md:items-center rounded-[16px] p-[28px] mb-[24px] border border-[rgba(231,0,11,0.3)] transition-all duration-300 hover:brightness-110 gap-6 md:gap-0" style="background: linear-gradient(152.983deg, rgba(231, 0, 11, 0.2) 0%, rgba(115, 0, 5, 0.2) 100%)">
+        <div class="w-full flex flex-col md:flex-row justify-between items-start md:items-center rounded-[16px] p-[28px] mb-[24px] border border-[rgba(231,0,11,0.8)] transition-all duration-300 hover:brightness-110 gap-6 md:gap-0" style="background: linear-gradient(152.983deg, rgba(231, 0, 11, 0.3) 0%, rgba(115, 0, 5, 0.3) 100%)">
           <!-- CONTENIDO IZQUIERDO -->
           <div class="flex flex-col gap-[12px]">
             <div class="flex items-center gap-[8px]">
@@ -174,7 +180,7 @@
                <span class="text-[14px] text-[#9CA3AF]">Entrenamiento de Hoy</span>
             </div>
             
-            <h2 class="text-[30px] leading-[36px] text-white font-normal mt-[12px]">Empuje Superior A</h2>
+            <h2 class="text-[30px] leading-[36px] text-white font-bold mt-[12px]">Empuje Superior A</h2>
             
             <div class="flex flex-wrap gap-[16px] items-center mt-[12px]">
               <div class="flex items-center gap-1">
@@ -194,18 +200,18 @@
                 </svg>
                 <span class="text-[14px] text-white">32 min</span>
               </div>
-              <div class="bg-[rgba(245,73,0,0.2)] border border-[rgba(245,73,0,0.3)] rounded-[8px] py-[3px] px-[9px] text-[12px] text-white">
+              <div class="bg-[#7F000B] rounded-[8px] py-[3px] px-[9px] text-[12px] font-medium text-[#FFB3B3]">
                 Intermedio
               </div>
             </div>
           </div>
 
           <!-- BOTÓN COMENZAR -->
-          <button class="w-full md:w-auto bg-[#E7000B] rounded-[10px] py-[12px] px-[24px] text-[16px] font-semibold text-white flex justify-center items-center gap-[8px] cursor-pointer hover:bg-[#B91C1C] transition-all duration-200 hover:scale-105 active:scale-95">
+          <button class="w-full md:w-auto bg-[#7F000B] rounded-[10px] py-[12px] px-[24px] text-[16px] font-semibold text-[#FFB3B3] flex justify-center items-center gap-[8px] cursor-pointer hover:bg-[#99000B] transition-all duration-200 hover:scale-105 active:scale-95">
             Comenzar
             <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-              <path d="M4.16667 10H15.8333" stroke="white" stroke-width="1.67" stroke-linecap="round" stroke-linejoin="round"/>
-              <path d="M10 4.16667L15.8333 10L10 15.8333" stroke="white" stroke-width="1.67" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M4.16667 10H15.8333" stroke="#FFB3B3" stroke-width="1.67" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M10 4.16667L15.8333 10L10 15.8333" stroke="#FFB3B3" stroke-width="1.67" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
           </button>
         </div>
@@ -383,6 +389,17 @@
 <style scoped>
 @keyframes progress {
   from { width: 0; }
+}
+
+@keyframes wave {
+  0% { transform: rotate(0deg); }
+  10% { transform: rotate(14deg); }
+  20% { transform: rotate(-8deg); }
+  30% { transform: rotate(14deg); }
+  40% { transform: rotate(-4deg); }
+  50% { transform: rotate(10deg); }
+  60% { transform: rotate(0deg); }
+  100% { transform: rotate(0deg); }
 }
 
 /* Custom scrollbar to match the design */

@@ -13,12 +13,15 @@ const emit = defineEmits(['open-signup']);
         <div class="absolute right-[5%] top-1/2 -translate-y-1/2 w-[500px] h-[500px] md:w-[700px] md:h-[700px] lg:w-[850px] lg:h-[850px] rounded-full border circle-decoration pointer-events-none z-1 circle-large"></div>
         <div class="absolute right-[8%] top-1/2 -translate-y-1/2 w-[400px] h-[400px] md:w-[600px] md:h-[600px] lg:w-[750px] lg:h-[750px] rounded-full border circle-decoration pointer-events-none z-1 circle-medium"></div>
 
+        <!-- Gradient Bottom moved to back - Z-INDEX 0 -->
+        <div class="absolute bottom-0 left-0 right-0 h-48 bg-gradient-to-t from-black to-transparent z-0 pointer-events-none"></div>
+
         <div class="container mx-auto px-6 py-12 lg:py-12 relative z-10 w-full h-full"> 
             <!-- GRID LAYER (Z-INDEX 10 for text, Z-INDEX 20 for image) -->
             <div class="grid lg:grid-cols-2 gap-8 lg:gap-12 items-end lg:items-center h-full">
                 
-                <!-- Left Content (Text) - Z-INDEX 10 -->
-                <div class="max-w-2xl relative z-10 lg:-ml-8">
+                <!-- Left Content (Text) - Z-INDEX 30 -->
+                <div class="max-w-2xl relative z-30 lg:-ml-8">
                     <h1 class="text-h1-huge font-weight-black mb-6 lg:mb-8 text-white uppercase">
                         REPS, UNA<br />
                         NUEVA FORMA<br />
@@ -46,18 +49,18 @@ const emit = defineEmits(['open-signup']);
                     </div>
 
                     <!-- Stats - Desktop Only -->
-                    <div class="hidden lg:grid lg:grid-cols-3 gap-8 mt-16 max-w-xl">
+                    <div class="hidden lg:grid lg:grid-cols-3 gap-8 mt-16 max-w-xl relative z-30">
                         <div>
-                            <div class="text-4xl text-red-600 mb-1 font-bold">50K+</div>
-                            <div class="text-sm text-gray-400">Usuarios Activos</div>
+                            <div class="text-5xl mb-2 font-black text-red-600">50K+</div>
+                            <div class="text-[13px] font-bold tracking-[0.15em] uppercase text-[#888888]">USUARIOS ACTIVOS</div>
                         </div>
                         <div>
-                            <div class="text-4xl text-red-600 mb-1 font-bold">100M+</div>
-                            <div class="text-sm text-gray-400">Entrenamientos</div>
+                            <div class="text-5xl mb-2 font-black text-red-600">100M+</div>
+                            <div class="text-[13px] font-bold tracking-[0.15em] uppercase text-[#888888]">ENTRENAMIENTOS</div>
                         </div>
                         <div>
-                            <div class="text-4xl text-red-600 mb-1 font-bold">4.9★</div>
-                            <div class="text-sm text-gray-400">Valoración</div>
+                            <div class="text-5xl mb-2 font-black text-red-600">4.9★</div>
+                            <div class="text-[13px] font-bold tracking-[0.15em] uppercase text-[#888888]">VALORACIÓN</div>
                         </div>
                     </div>
                 </div>
@@ -73,9 +76,6 @@ const emit = defineEmits(['open-signup']);
                     </div>
                 </div>
             </div>
-
-        <!-- Gradient Bottom - Z-INDEX 10 -->
-        <div class="absolute bottom-0 left-0 right-0 h-48 bg-gradient-to-t from-black to-transparent z-10 pointer-events-none"></div>
     </section>
 </template>
 
@@ -113,7 +113,18 @@ const emit = defineEmits(['open-signup']);
 /* Colors */
 .text-white { color: #FFFFFF; }
 .text-red-600 { color: #DC2626; }
+.text-red-bright { color: #FF4444; }
 .text-gray-400 { color: #9CA3AF; }
+.text-gray-200 { color: #E5E7EB; }
+.drop-shadow-red { filter: drop-shadow(0 0 8px rgba(255, 68, 68, 0.6)); text-shadow: 0 0 15px rgba(255, 68, 68, 0.4); }
+.drop-shadow-red-neon { filter: drop-shadow(0 0 10px rgba(220, 38, 38, 0.8)); text-shadow: 0 0 20px rgba(220, 38, 38, 1), 0 0 40px rgba(220, 38, 38, 0.8); color: #FFFFFF; }
+.font-medium { font-weight: 500; }
+.font-bold { font-weight: 700; }
+.font-black { font-weight: 900; }
+.text-5xl { font-size: 3rem; line-height: 1; }
+.text-base { font-size: 1rem; line-height: 1.5rem; }
+.tracking-wider { letter-spacing: 0.05em; }
+.mb-2 { margin-bottom: 0.5rem; }
 .bg-black { background-color: #000000; }
 .bg-red-600 { background-color: #DC2626; }
 .border-red-600\/20 { border-color: rgba(220, 38, 38, 0.2); }
@@ -202,8 +213,9 @@ const emit = defineEmits(['open-signup']);
 
 /* Custom Circles */
 .circle-decoration {
-    border-width: 8px;
-    border-color: rgba(220, 38, 38, 0.2) !important;
+    border-width: 12px;
+    border-color: rgba(220, 38, 38, 0.45) !important;
+    box-shadow: 0 0 40px rgba(220, 38, 38, 0.2), inset 0 0 40px rgba(220, 38, 38, 0.1);
 }
 
 .circle-large {
