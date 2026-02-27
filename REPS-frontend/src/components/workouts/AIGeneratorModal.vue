@@ -7,7 +7,9 @@
       <div class="p-6 border-b border-[#1F2937] flex justify-between items-center bg-gradient-to-r from-[rgba(147,51,234,0.1)] to-transparent">
         <div class="flex items-center gap-3">
           <div class="w-10 h-10 bg-[#9333EA] rounded-xl flex items-center justify-center shadow-lg shadow-purple-500/20">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M12 3v18m9-9H3"/><path d="m19.5 4.5-15 15m0-15 15 15"/></svg>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="m12 3 1.912 5.813a2 2 0 0 0 1.275 1.275L21 12l-5.813 1.912a2 2 0 0 0-1.275 1.275L12 21l-1.912-5.813a2 2 0 0 0-1.275-1.275L3 12l5.813-1.912a2 2 0 0 0 1.275-1.275L12 3Z"/>
+            </svg>
           </div>
           <h2 class="text-2xl font-bold text-white">Generar con IA</h2>
         </div>
@@ -109,7 +111,9 @@
           @click="generate" 
           class="bg-[#9333EA] hover:bg-[#7C3AED] rounded-lg px-6 py-2.5 flex items-center gap-2 text-[15px] font-semibold text-white transition-all hover:scale-105 active:scale-95 shadow-lg shadow-purple-500/20"
         >
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 3v18m9-9H3"/><path d="m19.5 4.5-15 15m0-15 15 15"/></svg>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="m12 3 1.912 5.813a2 2 0 0 0 1.275 1.275L21 12l-5.813 1.912a2 2 0 0 0-1.275 1.275L12 21l-1.912-5.813a2 2 0 0 0-1.275-1.275L3 12l5.813-1.912a2 2 0 0 0 1.275-1.275L12 3Z"/>
+          </svg>
           Generar con IA
         </button>
       </div>

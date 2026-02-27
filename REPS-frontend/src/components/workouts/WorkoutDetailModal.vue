@@ -112,7 +112,7 @@ const props = defineProps<{
 const diffClasses = computed(() => {
   switch (props.workout.difficulty) {
     case 'Principiante': return 'bg-[#10B981]';
-    case 'Intermedio': return 'bg-[#F59E0B]';
+    case 'Intermedio': return 'bg-[#DC2626]';
     case 'Avanzado': return 'bg-[#DC2626]';
     case 'Personalizado': return 'bg-[#9333EA]';
     default: return 'bg-gray-600';

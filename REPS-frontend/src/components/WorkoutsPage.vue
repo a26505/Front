@@ -11,7 +11,9 @@
         
         <div class="flex gap-3">
           <button @click="showIAModal = true" class="bg-[#9333EA] hover:bg-[#7C3AED] rounded-lg px-4 py-2 flex items-center gap-2 text-sm font-bold transition-all hover:scale-105 active:scale-95">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="M12 3v18m9-9H3"/><path d="m19.5 4.5-15 15m0-15 15 15"/></svg>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="m12 3 1.912 5.813a2 2 0 0 0 1.275 1.275L21 12l-5.813 1.912a2 2 0 0 0-1.275 1.275L12 21l-1.912-5.813a2 2 0 0 0-1.275-1.275L3 12l5.813-1.912a2 2 0 0 0 1.275-1.275L12 3Z"/>
+            </svg>
             Generar con IA
           </button>
           
@@ -25,12 +27,15 @@
       <!-- TABS NAVEGACIÓN -->
       <main class="flex-1 p-6 bg-black overflow-x-hidden">
         <!-- IA BANNER REFINADO (Tono morado profundo) -->
-        <div class="bg-gradient-to-r from-[#13072E] via-[#0F071C] to-[#0A0A0A] border border-[#9333EA]/30 hover:border-[#9333EA]/60 rounded-xl p-4 flex justify-between items-center cursor-pointer transition-all duration-500 mb-6 group shadow-[0_0_20px_rgba(147,51,234,0.15)] hover:shadow-[0_0_30px_rgba(147,51,234,0.25)]">
+        <div 
+          @click="activeTab = 'ai'"
+          class="bg-gradient-to-r from-[#13072E] via-[#0F071C] to-[#0A0A0A] border border-[#9333EA]/30 hover:border-[#9333EA]/60 rounded-xl p-4 flex justify-between items-center cursor-pointer transition-all duration-500 mb-6 group shadow-[0_0_20px_rgba(147,51,234,0.15)] hover:shadow-[0_0_30px_rgba(147,51,234,0.25)]"
+        >
           <div class="flex items-center gap-4">
             <div class="w-10 h-10 bg-gradient-to-br from-[#9333EA] to-[#6B21A8] rounded-full flex items-center justify-center shadow-lg shadow-purple-900/40 group-hover:scale-110 transition-transform duration-300">
               <!-- Icono Sparkle/Estrella de la IA -->
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M12 2l2.4 7.6L22 12l-7.6 2.4L12 22l-2.4-7.6L2 12l7.6-2.4z"/>
+                <path d="m12 3 1.912 5.813a2 2 0 0 0 1.275 1.275L21 12l-5.813 1.912a2 2 0 0 0-1.275 1.275L12 21l-1.912-5.813a2 2 0 0 0-1.275-1.275L3 12l5.813-1.912a2 2 0 0 0 1.275-1.275L12 3Z"/>
               </svg>
             </div>
             <div>
@@ -172,17 +177,36 @@
 
              <div v-if="activeTab === 'ai'">
                 <!-- Banner Pro for AI Tab -->
-                <div v-if="!isPro" class="py-16 text-center bg-[#0A0D14] border border-[#1F2937] rounded-xl mb-8">
-                  <div class="w-16 h-16 bg-[#9333EA]/10 rounded-full flex items-center justify-center mx-auto mb-6">
-                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#9333EA" stroke-width="2">
-                       <path d="M12 3v18m9-9H3"/><path d="m19.5 4.5-15 15m0-15 15 15"/>
-                    </svg>
+                <!-- Premium AI Pro Access Section -->
+                <div v-if="!isPro" class="relative py-20 px-8 text-center rounded-3xl mb-12 overflow-hidden border border-[#9333EA]/20 group">
+                  <!-- Animated Background Blobs -->
+                  <div class="absolute inset-0 bg-[#0A0D14]"></div>
+                  <div class="absolute -top-24 -left-24 w-64 h-64 bg-[#9333EA]/10 blur-[100px] rounded-full animate-pulse"></div>
+                  <div class="absolute -bottom-24 -right-24 w-80 h-80 bg-[#4F46E5]/10 blur-[120px] rounded-full animate-pulse" style="animation-delay: 1.5s"></div>
+                  
+                  <div class="relative z-10 flex flex-col items-center">
+                    <!-- Icon Container with floating animation -->
+                    <div class="w-20 h-20 bg-gradient-to-br from-[#1E1B4B] to-[#0A0A0A] border border-[#9333EA]/30 rounded-2xl flex items-center justify-center mb-8 shadow-2xl shadow-purple-900/40 relative group-hover:scale-110 transition-transform duration-500 animate-float">
+                      <div class="absolute inset-0 bg-[#9333EA]/10 blur-xl opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="relative z-10 drop-shadow-[0_0_8px_rgba(147,51,234,0.8)]">
+                        <path d="m12 3 1.912 5.813a2 2 0 0 0 1.275 1.275L21 12l-5.813 1.912a2 2 0 0 0-1.275 1.275L12 21l-1.912-5.813a2 2 0 0 0-1.275-1.275L3 12l5.813-1.912a2 2 0 0 0 1.275-1.275L12 3Z"/>
+                      </svg>
+                    </div>
+
+                    <!-- Title with Gradient -->
+                    <h2 class="text-4xl md:text-5xl font-black mb-4 uppercase tracking-tighter bg-gradient-to-r from-white via-purple-200 to-white bg-clip-text text-transparent drop-shadow-sm">
+                      Acceso IA Pro
+                    </h2>
+                    
+                    <p class="text-[15px] text-gray-400 font-medium mb-10 max-w-sm mx-auto leading-relaxed">
+                      Lleva tus entrenamientos al siguiente nivel con rutinas <span class="text-purple-300">ultra-personalizadas</span> basadas en tu progreso real y objetivos actuales.
+                    </p>
+
+                    <button class="relative bg-white text-black hover:text-white px-10 py-4 rounded-xl text-sm font-black transition-all hover:scale-105 active:scale-95 uppercase tracking-widest shadow-[0_0_40px_rgba(255,255,255,0.2)] hover:shadow-purple-500/40 group/btn border border-transparent overflow-hidden">
+                      <div class="absolute inset-0 bg-gradient-to-r from-[#9333EA] to-[#7C3AED] translate-y-full group-hover/btn:translate-y-0 transition-transform duration-300 ease-out"></div>
+                      <span class="relative z-10">Mejorar ahora</span>
+                    </button>
                   </div>
-                  <h2 class="text-3xl font-black text-white mb-3 uppercase tracking-tighter">Acceso IA Pro</h2>
-                  <p class="text-sm text-[#9CA3AF] mb-8 max-w-sm mx-auto">Rutinas ultra-personalizadas basadas en tu progreso real y objetivos actuales.</p>
-                  <button class="bg-[#9333EA] hover:bg-[#7C3AED] px-8 py-3 rounded-lg text-sm font-black text-white transition-all hover:scale-105 uppercase tracking-widest">
-                    Mejorar ahora
-                  </button>
                 </div>
 
                 <WorkoutCard 
@@ -299,5 +323,12 @@ const openDetail = (workout) => {
   padding-top: 0;
   padding-bottom: 0;
   margin-bottom: 0;
+}
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+.animate-float {
+  animation: float 4s ease-in-out infinite;
 }
 </style>

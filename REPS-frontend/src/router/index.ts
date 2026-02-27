@@ -37,6 +37,11 @@ const router = createRouter({
             name: 'workouts',
             component: () => import('../components/WorkoutsPage.vue')
         },
+        {
+            path: '/progress',
+            name: 'progress',
+            component: () => import('../components/ProgressPage.vue')
+        },
         // Login route removed as it is now integrated into LandingPage
         // {
         //     path: '/login',

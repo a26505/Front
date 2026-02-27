@@ -99,7 +99,7 @@ const diffTextClass = computed(() => {
   
   switch (props.workout.difficulty) {
     case 'Principiante': return 'text-[#10B981]';
-    case 'Intermedio': return 'text-[#9CA3AF]';
+    case 'Intermedio': return 'text-[#DC2626]';
     case 'Avanzado': return 'text-[#DC2626]';
     default: return 'text-gray-600';
   }
