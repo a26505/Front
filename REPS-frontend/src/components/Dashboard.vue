@@ -1,91 +1,7 @@
 <template>
   <div class="flex min-h-screen bg-[#000000] text-white">
-    <!-- 1️⃣ SIDEBAR IZQUIERDO -->
-    <aside
-      class="fixed w-[256px] h-screen bg-[rgba(16,24,40,0.5)] border-r border-[#1E2939] p-6 hidden md:flex flex-col z-50 transition-transform duration-300"
-      :class="{ 'translate-x-0 hidden md:flex': true }"
-    >
-      <!-- LOGO -->
-      <div class="absolute top-[24px] left-[24px]">
-        <!-- Fallback logo if image not available -->
-        <div class="flex items-center gap-2">
-            <div class="w-10 h-10 bg-[#E7000B] rounded-lg flex items-center justify-center font-bold text-xl italic tracking-tighter">REPS</div>
-            <span class="font-bold text-xl tracking-wider hidden">REPS</span>
-        </div>
-      </div>
-
-      <!-- NAVEGACIÓN -->
-      <nav class="absolute top-[112px] left-[24px] w-[207px] flex flex-col gap-2">
-        <!-- Dashboard (Activo) -->
-        <a href="#" class="h-[50px] p-[17px] rounded-[10px] flex items-center gap-[12px] bg-[rgba(231,0,11,0.2)] border border-[rgba(231,0,11,0.3)] transition-colors duration-200">
-          <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-            <path d="M2.5 7.5L10 2.5L17.5 7.5V16.6667C17.5 17.5 16.8333 18.3333 16 18.3333H4C3.16667 18.3333 2.5 17.5 2.5 16.6667V7.5Z" stroke="#DC2626" stroke-width="1.67" stroke-linecap="round" stroke-linejoin="round"/>
-            <path d="M7.5 18.3333V10H12.5V18.3333" stroke="#DC2626" stroke-width="1.67" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-          <span class="text-white text-[16px]">Dashboard</span>
-        </a>
-
-        <!-- Entrenamientos -->
-        <a href="#" class="h-[48px] p-[16px] rounded-[10px] flex items-center gap-[12px] bg-transparent hover:bg-[rgba(255,255,255,0.05)] transition-colors duration-200">
-          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M14.4 14.4 9.6 9.6"/>
-            <path d="M18.657 21.485a2 2 0 1 1-2.829-2.828l-1.768 1.768a2 2 0 1 1-2.829-2.829l6.364-6.364a2 2 0 1 1 2.829 2.828l-1.768 1.768a2 2 0 1 1 2.828 2.829z"/>
-            <path d="m21.5 21.5-1.4-1.4"/>
-            <path d="M3.9 3.9 2.5 2.5"/>
-            <path d="M6.404 12.768a2 2 0 1 1-2.829-2.829l1.768-1.767a2 2 0 1 1-2.828-2.829l2.828-2.828a2 2 0 1 1 2.829 2.828l1.767-1.768a2 2 0 1 1 2.829 2.829z"/>
-          </svg>
-          <span class="text-white text-[16px]">Entrenamientos</span>
-        </a>
-
-        <!-- Progreso -->
-        <a href="#" class="h-[48px] p-[16px] rounded-[10px] flex items-center gap-[12px] bg-transparent hover:bg-[rgba(255,255,255,0.05)] transition-colors duration-200">
-          <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-            <path d="M17.5 6.66667L10.8333 13.3333L7.5 10L2.5 15" stroke="white" stroke-width="1.67" stroke-linecap="round" stroke-linejoin="round"/>
-            <path d="M13.3333 6.66667H17.5V10.8333" stroke="white" stroke-width="1.67" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-          <span class="text-white text-[16px]">Progreso</span>
-        </a>
-
-        <!-- Comunidad -->
-        <a href="#" class="h-[48px] p-[16px] rounded-[10px] flex items-center gap-[12px] bg-transparent hover:bg-[rgba(255,255,255,0.05)] transition-colors duration-200">
-          <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-            <path d="M14.1667 17.5V15.8333C14.1667 13.9833 12.6833 12.5 10.8333 12.5H4.16667C2.31667 12.5 0.833333 13.9833 0.833333 15.8333V17.5" stroke="white" stroke-width="1.67" stroke-linecap="round" stroke-linejoin="round"/>
-            <circle cx="7.5" cy="5.83333" r="3.33333" stroke="white" stroke-width="1.67" stroke-linecap="round" stroke-linejoin="round"/>
-            <path d="M19.1667 17.5V15.8333C19.1667 14.25 18.0833 12.9167 16.6667 12.5833" stroke="white" stroke-width="1.67" stroke-linecap="round" stroke-linejoin="round"/>
-            <path d="M13.3333 2.58333C14.75 2.91667 15.8333 4.25 15.8333 5.83333C15.8333 7.41667 14.75 8.75 13.3333 9.08333" stroke="white" stroke-width="1.67" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-          <span class="text-white text-[16px]">Comunidad</span>
-        </a>
-
-        <!-- Perfil -->
-        <a href="#" class="h-[48px] p-[16px] rounded-[10px] flex items-center gap-[12px] bg-transparent hover:bg-[rgba(255,255,255,0.05)] transition-colors duration-200">
-          <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-            <path d="M16.6667 17.5V15.8333C16.6667 13.9833 15.1833 12.5 13.3333 12.5H6.66667C4.81667 12.5 3.33333 13.9833 3.33333 15.8333V17.5" stroke="white" stroke-width="1.67" stroke-linecap="round" stroke-linejoin="round"/>
-            <circle cx="10" cy="5.83333" r="3.33333" stroke="white" stroke-width="1.67" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-          <span class="text-white text-[16px]">Perfil</span>
-        </a>
-
-        <!-- Configuración -->
-        <a href="#" class="h-[48px] p-[16px] rounded-[10px] flex items-center gap-[12px] bg-transparent hover:bg-[rgba(255,255,255,0.05)] transition-colors duration-200">
-          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/>
-            <circle cx="12" cy="12" r="3"/>
-          </svg>
-          <span class="text-white text-[16px]">Configuración</span>
-        </a>
-      </nav>
-
-      <!-- BOTÓN SALIR -->
-      <div class="absolute bottom-[72px] left-[24px] w-[207px] h-[48px] rounded-[10px] p-[16px] flex items-center gap-[12px] cursor-pointer hover:bg-[rgba(255,255,255,0.05)] transition-colors duration-200">
-        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-          <path d="M7.5 17.5H4.16667C3.24583 17.5 2.5 16.7542 2.5 15.8333V4.16667C2.5 3.24583 3.24583 2.5 4.16667 2.5H7.5" stroke="#9CA3AF" stroke-width="1.67" stroke-linecap="round" stroke-linejoin="round"/>
-          <path d="M13.3333 14.1667L17.5 10L13.3333 5.83333" stroke="#9CA3AF" stroke-width="1.67" stroke-linecap="round" stroke-linejoin="round"/>
-          <path d="M17.5 10H7.5" stroke="#9CA3AF" stroke-width="1.67" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-        <span class="text-white text-[16px]">Salir</span>
-      </div>
-    </aside>
+    <!-- SIDEBAR UNIFICADO -->
+    <Sidebar active="dashboard" />
 
     <!-- 2️⃣ CONTENIDO PRINCIPAL Y HEADER -->
     <div class="flex-1 md:ml-[256px] min-h-screen">
@@ -383,6 +299,9 @@
 </template>
 
 <script setup lang="ts">
+import { ref, onMounted } from 'vue';
+import Sidebar from './Sidebar.vue';
+import { Chart, registerables } from 'chart.js';
 // Dashboard logic would go here
 </script>
 
