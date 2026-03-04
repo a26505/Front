@@ -173,36 +173,14 @@ namespace REPS_backend.Services
 
         public async Task<List<LogroDTO>> GetUltimosLogrosDesbloqueadosAsync(int userId, int count)
         {
-            var userLogros = await _logroRepository.GetUserLogrosAsync(userId);
-            var desbloqueados = userLogros
-                .Where(ul => ul.Desbloqueado)
-                .OrderByDescending(ul => ul.FechaObtencion)
+            var todosLogrosCalculados = await GetLogrosForUserAsync(userId);
+            var desbloqueados = todosLogrosCalculados
+                .Where(l => l.Desbloqueado)
+                .OrderByDescending(l => l.FechaObtencion ?? DateTime.MinValue)
                 .Take(count)
                 .ToList();
 
-            if (!desbloqueados.Any()) return new List<LogroDTO>();
-
-            // Cargar info del logro
-            var result = new List<LogroDTO>();
-            foreach (var ul in desbloqueados)
-            {
-                var logro = await _logroRepository.GetByIdAsync(ul.LogroId);
-                if (logro != null)
-                {
-                    result.Add(new LogroDTO
-                    {
-                        Id = logro.Id,
-                        Titulo = logro.Titulo,
-                        Descripcion = logro.Descripcion,
-                        Puntos = logro.Puntos,
-                        IconoUrl = logro.IconoUrl,
-                        Progreso = 100,
-                        Desbloqueado = true,
-                        FechaObtencion = ul.FechaObtencion
-                    });
-                }
-            }
-            return result;
+            return desbloqueados;
         }
     }
 }

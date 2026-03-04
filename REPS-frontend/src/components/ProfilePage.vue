@@ -85,7 +85,7 @@
           </div>
 
           <!-- BOTÓN EDITAR -->
-          <button class="bg-white text-[#DC2626] rounded-[10px] px-6 py-3 flex items-center gap-2 text-[15px] font-semibold cursor-pointer transition-all duration-200 hover:bg-[#F3F4F6] w-full md:w-auto justify-center">
+          <button @click="goToSettings" class="bg-white text-[#DC2626] rounded-[10px] px-6 py-3 flex items-center gap-2 text-[15px] font-semibold cursor-pointer transition-all duration-200 hover:bg-[#F3F4F6] w-full md:w-auto justify-center">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#DC2626" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/>
               <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>
@@ -248,7 +248,14 @@ import RankIcon from './common/RankIcon.vue';
 import { useAuthStore } from '../stores/auth';
 import { usuariosApi, recordsApi, progresoApi, logrosApi } from '../api';
 
+import { useRouter } from 'vue-router';
+
 const authStore = useAuthStore();
+const router = useRouter();
+
+const goToSettings = () => {
+  router.push('/settings');
+};
 
 onMounted(async () => {
   document.title = 'Mi Perfil | REPS - Gestiona tu información y logros';
@@ -442,7 +449,7 @@ onMounted(async () => {
 });
 
 const records = computed(() => personalRecords.value.slice(0, 3).map((r: any) => ({
-  label: r.nombreEjercicio,
+  label: r.ejercicioNombre || r.nombreEjercicio || 'Ejercicio Desconocido',
   value: `${r.pesoMaximo} kg`,
   color: '#DC2626',
   icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M14.4 14.4 9.6 9.6"/><path d="M18.657 21.485a2 2 0 1 1-2.829-2.828l-1.768 1.768a2 2 0 1 1-2.829-2.829l6.364-6.364a2 2 0 1 1 2.829 2.828l-1.768 1.768a2 2 0 1 1 2.828 2.829z"/></svg>'

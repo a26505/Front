@@ -51,9 +51,9 @@
                   </svg>
                 </button>
                 <div>
-                  <h4 class="font-bold text-white text-lg">{{ ex.name || ex.ejercicio?.nombre }}</h4>
-                  <template v-if="ex.muscle || ex.ejercicio?.grupoMuscular">
-                    <span class="text-[10px] uppercase font-black tracking-widest text-[#9CA3AF]">{{ ex.muscle || ex.ejercicio?.grupoMuscular }}</span>
+                  <h4 class="font-bold text-white text-lg">{{ ex.name || ex.ejercicio?.nombre || ex.nombreEjercicio }}</h4>
+                  <template v-if="ex.muscle || ex.ejercicio?.grupoMuscular || ex.grupoMuscular">
+                    <span class="text-[10px] uppercase font-black tracking-widest text-[#9CA3AF]">{{ ex.muscle || ex.ejercicio?.grupoMuscular || ex.grupoMuscular }}</span>
                   </template>
                 </div>
               </div>

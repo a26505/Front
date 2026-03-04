@@ -12,11 +12,11 @@
 
     <!-- NAVEGACIÓN -->
     <nav class="flex flex-col gap-2 flex-1">
-      <router-link 
+      <div 
         v-for="item in menuItems" 
         :key="item.id"
-        :to="item.path" 
-        class="h-[50px] px-[17px] rounded-[10px] flex items-center gap-[12px] transition-all duration-200 group"
+        @click="$router.push(item.path)"
+        class="h-[50px] px-[17px] rounded-[10px] flex items-center gap-[12px] transition-all duration-200 group cursor-pointer"
         :class="active === item.id 
           ? 'bg-[#DC2626]/20 border border-[#DC2626]/30' 
           : 'bg-transparent hover:bg-white/5 border border-transparent'"
@@ -27,12 +27,12 @@
           v-html="item.icon"
         ></div>
         <span 
-          class="text-[16px] transition-colors duration-200"
+          class="text-[16px] transition-colors duration-200 select-none"
           :class="active === item.id ? 'text-white' : 'text-[#9CA3AF] group-hover:text-white'"
         >
           {{ item.label }}
         </span>
-      </router-link>
+      </div>
     </nav>
 
     <!-- BOTÓN SALIR -->
@@ -127,7 +127,7 @@ const handleLogout = () => {
   // Duración de la animación
   setTimeout(() => {
     authStore.logout();
-    router.push('/login');
+    router.push('/');
   }, 1200);
 };
 </script>

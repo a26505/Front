@@ -3,6 +3,15 @@
 const athleteImageUrl = "/hero-athlete.png"; 
 
 const emit = defineEmits(['open-signup']);
+
+const scrollToFeatures = () => {
+    const featuresSection = document.getElementById('features');
+    if (featuresSection) {
+        featuresSection.scrollIntoView({ behavior: 'smooth' });
+    } else {
+        window.scrollBy({ top: window.innerHeight, behavior: 'smooth' });
+    }
+};
 </script>
 
 <template>
@@ -42,6 +51,7 @@ const emit = defineEmits(['open-signup']);
                             <svg class="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
                         </button>
                         <button 
+                            @click="scrollToFeatures"
                             class="border-2 border-white hover:bg-white/10 px-8 py-6 text-lg rounded-full text-white font-bold transition-colors"
                         >
                             VER MÁS

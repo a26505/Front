@@ -101,8 +101,11 @@ namespace REPS_backend.Services
             {
                 Id = r.Id,
                 Nombre = r.Nombre,
+                Nivel = r.Nivel.ToString(),
+                DuracionMinutos = r.DuracionMinutos,
                 CreadorNombre = r.Usuario != null ? r.Usuario.Nombre : "Tú",
                 Likes = r.Likes,
+                CantidadEjercicios = r.Ejercicios?.Count ?? 0,
                 TotalEjercicios = r.Ejercicios?.Count ?? 0
             };
         }

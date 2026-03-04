@@ -33,6 +33,7 @@ namespace REPS_backend.Repositories
             // Buscamos por ID e incluimos los ejercicios
             return await _context.Rutinas
                 .Include(r => r.Ejercicios)
+                    .ThenInclude(re => re.Ejercicio)
                 .Include(r => r.Usuario)
                 .FirstOrDefaultAsync(r => r.Id == id);
         }

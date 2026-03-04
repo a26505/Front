@@ -10,10 +10,12 @@ namespace REPS_backend.Controllers
     public class RutinasController : ControllerBase
     {
         private readonly IRutinaService _rutinaService;
+        private readonly ILogger<RutinasController> _logger;
 
-        public RutinasController(IRutinaService rutinaService)
+        public RutinasController(IRutinaService rutinaService, ILogger<RutinasController> logger)
         {
             _rutinaService = rutinaService;
+            _logger = logger;
         }
 
         private int GetUserId()
@@ -25,6 +27,12 @@ namespace REPS_backend.Controllers
         [HttpPost]
         public async Task<ActionResult<RutinaDetalleDto>> CrearRutina([FromBody] RutinaCreateDto dto)
         {
+            _logger.LogInformation($"Creando rutina: {dto.Nombre}. Cantidad ejercicios DTO: {dto.Ejercicios?.Count ?? 0}");
+            if (dto.Ejercicios != null) {
+                foreach(var e in dto.Ejercicios) {
+                    _logger.LogInformation($"Ejercicio ID: {e.EjercicioId}, Tipo: {e.Tipo}, Repeticiones: {e.Repeticiones}");
+                }
+            }
             int usuarioId = GetUserId();
             var rutinaCreada = await _rutinaService.CrearRutinaAsync(dto, usuarioId);
             return CreatedAtAction(nameof(GetRutinaById), new { id = rutinaCreada.Id }, rutinaCreada);

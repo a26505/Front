@@ -10,30 +10,18 @@
         <div class="flex flex-col gap-0">
           <div class="flex items-center gap-2">
             <h1 class="text-[30px] leading-[36px] font-normal text-white">¡Hola, {{ userName }}!</h1>
-            <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="url(#welcomeGradient)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" class="animate-[wave_2.5s_ease-in-out_infinite] origin-[70%_90%] drop-shadow-[0_0_8px_rgba(245,158,11,0.5)]">
-              <path d="M18 11V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v5" />
-              <path d="M14 10V4a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v11" />
-              <path d="M10 10.5V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v8" />
-              <path d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15" />
-              <defs>
-                <linearGradient id="welcomeGradient" x1="2" y1="2" x2="22" y2="22" gradientUnits="userSpaceOnUse">
-                  <stop stop-color="#FEF08A" />
-                  <stop offset="0.5" stop-color="#F59E0B" />
-                  <stop offset="1" stop-color="#EA580C" />
-                </linearGradient>
-              </defs>
-            </svg>          </div>
+          </div>
           <p class="text-[14px] leading-[20px] text-[#9CA3AF]">Listo para superar tus límites hoy</p>
         </div>
 
-        <button class="relative bg-gradient-to-r from-[#EAB308] to-[#A16207] rounded-[8px] h-[36px] px-[16px] flex items-center justify-center gap-[8px] cursor-pointer transition-all duration-300 hover:scale-105 active:scale-95 border border-[#FEF08A] overflow-hidden group">
+        <router-link to="/select-plan" class="relative bg-gradient-to-r from-[#EAB308] to-[#A16207] rounded-[8px] h-[36px] px-[16px] flex items-center justify-center gap-[8px] cursor-pointer transition-all duration-300 hover:scale-105 active:scale-95 border border-[#FEF08A] overflow-hidden group">
           <div class="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out"></div>
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none" class="relative z-10">
             <path d="M2 11.3333L3.33333 3.33333L6.66667 6.66667L8 1.33333L9.33333 6.66667L12.6667 3.33333L14 11.3333H2Z" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
             <path d="M2 11.3333H14V13.3333C14 13.7 13.7 14 13.3333 14H2.66667C2.3 14 2 13.7 2 13.3333V11.3333Z" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
           </svg>
           <span class="text-white text-[14px] font-bold tracking-wide relative z-10 whitespace-nowrap">Mejorar a Pro</span>
-        </button>
+        </router-link>
 
       </header>
 
@@ -161,8 +149,11 @@
               <div 
                 v-for="day in weekDaysWorked" 
                 :key="day.label"
-                class="w-[36px] h-[36px] sm:w-[44px] sm:h-[44px] rounded-full flex items-center justify-center text-[14px] font-semibold"
-                :class="day.done ? 'bg-[#E7000B] text-white' : 'bg-[#1F2937] text-[#6B7280]'"
+                class="w-[36px] h-[36px] sm:w-[44px] sm:h-[44px] rounded-full flex items-center justify-center text-[14px] font-semibold border-2"
+                :class="[
+                  day.done ? 'bg-[#E7000B] text-white border-transparent' : 'bg-[#1F2937] text-[#6B7280] border-transparent',
+                  day.isToday && !day.done ? 'border-[#E7000B]/50 ring-2 ring-[#E7000B]/20' : ''
+                ]"
               >{{ day.label }}</div>
             </div>
 
@@ -241,7 +232,7 @@
               class="flex justify-between items-center bg-[#07090E] rounded-[12px] p-[20px] border border-[rgba(255,255,255,0.08)]"
             >
               <div class="flex flex-col gap-[8px]">
-                <span class="text-[16px] text-white font-semibold">{{ rec.nombreEjercicio }}</span>
+                <span class="text-[16px] text-white font-semibold">{{ rec.ejercicioNombre || rec.nombreEjercicio || 'Ejercicio Desconocido' }}</span>
                 <span class="text-[13px] text-[#9CA3AF]">{{ rec.fechaRecord ? new Date(rec.fechaRecord).toLocaleDateString('es-ES') : '' }}</span>
               </div>
               <div class="flex flex-col items-end gap-[8px]">
@@ -269,7 +260,7 @@ import Sidebar from './Sidebar.vue';
 import RankIcon from './common/RankIcon.vue';
 import ActiveWorkoutModal from './workouts/ActiveWorkoutModal.vue';
 import { useAuthStore } from '../stores/auth';
-import { dashboardApi, recordsApi } from '../api';
+import { dashboardApi, recordsApi, rutinasApi } from '../api';
 import { getErrorMessage } from '../utils/error-handler';
 
 const authStore = useAuthStore();
@@ -290,16 +281,35 @@ const errorText = ref('');
 const showActiveWorkout = ref(false);
 const activeWorkoutData = ref<any>(null);
 
-const startSuggestedWorkout = () => {
+const startSuggestedWorkout = async () => {
     if (rutinaSugerida.value) {
-        activeWorkoutData.value = rutinaSugerida.value;
-        showActiveWorkout.value = true;
+        try {
+            // Cargar detalle completo para tener ejercicios
+            const res = await rutinasApi.getById(rutinaSugerida.value.id);
+            activeWorkoutData.value = {
+                ...rutinaSugerida.value,
+                ejercicios: res.data?.ejercicios || [],
+                exerciseList: (res.data?.ejercicios || []).map((e: any) => ({
+                    name: e.nombreEjercicio,
+                    sets: e.series,
+                    reps: e.repeticiones || '10-12',
+                    rest: `${e.descansoSegundos}s`,
+                    weight: 'Smart Weight',
+                    muscle: e.grupoMuscular
+                }))
+            };
+            showActiveWorkout.value = true;
+        } catch (e) {
+            console.error("No se pudo cargar el detalle de la rutina", e);
+            hasError.value = true;
+            errorText.value = "Error al intentar comenzar rutina. Es posible que haya sido eliminada o tengas mala conexión.";
+        }
     }
 };
 
 const handleWorkoutCompleted = () => {
     showActiveWorkout.value = false;
-    // recargar datos para refrescar la racha
+    authStore.fetchProfile(); // refrescar datos de usuario
     loadData();
 };
 
@@ -307,7 +317,24 @@ const handleWorkoutCompleted = () => {
 const diasSemana = ['L','M','X','J','V','S','D'];
 const weekDaysWorked = computed(() => {
   const r = authStore.profile?.rachaDias ?? 0;
-  return diasSemana.map((d, i) => ({ label: d, done: i < Math.min(r, 7) }));
+  // JavaScript getDay(): 0 = Domingo, 1 = Lunes... 6 = Sábado
+  // Mapeo JS a nuestro array (0=Lunes... 6=Domingo)
+  let currentJsDay = new Date().getDay();
+  let currentCustomDay = currentJsDay === 0 ? 6 : currentJsDay - 1; 
+  
+  return diasSemana.map((d, i) => {
+      // Un día se cuenta como completado si la racha lo cubre mirando hacia atrás desde hoy
+      // (asumiendo que la racha llega hasta hoy, por simplicidad)
+      const diff = currentCustomDay - i;
+      let done = false;
+      if (diff >= 0 && diff < r) {
+          done = true;
+      } else if (diff < 0 && (7 + diff) < r) {
+          done = true;
+      }
+      
+      return { label: d, done, isToday: i === currentCustomDay };
+  });
 });
 
 const metaSemanal = ref(5);

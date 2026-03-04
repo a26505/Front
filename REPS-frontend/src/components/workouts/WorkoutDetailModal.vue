@@ -49,9 +49,12 @@
 
         <!-- Lista de Ejercicios -->
         <h3 class="text-xl font-bold text-white mb-4 uppercase tracking-wider">Ejercicios</h3>
+        <div v-if="!workout.exerciseList || workout.exerciseList.length === 0" class="py-8 text-center text-[#9CA3AF] bg-[rgba(31,41,55,0.2)] rounded-xl border border-dashed border-[#374151]">
+          Esta rutina no tiene ejercicios listados de momento.
+        </div>
         <div class="flex flex-col gap-4">
           <div 
-            v-for="(ex, i) in (workout.exerciseList || simulatedExercises)" 
+            v-for="(ex, i) in workout.exerciseList" 
             :key="i"
             class="bg-[#0A0A0A] border border-[#374151] rounded-xl p-4 flex gap-4"
           >
@@ -61,10 +64,10 @@
             <div class="flex-1">
               <div class="flex justify-between items-start mb-2">
                 <div class="flex flex-col gap-1">
-                  <h4 class="font-bold text-white">{{ ex.name }}</h4>
-                  <div v-if="ex.muscle" class="flex">
+                  <h4 class="font-bold text-white">{{ ex.name || ex.nombreEjercicio }}</h4>
+                  <div v-if="ex.muscle || ex.grupoMuscular" class="flex">
                     <span class="bg-[#1F2937] text-blue-400 text-[10px] font-black px-2 py-0.5 rounded border border-blue-900/50 uppercase tracking-widest">
-                      {{ ex.muscle }}
+                      {{ (ex.muscle || ex.grupoMuscular) === 'OTRO' ? 'Sin Especificar' : (ex.muscle || ex.grupoMuscular) }}
                     </span>
                   </div>
                 </div>
@@ -81,11 +84,11 @@
                 </div>
                 <div class="flex flex-col">
                   <span class="text-[10px] uppercase font-bold text-[#6B7280]">Descanso</span>
-                  <span class="text-white font-medium">{{ ex.rest }}</span>
+                  <span class="text-white font-medium">{{ ex.rest || `${ex.descansoSegundos}s` }}</span>
                 </div>
                 <div class="flex flex-col">
                   <span class="text-[10px] uppercase font-bold text-[#6B7280]">Peso Sugerido</span>
-                  <span class="text-white font-medium">{{ ex.weight }}</span>
+                  <span class="text-white font-medium">{{ ex.weight || 'Smart Weight' }}</span>
                 </div>
               </div>
               <p v-if="ex.notes" class="mt-3 text-xs italic text-[#6B7280]">"{{ ex.notes }}"</p>
@@ -142,13 +145,6 @@ const diffClasses = computed(() => {
     default: return 'bg-gray-600';
   }
 });
-
-const simulatedExercises = [
-  { name: 'Press de Banca Plano', sets: 4, reps: '8-10', rest: '120s', weight: '80 kg', unilateral: false, notes: 'Controlar el descenso en 3 segundos.' },
-  { name: 'Aperturas con Mancuernas', sets: 3, reps: '12-15', rest: '90s', weight: '16 kg/lado', unilateral: false },
-  { name: 'Press Militar con Barra', sets: 3, reps: '10', rest: '90s', weight: '40 kg', unilateral: false },
-  { name: 'Extensiones de Tríceps Polea Alta', sets: 3, reps: '15', rest: '60s', weight: '25 kg', unilateral: false }
-];
 </script>
 
 <style scoped>

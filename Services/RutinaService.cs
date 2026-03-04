@@ -36,6 +36,7 @@ namespace REPS_backend.Services
                     EjercicioId = ejDto.EjercicioId,
                     Orden = orden++,
                     Series = ejDto.Series,
+                    Repeticiones = ejDto.Repeticiones,
                     DescansoSegundos = ejDto.DescansoSegundos,
                     Tipo = ejDto.Tipo,
                     PorcentajeDelPeso = CalcularPorcentajeSmart(ejDto.Tipo),
@@ -232,7 +233,8 @@ namespace REPS_backend.Services
                     GrupoMuscular = e.Ejercicio?.GrupoMuscular.ToString().ToUpper() ?? "OTRO",
                     Series = e.Series,
                     DescansoSegundos = e.DescansoSegundos,
-                    Tipo = e.Tipo
+                    Tipo = e.Tipo,
+                    Repeticiones = e.Repeticiones
                 }).ToList() ?? new List<RutinaEjercicioDto>()
             };
         }
@@ -247,6 +249,19 @@ namespace REPS_backend.Services
                 throw new UnauthorizedAccessException("No tienes permisos para eliminar esta rutina.");
 
             await _repository.DeleteAsync(id);
+            return true;
+        }
+
+        public async Task<bool> PublicarRutinaAsync(int id, int usuarioId)
+        {
+            var rutina = await _repository.GetByIdAsync(id);
+            if (rutina == null) return false;
+            
+            if (rutina.UsuarioId != usuarioId) 
+                throw new UnauthorizedAccessException("No tienes permisos para publicar esta rutina.");
+
+            rutina.Estado = EstadoRutina.Publicada;
+            await _repository.UpdateAsync(rutina);
             return true;
         }
     }

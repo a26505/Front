@@ -69,6 +69,9 @@ const router = createRouter({
 
 // Guard de navegación: redirige a landing si no autenticado
 router.beforeEach((to) => {
+    // Reset scroll al cambiar de pantalla
+    window.scrollTo(0, 0);
+
     const isAuthenticated = !!localStorage.getItem('token')
 
     // Si intenta ir a comunidad y NO está logueado, lo mandamos a la página pública

@@ -21,7 +21,6 @@
         public Rango RangoGeneral { get; set; } = Rango.Bronce;
 
         public string? Biografia { get; set; } = "Apasionado del fitness y la vida saludable";
-        public string? Biografia { get; set; } = "Apasionado del fitness y la vida saludable";
         public bool EsPerfilPublico { get; set; } = true;
         public bool MostrarEstadisticas { get; set; } = true;
         public bool RankingVisible { get; set; } = true;

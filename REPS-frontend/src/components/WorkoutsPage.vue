@@ -10,7 +10,7 @@
         <h1 class="text-3xl font-bold text-white tracking-tight">Mis Entrenamientos</h1>
         
         <div class="flex gap-3">
-          <button @click="showIAModal = true" class="bg-[#9333EA] hover:bg-[#7C3AED] rounded-lg px-4 py-2 flex items-center gap-2 text-sm font-bold transition-all hover:scale-105 active:scale-95">
+          <button @click="openIAGenerator" class="bg-[#9333EA] hover:bg-[#7C3AED] rounded-lg px-4 py-2 flex items-center gap-2 text-sm font-bold transition-all hover:scale-105 active:scale-95">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
               <path d="m12 3 1.912 5.813a2 2 0 0 0 1.275 1.275L21 12l-5.813 1.912a2 2 0 0 0-1.275 1.275L12 21l-1.912-5.813a2 2 0 0 0-1.275-1.275L3 12l5.813-1.912a2 2 0 0 0 1.275-1.275L12 3Z"/>
             </svg>
@@ -142,11 +142,11 @@
         <!-- LISTA DE ENTRENAMIENTOS -->
         <div class="flex flex-col gap-4 animate-fade-in pb-12">
              <div v-if="activeTab === 'my'">
-                <div v-if="myWorkouts.length === 0" class="flex flex-col items-center justify-center py-12 px-6 bg-[rgba(31,41,55,0.2)] border border-dashed border-[#374151] rounded-[12px] mt-6">
+                <div v-if="filteredMyWorkouts.length === 0" class="flex flex-col items-center justify-center py-12 px-6 bg-[rgba(31,41,55,0.2)] border border-dashed border-[#374151] rounded-[12px] mt-6">
                   <p class="text-[#9CA3AF] text-center font-medium">No tienes ninguna rutina guardada.<br>Crea una nueva rutina o busca en la comunidad.</p>
                 </div>
                 <WorkoutCard 
-                   v-for="workout in myWorkouts" 
+                   v-for="workout in filteredMyWorkouts" 
                    :key="workout.id" 
                    :workout="workout" 
                    type="my"
@@ -157,8 +157,11 @@
              </div>
 
              <div v-if="activeTab === 'friends'">
+                <div v-if="filteredFriendsWorkouts.length === 0" class="flex flex-col items-center justify-center py-12 px-6 bg-[rgba(31,41,55,0.2)] border border-dashed border-[#374151] rounded-[12px] mt-6">
+                  <p class="text-[#9CA3AF] text-center font-medium">No se encontraron rutinas de tus amigos.</p>
+                </div>
                 <WorkoutCard 
-                   v-for="workout in friendsWorkouts" 
+                   v-for="workout in filteredFriendsWorkouts" 
                    :key="workout.id" 
                    :workout="workout" 
                    type="friends"
@@ -167,14 +170,14 @@
              </div>
 
              <div v-if="activeTab === 'community'">
-                <div v-if="communityWorkouts.length === 0" class="flex flex-col items-center justify-center py-12 px-6 bg-[rgba(31,41,55,0.2)] border border-dashed border-[#374151] rounded-[12px] mt-6">
+                <div v-if="filteredCommunityWorkouts.length === 0" class="flex flex-col items-center justify-center py-12 px-6 bg-[rgba(31,41,55,0.2)] border border-dashed border-[#374151] rounded-[12px] mt-6">
                   <p class="text-[#9CA3AF] text-center font-medium mb-4">Aquí saldrán las rutinas que te guardes de la comunidad o guarda tus primeras rutinas de la comunidad.</p>
                   <router-link to="/community" class="bg-[#DC2626] text-white px-6 py-2 rounded-lg font-bold shadow-lg shadow-red-900/20 hover:scale-105 active:scale-95 transition-all">
                     Ver Comunidad
                   </router-link>
                 </div>
                 <WorkoutCard 
-                   v-for="workout in communityWorkouts" 
+                   v-for="workout in filteredCommunityWorkouts" 
                    :key="workout.id" 
                    :workout="workout" 
                    type="community"
@@ -209,18 +212,18 @@
                       Lleva tus entrenamientos al siguiente nivel con rutinas <span class="text-purple-300">ultra-personalizadas</span> basadas en tu progreso real y objetivos actuales.
                     </p>
 
-                    <button class="relative bg-white text-black hover:text-white px-10 py-4 rounded-xl text-sm font-black transition-all hover:scale-105 active:scale-95 uppercase tracking-widest shadow-[0_0_40px_rgba(255,255,255,0.2)] hover:shadow-purple-500/40 group/btn border border-transparent overflow-hidden">
+                    <router-link to="/select-plan" class="relative bg-white text-black hover:text-white px-10 py-4 rounded-xl text-sm font-black transition-all hover:scale-105 active:scale-95 uppercase tracking-widest shadow-[0_0_40px_rgba(255,255,255,0.2)] hover:shadow-purple-500/40 group/btn border border-transparent overflow-hidden">
                       <div class="absolute inset-0 bg-gradient-to-r from-[#9333EA] to-[#7C3AED] translate-y-full group-hover/btn:translate-y-0 transition-transform duration-300 ease-out"></div>
                       <span class="relative z-10">Mejorar ahora</span>
-                    </button>
+                    </router-link>
                   </div>
                 </div>
 
-                <div v-if="aiWorkouts.length === 0" class="flex flex-col items-center justify-center py-12 px-6 bg-[rgba(31,41,55,0.2)] border border-dashed border-[#374151] rounded-[12px] mt-6">
+                <div v-if="filteredAiWorkouts.length === 0 && isPro" class="flex flex-col items-center justify-center py-12 px-6 bg-[rgba(31,41,55,0.2)] border border-dashed border-[#374151] rounded-[12px] mt-6">
                   <p class="text-[#9CA3AF] text-center font-medium">No tienes entrenamientos generados con IA.<br>Usa el botón "Generar con IA" para crear uno.</p>
                 </div>
                 <WorkoutCard 
-                   v-for="workout in aiWorkouts" 
+                   v-for="workout in filteredAiWorkouts" 
                    :key="workout.id" 
                    :workout="workout" 
                    type="ai"
@@ -257,14 +260,14 @@
         <div class="bg-[#111827] border border-[#1F2937] rounded-xl p-6 max-w-sm w-full shadow-[0_0_30px_rgba(59,130,246,0.1)] slide-in-from-bottom-5">
             <h3 class="text-xl font-bold text-white mb-2 flex items-center gap-2">
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-blue-500"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
-              Publicar Rutina
+              Enviar a Revisión
             </h3>
-            <p class="text-[#9CA3AF] mb-6 text-sm">Al publicar tu rutina, estará disponible para toda la comunidad y podrán usarla. ¿Quieres continuar?</p>
+            <p class="text-[#9CA3AF] mb-6 text-sm">Al enviar tu rutina, nuestro equipo la revisará antes de ser publicada en la comunidad para todos. ¿Quieres continuar?</p>
             <div class="flex gap-3 justify-end">
                 <button @click="publishModal.show = false" class="px-4 py-2 rounded-lg text-white bg-[#1F2937] border border-[#374151] hover:bg-[#374151] font-bold transition-all text-sm">Cancelar</button>
                 <button @click="confirmPublish" class="px-5 py-2 rounded-lg text-white bg-blue-600 hover:bg-blue-700 font-bold transition-all shadow-lg shadow-blue-900/20 text-sm flex items-center gap-2" :disabled="isPublishing">
                     <span v-if="isPublishing" class="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
-                    Publicar
+                    Enviar
                 </button>
             </div>
         </div>
@@ -319,6 +322,42 @@ const clearFilters = () => {
   filterDifficulty.value = 'Todas';
   selectedMuscles.value = [];
 };
+
+import { useRouter } from 'vue-router';
+const router = useRouter();
+
+const openIAGenerator = () => {
+  if (isPro.value) {
+    showIAModal.value = true;
+  } else {
+    router.push('/select-plan');
+  }
+};
+
+const filterWorkouts = (list: any[]) => {
+  return list.filter(w => {
+    // Texto
+    if (searchQuery.value && !w.title.toLowerCase().includes(searchQuery.value.toLowerCase())) {
+      return false;
+    }
+    // Dificultad
+    if (filterDifficulty.value !== 'Todas' && w.difficulty !== filterDifficulty.value) {
+      return false;
+    }
+    // Músculos (si hay filtros activos, al menos 1 debe coincidir)
+    if (selectedMuscles.value.length > 0) {
+      if (!w.muscles || w.muscles.length === 0) return false;
+      const hasMuscle = w.muscles.some((m: string) => selectedMuscles.value.includes(m));
+      if (!hasMuscle) return false;
+    }
+    return true;
+  });
+};
+
+const filteredMyWorkouts = computed(() => filterWorkouts(myWorkouts.value));
+const filteredCommunityWorkouts = computed(() => filterWorkouts(communityWorkouts.value));
+const filteredAiWorkouts = computed(() => filterWorkouts(aiWorkouts.value));
+const filteredFriendsWorkouts = computed(() => filterWorkouts(friendsWorkouts.value));
 
 const tabs = [
   { id: 'my', name: 'Mis Rutinas' },
@@ -471,7 +510,7 @@ const confirmPublish = async () => {
     try {
         await rutinasApi.publicar(id);
         await loadRutinas();
-        showToast('Rutina publicada en la comunidad!', 'success');
+        showToast('Rutina enviada a revisión. ¡Gracias por aportar!', 'success');
         publishModal.value.show = false;
     } catch (e) {
         console.error('Error publishing routine:', e);

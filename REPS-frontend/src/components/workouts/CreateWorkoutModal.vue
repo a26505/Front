@@ -190,12 +190,12 @@ const saveWorkout = async () => {
     const dto = {
       nombre: name.value,
       nivel: 1,
-      ejercicios: selectedExercises.value.map((e: any, idx: number) => ({
+      ejercicios: selectedExercises.value.map((e: any) => ({
         ejercicioId: e.id,
-        series: e.sets,
-        repeticiones: e.reps,
+        series: parseInt(e.sets) || 3,
+        repeticiones: e.reps || '10-12',
         descansoSegundos: parseInt(e.rest) || 90,
-        orden: idx + 1
+        tipo: 0 // TipoSerie.Normal
       }))
     };
     await rutinasApi.crear(dto);
