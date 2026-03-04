@@ -73,6 +73,7 @@ export const rutinasApi = {
     getComunidad: () => api.get('/Rutinas/comunidad'),
     getById: (id: number) => api.get(`/Rutinas/${id}`),
     crear: (data: any) => api.post('/Rutinas', data),
+    actualizar: (id: number, data: any) => api.put(`/Rutinas/${id}`, data),
     generarIA: (data: any) => api.post('/Rutinas/generar-ia', data),
     like: (id: number) => api.post(`/Rutinas/${id}/like`),
     copiar: (id: number) => api.post(`/Rutinas/${id}/copiar`),

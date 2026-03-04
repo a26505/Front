@@ -115,5 +115,25 @@ namespace REPS_backend.Controllers
                 return BadRequest(e.Message);
             }
         }
+
+        [HttpPut("{id}")]
+        public async Task<ActionResult<RutinaDetalleDto>> ActualizarRutina(int id, [FromBody] RutinaCreateDto dto)
+        {
+            try
+            {
+                int usuarioId = GetUserId();
+                var rutinaActualizada = await _rutinaService.ActualizarRutinaAsync(id, dto, usuarioId);
+                return Ok(rutinaActualizada);
+            }
+            catch (UnauthorizedAccessException)
+            {
+                return Forbid();
+            }
+            catch (Exception e)
+            {
+                if (e.Message == "Rutina no encontrada.") return NotFound(e.Message);
+                return BadRequest(e.Message);
+            }
+        }
     }
 }

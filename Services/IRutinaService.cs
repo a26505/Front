@@ -13,5 +13,6 @@ namespace REPS_backend.Services
         Task<RutinaDetalleDto> CopiarRutinaAsync(int rutinaId, int usuarioId);
         Task<bool> EliminarRutinaAsync(int id, int usuarioId);
         Task<bool> PublicarRutinaAsync(int id, int usuarioId);
+        Task<RutinaDetalleDto> ActualizarRutinaAsync(int id, RutinaCreateDto dto, int usuarioId);
     }
 }

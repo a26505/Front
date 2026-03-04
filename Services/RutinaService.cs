@@ -264,5 +264,51 @@ namespace REPS_backend.Services
             await _repository.UpdateAsync(rutina);
             return true;
         }
+
+        public async Task<RutinaDetalleDto> ActualizarRutinaAsync(int id, RutinaCreateDto dto, int usuarioId)
+        {
+            var rutina = await _repository.GetByIdWithEjerciciosAsync(id);
+            if (rutina == null) throw new Exception("Rutina no encontrada.");
+            
+            if (rutina.UsuarioId != usuarioId) 
+                throw new UnauthorizedAccessException("No tienes permisos para editar esta rutina.");
+
+            // 1. Actualizar datos básicos
+            rutina.Nombre = dto.Nombre;
+            rutina.Nivel = dto.Nivel;
+            
+            // 2. Limpiar ejercicios anteriores e insertar los nuevos
+            rutina.Ejercicios.Clear();
+            
+            int orden = 1;
+            if (dto.Ejercicios != null)
+            {
+                foreach (var ejDto in dto.Ejercicios)
+                {
+                    var ejercicioDominio = new RutinaEjercicio
+                    {
+                        EjercicioId = ejDto.EjercicioId,
+                        Orden = orden++,
+                        Series = ejDto.Series,
+                        Repeticiones = ejDto.Repeticiones,
+                        DescansoSegundos = ejDto.DescansoSegundos,
+                        Tipo = ejDto.Tipo,
+                        PorcentajeDelPeso = CalcularPorcentajeSmart(ejDto.Tipo),
+                        PesoSugerido = 0
+                    };
+                    rutina.Ejercicios.Add(ejercicioDominio);
+                }
+            }
+
+            // 3. Recalcular duración
+            rutina.DuracionMinutos = CalcularDuracionInterna(rutina.Ejercicios.ToList());
+
+            // 4. Guardar cambios
+            await _repository.UpdateAsync(rutina);
+            
+            // 5. Cargar completa para DTO final
+            var completa = await _repository.GetByIdWithEjerciciosAsync(id);
+            return MapToDetalleDto(completa ?? rutina);
+        }
     }
 }

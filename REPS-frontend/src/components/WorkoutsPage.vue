@@ -153,6 +153,7 @@
                    @click="openDetail(workout)"
                    @delete="deleteWorkout"
                    @publish="publishWorkout"
+                   @edit="openEditModal"
                 />
              </div>
 
@@ -229,6 +230,7 @@
                    type="ai"
                    @click="openDetail(workout)"
                    @delete="deleteWorkout"
+                   @edit="openEditModal"
                 />
              </div>
         </div>
@@ -239,6 +241,12 @@
     <CreateWorkoutModal v-if="showCreateModal" @close="handleWorkoutCreated" />
     <AIGeneratorModal v-if="showIAModal" @close="showIAModal = false" @generate="handleGenerateAI" />
     <WorkoutDetailModal v-if="selectedWorkout" :workout="selectedWorkout" @close="selectedWorkout = null" />
+    <EditWorkoutModal 
+      v-if="showEditModal && workoutToEdit" 
+      :workoutToEdit="workoutToEdit" 
+      @close="showEditModal = false; workoutToEdit = null"
+      @save="handleWorkoutEdited"
+    />
 
     <!-- MODAL PERSONALIZADO DE ELIMINACIÓN -->
     <div v-if="deleteModal.show" class="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-in fade-in duration-200">
@@ -292,6 +300,7 @@ import WorkoutCard from './workouts/WorkoutCard.vue';
 import CreateWorkoutModal from './workouts/CreateWorkoutModal.vue';
 import AIGeneratorModal from './workouts/AIGeneratorModal.vue';
 import WorkoutDetailModal from './workouts/WorkoutDetailModal.vue';
+import EditWorkoutModal from './workouts/EditWorkoutModal.vue';
 import { rutinasApi } from '../api';
 import { useAuthStore } from '../stores/auth';
 
@@ -300,6 +309,8 @@ const activeTab = ref('my');
 const showFilters = ref(false);
 const showCreateModal = ref(false);
 const showIAModal = ref(false);
+const showEditModal = ref(false);
+const workoutToEdit = ref<any>(null);
 const selectedWorkout = ref(null);
 const isPro = computed(() => authStore.isPro);
 
@@ -467,6 +478,43 @@ const openDetail = async (workout: any) => {
 const handleWorkoutCreated = async () => {
   showCreateModal.value = false;
   await loadRutinas();
+};
+
+// Abrir modal de edición cargando el detalle completo
+const openEditModal = async (workout: any) => {
+  try {
+    const res = await rutinasApi.getById(workout.id);
+    const detail = res.data;
+    workoutToEdit.value = {
+      ...workout,
+      id: workout.id,
+      nombre: workout.title,
+      nivel: workout.difficulty,
+      exerciseList: detail.ejercicios.map((e: any) => ({
+        ejercicioId: e.ejercicioId,
+        id: e.ejercicioId,
+        name: e.nombreEjercicio,
+        muscle: e.grupoMuscular,
+        sets: e.series,
+        reps: e.repeticiones || '10-12',
+        rest: e.descansoSegundos || 90,
+        weight: '0 kg'
+      }))
+    };
+    showEditModal.value = true;
+  } catch (e) {
+    console.error('Error cargando detalle para editar', e);
+    workoutToEdit.value = workout;
+    showEditModal.value = true;
+  }
+};
+
+// Recarga después de editar una rutina
+const handleWorkoutEdited = async () => {
+  showEditModal.value = false;
+  workoutToEdit.value = null;
+  await loadRutinas();
+  showToast('¡Rutina actualizada correctamente!', 'success');
 };
 // --- CUSTOM ALERTS & DELETE ---
 const deleteModal = ref({ show: false, id: -1 });
