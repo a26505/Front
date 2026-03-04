@@ -112,43 +112,63 @@
       </div>
 
       <!-- FOOTER -->
-      <div class="p-6 border-t border-[#1F2937] flex justify-end gap-3">
-        <button @click="$emit('close')" class="bg-transparent border border-[#374151] hover:border-[#DC2626] rounded-lg px-6 py-2.5 text-[15px] font-semibold text-[#9CA3AF] transition-all">
-          Cancelar
-        </button>
-        <button 
-          @click="saveWorkout" 
-          :disabled="!name || selectedExercises.length === 0"
-          class="bg-[#DC2626] hover:bg-[#B91C1C] disabled:opacity-50 disabled:cursor-not-allowed rounded-lg px-6 py-2.5 flex items-center gap-2 text-[15px] font-semibold text-white transition-all hover:scale-105 active:scale-95"
-        >
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>
-          Crear Rutina
-        </button>
+      <div class="p-6 border-t border-[#1F2937] flex flex-col gap-3">
+        <p v-if="saveError" class="text-[#FCA5A5] text-sm text-center">{{ saveError }}</p>
+        <div class="flex justify-end gap-3">
+          <button @click="$emit('close')" class="bg-transparent border border-[#374151] hover:border-[#DC2626] rounded-lg px-6 py-2.5 text-[15px] font-semibold text-[#9CA3AF] transition-all">
+            Cancelar
+          </button>
+          <button 
+            @click="saveWorkout" 
+            :disabled="!name || selectedExercises.length === 0 || isSaving"
+            class="bg-[#DC2626] hover:bg-[#B91C1C] disabled:opacity-50 disabled:cursor-not-allowed rounded-lg px-6 py-2.5 flex items-center gap-2 text-[15px] font-semibold text-white transition-all hover:scale-105 active:scale-95"
+          >
+            <span v-if="isSaving" class="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+            <svg v-else width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>
+            {{ isSaving ? 'Guardando...' : 'Crear Rutina' }}
+          </button>
+        </div>
       </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
+import { rutinasApi, ejerciciosApi } from '../../api';
 
 const emit = defineEmits(['close', 'save']);
 
 const name = ref('');
-const selectedExercises = ref([]);
+const selectedExercises = ref<any[]>([]);
+const isSaving = ref(false);
+const saveError = ref('');
 
-const availableExercises = [
-  { name: 'Press de Banca con Barra', muscle: 'Pecho' },
-  { name: 'Sentadilla Libre', muscle: 'Piernas' },
-  { name: 'Peso Muerto Rumano', muscle: 'Isquios' },
-  { name: 'Press Militar', muscle: 'Hombros' },
-  { name: 'Dominadas Pronas', muscle: 'Espalda' },
-  { name: 'Curl de Bíceps con Barra', muscle: 'Brazos' },
-  { name: 'Press de Banca Inclinado', muscle: 'Pecho' },
-  { name: 'Remo con Barra', muscle: 'Espalda' }
-];
+// Ejercicios disponibles: se cargan del backend
+const availableExercises = ref<any[]>([]);
 
-const addExercise = (ex) => {
+onMounted(async () => {
+  try {
+    const res = await ejerciciosApi.getAll();
+    availableExercises.value = (res.data as any[]).map((e: any) => ({
+      id: e.id,
+      name: e.nombre,
+      muscle: e.grupoMuscular ?? e.grupo ?? ''
+    }));
+  } catch {
+    // Fallback con ejercicios de ejemplo
+    availableExercises.value = [
+      { id: 1, name: 'Press de Banca con Barra', muscle: 'Pecho' },
+      { id: 2, name: 'Sentadilla Libre', muscle: 'Piernas' },
+      { id: 3, name: 'Peso Muerto Rumano', muscle: 'Isquios' },
+      { id: 4, name: 'Press Militar', muscle: 'Hombros' },
+      { id: 5, name: 'Dominadas Pronas', muscle: 'Espalda' },
+      { id: 6, name: 'Curl de Bíceps con Barra', muscle: 'Brazos' },
+    ];
+  }
+});
+
+const addExercise = (ex: any) => {
   selectedExercises.value.push({
     ...ex,
     sets: 3,
@@ -158,12 +178,34 @@ const addExercise = (ex) => {
   });
 };
 
-const removeExercise = (index) => {
+const removeExercise = (index: number) => {
   selectedExercises.value.splice(index, 1);
 };
 
-const saveWorkout = () => {
-  emit('save', { name: name.value, exercises: selectedExercises.value });
+const saveWorkout = async () => {
+  if (!name.value || selectedExercises.value.length === 0) return;
+  isSaving.value = true;
+  saveError.value = '';
+  try {
+    const dto = {
+      nombre: name.value,
+      nivel: 1,
+      ejercicios: selectedExercises.value.map((e: any, idx: number) => ({
+        ejercicioId: e.id,
+        series: e.sets,
+        repeticiones: e.reps,
+        descansoSegundos: parseInt(e.rest) || 90,
+        orden: idx + 1
+      }))
+    };
+    await rutinasApi.crear(dto);
+    emit('save', { name: name.value, exercises: selectedExercises.value });
+    emit('close');
+  } catch (err: any) {
+    saveError.value = err.response?.data?.message ?? 'Error al crear la rutina';
+  } finally {
+    isSaving.value = false;
+  }
 };
 </script>
 

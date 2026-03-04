@@ -35,20 +35,20 @@ namespace REPS_backend.Data
 
 
 
-            // 4. Seeding Logros
             // 4. Seeding Logros (Verificamos uno por uno para no duplicar ni saltar si ya hay otros)
             var logrosDefault = new Logro[]
             {
-                new Logro { Titulo = "Primeros Pasos", Descripcion = "Completar la primera sesión.", Puntos = 10, IconoUrl = "trophy_start.png" },
-                new Logro { Titulo = "Constancia", Descripcion = "Completar 3 sesiones en una semana.", Puntos = 20, IconoUrl = "trophy_calendar.png" },
-                new Logro { Titulo = "Fuerza Bruta", Descripcion = "Registrar una sentadilla con peso corporal.", Puntos = 30, IconoUrl = "trophy_muscle.png" },
-                new Logro { Titulo = "Social", Descripcion = "Añadir al primer amigo.", Puntos = 15, IconoUrl = "trophy_friends.png" },
-                new Logro { Titulo = "Popular", Descripcion = "Recibir 10 likes en una rutina.", Puntos = 50, IconoUrl = "trophy_star.png" },
-                new Logro { Titulo = "Creador", Descripcion = "Crear una rutina pública.", Puntos = 25, IconoUrl = "trophy_pencil.png" },
-                new Logro { Titulo = "Maratoniano", Descripcion = "Entrenar más de 100 minutos en total.", Puntos = 40, IconoUrl = "trophy_runner.png" },
-                new Logro { Titulo = "Imparable", Descripcion = "Racha de 7 días consecutivos.", Puntos = 100, IconoUrl = "trophy_fire.png" },
-                new Logro { Titulo = "Veterano", Descripcion = "Alcanzar el nivel 10.", Puntos = 200, IconoUrl = "trophy_medal.png" },
-                new Logro { Titulo = "Crítico", Descripcion = "Dar Like a 3 rutinas de la comunidad.", Puntos = 15, IconoUrl = "trophy_heart.png" },
+                new Logro { Titulo = "Primeros Pasos", Descripcion = "Completa tu primer entrenamiento.", Puntos = 50, IconoUrl = "flame" },
+                new Logro { Titulo = "Constancia", Descripcion = "Completa 3 sesiones en una semana.", Puntos = 100, IconoUrl = "crown" },
+                new Logro { Titulo = "Racha de Fuego", Descripcion = "28 días consecutivos", Puntos = 300, IconoUrl = "flame" },
+                new Logro { Titulo = "Centurión", Descripcion = "100 entrenamientos totales", Puntos = 150, IconoUrl = "crown" },
+                new Logro { Titulo = "Estrella Ascendente", Descripcion = "50 entrenamientos / 30 días", Puntos = 100, IconoUrl = "star" },
+                new Logro { Titulo = "Velocista", Descripcion = "10 entrenamientos / semana", Puntos = 80, IconoUrl = "bolt" },
+                new Logro { Titulo = "Inquebrantable", Descripcion = "60 días de actividad", Puntos = 300, IconoUrl = "target" },
+                new Logro { Titulo = "Guerrero del Hierro", Descripcion = "Completa 100 entrenamientos", Puntos = 200, IconoUrl = "muscle" },
+                new Logro { Titulo = "Maestro del Volumen", Descripcion = "Levanta un total de 100,000 kg", Puntos = 300, IconoUrl = "target" },
+                new Logro { Titulo = "Coleccionista de Records", Descripcion = "Establece 5 récords personales", Puntos = 180, IconoUrl = "bolt" },
+                new Logro { Titulo = "Perfeccionista", Descripcion = "Completa 50 entrenamientos sin fallar", Puntos = 150, IconoUrl = "star" }
             };
 
             foreach (var logro in logrosDefault)

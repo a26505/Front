@@ -29,29 +29,28 @@
         Intermedio = 1,
         Avanzado = 2      
     }
-    
-    public enum Rango
-    {
-        SinRango = 0,
-        Bronce = 1,
-        Plata = 2,
-        Oro = 3,
-        Diamante = 4,
-        Elite = 5,
-        Max = 6
-    }
-    
+
     public enum GrupoMuscular
     {
-        Pierna = 0,
+        Pecho = 0,
         Espalda = 1,
-        Pecho = 2,
+        Pierna = 2,
         Hombro = 3,
         Biceps = 4,
         Triceps = 5,
         Abdomen = 6,
-        Otro = 7,
+        Cardio = 7,
         FullBody = 8,
-        Cardio = 9
+        Otro = 9
+    }
+
+    public enum Rango
+    {
+        Bronce = 0,
+        Plata = 1,
+        Oro = 2,
+        Platino = 3,
+        Diamante = 4,
+        Leyenda = 5
     }
 }

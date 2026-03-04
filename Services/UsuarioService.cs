@@ -21,6 +21,7 @@ namespace REPS_backend.Services
 
             return new UsuarioPerfilDto
             {
+                Id = user.Id,
                 Nombre = user.Nombre,
                 Email = user.Email,
                 AvatarId = user.AvatarId,
@@ -30,6 +31,10 @@ namespace REPS_backend.Services
                 PuntosTotales = user.PuntosTotales,
                 RachaDias = user.RachaDias,
                 RangoGeneral = user.RangoGeneral.ToString(),
+                Biografia = user.Biografia,
+                EsPerfilPublico = user.EsPerfilPublico,
+                MostrarEstadisticas = user.MostrarEstadisticas,
+                RankingVisible = user.RankingVisible,
                 EsPro = user.EsPro()
             };
         }
@@ -58,6 +63,11 @@ namespace REPS_backend.Services
 
             if (!string.IsNullOrEmpty(dto.Nombre)) user.Nombre = dto.Nombre;
             if (!string.IsNullOrEmpty(dto.AvatarId)) user.AvatarId = dto.AvatarId;
+            if (dto.Biografia != null) user.Biografia = dto.Biografia;
+            
+            if (dto.EsPerfilPublico.HasValue) user.EsPerfilPublico = dto.EsPerfilPublico.Value;
+            if (dto.MostrarEstadisticas.HasValue) user.MostrarEstadisticas = dto.MostrarEstadisticas.Value;
+            if (dto.RankingVisible.HasValue) user.RankingVisible = dto.RankingVisible.Value;
 
             await _repository.UpdateUsuarioAsync(user);
             return true;

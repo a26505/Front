@@ -36,5 +36,15 @@ namespace REPS_backend.Controllers
             var general = await _progresoService.ObtenerProgresoGeneralAsync(userId);
             return Ok(general);
         }
+
+        [HttpGet("analitica")]
+        public async Task<IActionResult> GetAnalitica()
+        {
+            var userIdString = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (!int.TryParse(userIdString, out int userId)) return Unauthorized();
+
+            var analitica = await _progresoService.ObtenerAnaliticaAsync(userId);
+            return Ok(analitica);
+        }
     }
 }

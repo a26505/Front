@@ -1,7 +1,12 @@
 <template>
   <div 
     class="bg-[#0A0D14] border border-[#1F2937] rounded-xl overflow-hidden cursor-pointer transition-all duration-300 mb-4 group p-6 flex justify-between items-center relative"
-    :class="type === 'friends' || type === 'community' ? 'hover:border-[#3B82F6]' : (type === 'ai' ? 'hover:border-[#9333EA]' : 'hover:border-[#DC2626]')"
+    :class="{
+      'hover:border-[#3B82F6]': type === 'friends',
+      'hover:border-[#10B981]': type === 'community',
+      'hover:border-[#9333EA]': type === 'ai',
+      'hover:border-[#DC2626]': type === 'my'
+    }"
   >
     <!-- CONTENIDO IZQUIERDO -->
     <div class="flex flex-col gap-3 flex-1">
@@ -63,11 +68,39 @@
 
     <!-- CONTENIDO DERECHA -->
     <div class="flex flex-col items-end justify-between self-stretch py-1">
-      <!-- Chevron para detalles -->
-      <div class="text-[#6B7280] group-hover:text-white transition-colors">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-          <polyline points="9 18 15 12 9 6"></polyline>
-        </svg>
+      <!-- Botón de Borrar, Publicar y Chevron para detalles -->
+      <div class="flex items-center gap-2">
+        <button 
+          v-if="type === 'my' && !workout.public"
+          @click.stop="$emit('publish', workout.id)"
+          class="text-gray-500 hover:text-blue-500 transition-colors p-1.5 rounded-full hover:bg-blue-500/10"
+          title="Publicar en Comunidad"
+        >
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="16 16 12 12 8 16"></polyline>
+            <line x1="12" y1="12" x2="12" y2="21"></line>
+            <path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"></path>
+            <polyline points="16 16 12 12 8 16"></polyline>
+          </svg>
+        </button>
+        <button 
+          v-if="type === 'my' || type === 'ai'"
+          @click.stop="$emit('delete', workout.id)"
+          class="text-gray-500 hover:text-[#DC2626] transition-colors p-1.5 rounded-full hover:bg-red-500/10"
+          title="Eliminar rutina"
+        >
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="3 6 5 6 21 6"></polyline>
+            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+            <line x1="10" y1="11" x2="10" y2="17"></line>
+            <line x1="14" y1="11" x2="14" y2="17"></line>
+          </svg>
+        </button>
+        <div class="text-[#6B7280] group-hover:text-white transition-colors">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="9 18 15 12 9 6"></polyline>
+          </svg>
+        </div>
       </div>
 
       <!-- Botón Comenzar -->
@@ -99,35 +132,23 @@ const diffTextClass = computed(() => {
   
   switch (props.workout.difficulty) {
     case 'Principiante': return 'text-[#10B981]';
-    case 'Intermedio': return 'text-[#DC2626]';
+    case 'Intermedio': return 'text-[#F59E0B]';
     case 'Avanzado': return 'text-[#DC2626]';
-    default: return 'text-gray-600';
+    default: return 'text-[#DC2626]';
   }
 });
 
 const muscleColorClass = computed(() => {
-  if (props.type === 'friends') {
-    return 'bg-[rgba(59,130,246,0.1)] border-[rgba(59,130,246,0.2)] text-[#3B82F6]';
-  }
-  if (props.type === 'community') {
-    return 'bg-[rgba(16,185,129,0.1)] border-[rgba(16,185,129,0.2)] text-[#10B981]';
-  }
-  if (props.type === 'ai') {
-    return 'bg-[rgba(147,51,234,0.1)] border-[rgba(147,51,234,0.2)] text-[#9333EA]';
-  }
-  return 'bg-[rgba(220,38,38,0.1)] border-[rgba(220,38,38,0.2)] text-[#DC2626]';
+  if (props.type === 'friends') return 'bg-[#3B82F6]/10 border-[#3B82F6]/20 text-[#3B82F6]';
+  if (props.type === 'community') return 'bg-[#10B981]/10 border-[#10B981]/20 text-[#10B981]';
+  if (props.type === 'ai') return 'bg-[#9333EA]/10 border-[#9333EA]/20 text-[#9333EA]';
+  return 'bg-[#DC2626]/10 border-[#DC2626]/20 text-[#DC2626]';
 });
 
 const buttonClass = computed(() => {
-  if (props.type === 'friends') {
-    return 'bg-[#3B82F6] hover:bg-[#2563EB] shadow-blue-500/10';
-  }
-  if (props.type === 'community') {
-    return 'bg-[#10B981] hover:bg-[#059669] shadow-emerald-500/10';
-  }
-  if (props.type === 'ai') {
-    return 'bg-[#9333EA] hover:bg-[#7C3AED] shadow-purple-500/10';
-  }
+  if (props.type === 'friends') return 'bg-[#3B82F6] hover:bg-[#2563EB] shadow-blue-500/10';
+  if (props.type === 'community') return 'bg-[#10B981] hover:bg-[#059669] shadow-emerald-500/10';
+  if (props.type === 'ai') return 'bg-[#9333EA] hover:bg-[#7C3AED] shadow-purple-500/10';
   return 'bg-[#DC2626] hover:bg-[#B91C1C] shadow-red-500/10';
 });
 </script>

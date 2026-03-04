@@ -11,15 +11,22 @@ namespace REPS_backend.Services
     {
         private readonly ILogroRepository _logroRepository;
         private readonly IRankingService _rankingService;
+        private readonly IUsuarioRepository _usuarioRepository;
+        private readonly IEntrenamientoRepository _entrenamientoRepository;
 
-        public LogroService(ILogroRepository logroRepository, IRankingService rankingService)
+        public LogroService(ILogroRepository logroRepository, IRankingService rankingService, IUsuarioRepository usuarioRepository, IEntrenamientoRepository entrenamientoRepository)
         {
             _logroRepository = logroRepository;
             _rankingService = rankingService;
+            _usuarioRepository = usuarioRepository;
+            _entrenamientoRepository = entrenamientoRepository;
         }
 
         public async Task<List<LogroDTO>> GetLogrosForUserAsync(int userId)
         {
+            var user = await _usuarioRepository.GetByIdAsync(userId);
+            var entrenamientosCount = await _entrenamientoRepository.CountByUsuarioIdAsync(userId);
+            
             var allLogros = await _logroRepository.GetAllAsync();
             var userLogros = await _logroRepository.GetUserLogrosAsync(userId);
             var userLogrosMap = userLogros.ToDictionary(ul => ul.LogroId);
@@ -39,10 +46,40 @@ namespace REPS_backend.Services
                     Desbloqueado = false
                 };
 
+                // Lógica dinámica avanzada para logros
+                if (user != null)
+                {
+                    switch (logro.Titulo)
+                    {
+        case "Primeros Pasos":
+            dto.Progreso = entrenamientosCount >= 1 ? 100 : 0;
+            break;
+        case "Centurión":
+        case "Guerrero del Hierro":
+            dto.Progreso = (int)Math.Min(100, (entrenamientosCount * 100.0) / 100);
+            break;
+        case "Racha de Fuego":
+            dto.Progreso = (int)Math.Min(100, (user.RachaDias * 100.0) / 28);
+            break;
+        case "Inquebrantable":
+            dto.Progreso = (int)Math.Min(100, (user.RachaDias * 100.0) / 60); 
+            break;
+                        case "Constancia":
+                             // 3 sesiones semana. Difícil de calcular sin histórico completo, pero podemos aproximar.
+                             dto.Progreso = entrenamientosCount >= 3 ? 100 : (int)(entrenamientosCount * 33.3);
+                             break;
+                        default:
+                            dto.Progreso = 0;
+                            break;
+                    }
+
+                    if (dto.Progreso >= 100) dto.Desbloqueado = true;
+                }
+
                 if (userLogrosMap.TryGetValue(logro.Id, out var userLogro))
                 {
-                    dto.Progreso = userLogro.Progreso;
-                    dto.Desbloqueado = userLogro.Desbloqueado;
+                    dto.Progreso = Math.Max(dto.Progreso, userLogro.Progreso);
+                    dto.Desbloqueado = dto.Desbloqueado || userLogro.Desbloqueado;
                     dto.FechaObtencion = userLogro.FechaObtencion;
                 }
 

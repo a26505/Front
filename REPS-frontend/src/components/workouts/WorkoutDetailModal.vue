@@ -51,16 +51,23 @@
         <h3 class="text-xl font-bold text-white mb-4 uppercase tracking-wider">Ejercicios</h3>
         <div class="flex flex-col gap-4">
           <div 
-            v-for="(ex, i) in simulatedExercises" 
+            v-for="(ex, i) in (workout.exerciseList || simulatedExercises)" 
             :key="i"
             class="bg-[#0A0A0A] border border-[#374151] rounded-xl p-4 flex gap-4"
           >
             <div class="w-8 h-8 shrink-0 bg-[#DC2626] rounded-full flex items-center justify-center font-bold text-sm text-white">
-              {{ i + 1 }}
+              {{ (i as number) + 1 }}
             </div>
             <div class="flex-1">
               <div class="flex justify-between items-start mb-2">
-                <h4 class="font-bold text-white">{{ ex.name }}</h4>
+                <div class="flex flex-col gap-1">
+                  <h4 class="font-bold text-white">{{ ex.name }}</h4>
+                  <div v-if="ex.muscle" class="flex">
+                    <span class="bg-[#1F2937] text-blue-400 text-[10px] font-black px-2 py-0.5 rounded border border-blue-900/50 uppercase tracking-widest">
+                      {{ ex.muscle }}
+                    </span>
+                  </div>
+                </div>
                 <span v-if="ex.unilateral" class="bg-[rgba(59,130,246,0.15)] px-2 py-0.5 rounded text-[10px] text-[#93C5FD] uppercase font-bold">Unilateral</span>
               </div>
               <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-[13px] text-[#9CA3AF]">
@@ -89,25 +96,42 @@
 
       <!-- FOOTER -->
       <div class="p-6 border-t border-[#1F2937] flex gap-3">
-        <button v-if="workout.author" class="flex-1 bg-transparent border border-[#374151] hover:border-[#DC2626] rounded-xl py-3.5 flex items-center justify-center gap-2 text-[15px] font-bold text-white transition-all">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
-          Copiar Rutina
-        </button>
-        <button class="flex-[2] bg-[#DC2626] hover:bg-[#B91C1C] rounded-xl py-3.5 flex items-center justify-center gap-2 text-[15px] font-bold text-white transition-all hover:scale-105 active:scale-95 shadow-lg shadow-red-500/20">
+        <button @click="startTraining" class="flex-[2] bg-[#DC2626] hover:bg-[#B91C1C] rounded-xl py-3.5 flex items-center justify-center gap-2 text-[15px] font-bold text-white transition-all hover:scale-105 active:scale-95 shadow-lg shadow-red-500/20">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="white"><path d="M5 3l14 9-14 9V3z"/></svg>
           Comenzar Entrenamiento
         </button>
       </div>
     </div>
+    <ActiveWorkoutModal 
+      v-if="showActiveWorkout" 
+      :workout="workout" 
+      @completed="handleWorkoutCompleted"
+      @close="showActiveWorkout = false"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
+import { ref, computed } from 'vue';
+import ActiveWorkoutModal from './ActiveWorkoutModal.vue';
 
 const props = defineProps<{
   workout: any;
 }>();
+
+const emit = defineEmits(['close', 'completed']);
+
+const showActiveWorkout = ref(false);
+
+const startTraining = () => {
+    showActiveWorkout.value = true;
+};
+
+const handleWorkoutCompleted = () => {
+    showActiveWorkout.value = false;
+    emit('completed');
+    emit('close');
+};
 
 const diffClasses = computed(() => {
   switch (props.workout.difficulty) {

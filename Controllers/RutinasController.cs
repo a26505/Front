@@ -6,32 +6,39 @@ namespace REPS_backend.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [Microsoft.AspNetCore.Authorization.Authorize]
     public class RutinasController : ControllerBase
     {
         private readonly IRutinaService _rutinaService;
 
-        // Inyectamos el SERVICIO, no el repositorio ni el DbContext
         public RutinasController(IRutinaService rutinaService)
         {
             _rutinaService = rutinaService;
         }
 
-        // POST: api/rutinas
+        private int GetUserId()
+        {
+            var claim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier);
+            return claim != null ? int.Parse(claim.Value) : 0;
+        }
+
         [HttpPost]
         public async Task<ActionResult<RutinaDetalleDto>> CrearRutina([FromBody] RutinaCreateDto dto)
         {
-            // Simulamos un usuario ID 1 (Cuando tengas login real, esto vendrá del token)
-            int usuarioId = 1; 
-
+            int usuarioId = GetUserId();
             var rutinaCreada = await _rutinaService.CrearRutinaAsync(dto, usuarioId);
-
-            // Devolvemos 201 Created y los datos de la rutina creada
             return CreatedAtAction(nameof(GetRutinaById), new { id = rutinaCreada.Id }, rutinaCreada);
         }
 
-        // GET: api/rutinas
-        // (Devuelve la lista ligera "Estilo Netflix Menú")
         [HttpGet]
+        public async Task<ActionResult<List<RutinaItemDto>>> GetMisRutinas()
+        {
+            int usuarioId = GetUserId();
+            var rutinas = await _rutinaService.ObtenerRutinasUsuarioAsync(usuarioId);
+            return Ok(rutinas);
+        }
+
+        [HttpGet("comunidad")]
         public async Task<ActionResult<List<RutinaItemDto>>> GetRutinasPublicas()
         {
             var rutinas = await _rutinaService.ObtenerRutinasPublicasAsync();
@@ -51,6 +58,54 @@ namespace REPS_backend.Controllers
             }
 
             return Ok(rutina);
+        }
+
+        [HttpPost("generar-ia")]
+        public async Task<ActionResult<RutinaDetalleDto>> GenerarConIA([FromBody] RutinaIARequestDto dto)
+        {
+            int usuarioId = GetUserId();
+            var rutina = await _rutinaService.GenerarRutinaIAAsync(dto, usuarioId);
+            return Ok(rutina);
+        }
+
+        [HttpPut("{id}/publicar")]
+        public async Task<IActionResult> PublicarRutina(int id)
+        {
+            try
+            {
+                int usuarioId = GetUserId();
+                var resultado = await _rutinaService.PublicarRutinaAsync(id, usuarioId);
+                if (!resultado) return NotFound($"Rutina con ID {id} no encontrada o no se pudo publicar.");
+                return NoContent();
+            }
+            catch (UnauthorizedAccessException)
+            {
+                return Forbid();
+            }
+            catch (Exception e)
+            {
+                return BadRequest(e.Message);
+            }
+        }
+
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> EliminarRutina(int id)
+        {
+            try
+            {
+                int usuarioId = GetUserId();
+                var resultado = await _rutinaService.EliminarRutinaAsync(id, usuarioId);
+                if (!resultado) return NotFound($"Rutina con ID {id} no encontrada");
+                return NoContent();
+            }
+            catch (UnauthorizedAccessException e)
+            {
+                return Forbid();
+            }
+            catch (Exception e)
+            {
+                return BadRequest(e.Message);
+            }
         }
     }
 }

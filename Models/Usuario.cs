@@ -14,16 +14,22 @@
         public DateTime FechaFinSuscripcion { get; set; } 
 
         public int PuntosTotales { get; set; } 
-        public int PuntosLogros { get; set; }
-        public int PuntosRecords { get; set; }
+        public int PuntosLogros { get; set; } 
+        public int PuntosRecords { get; set; } 
         public int RachaDias { get; set; }
         public DateTime? FechaUltimaActividad { get; set; }
-        public DateTime FechaRegistro { get; set; }
-        public string CodigoAmigo { get; set; } = "";
+        public Rango RangoGeneral { get; set; } = Rango.Bronce;
+
+        public string? Biografia { get; set; } = "Apasionado del fitness y la vida saludable";
+        public string? Biografia { get; set; } = "Apasionado del fitness y la vida saludable";
+        public bool EsPerfilPublico { get; set; } = true;
+        public bool MostrarEstadisticas { get; set; } = true;
+        public bool RankingVisible { get; set; } = true;
+
+        public string CodigoAmigo { get; set; } = string.Empty;
+        public DateTime FechaRegistro { get; set; } = DateTime.UtcNow;
         public bool EstaActivo { get; set; } = true;
         public bool EstaBorrado { get; set; } = false;
-
-        public Rango RangoGeneral { get; set; } = Rango.Bronce;
 
         public void SetPassword(string password) => 
             PasswordHash = BCrypt.Net.BCrypt.HashPassword(password);
@@ -33,5 +39,7 @@
 
         public bool EsPro() => 
             PlanActual == PlanSuscripcion.ProMensual && FechaFinSuscripcion > DateTime.Now;
+
+        public bool IsPro => EsPro(); // Alias for compatibility with services
     }
 }

@@ -113,24 +113,76 @@ namespace REPS_backend.Services
         private (string Rango, int SiguienteNivel, double Porcentaje) CalcularRango(int puntos)
         {
             if (puntos < UMBRAL_BRONCE)
-                return ("SinRango", UMBRAL_BRONCE, (double)puntos / UMBRAL_BRONCE);
+                return ("Bronce", UMBRAL_BRONCE, (double)puntos / UMBRAL_BRONCE);
 
             if (puntos < UMBRAL_PLATA)
-                return ("Bronce", UMBRAL_PLATA, (double)(puntos - UMBRAL_BRONCE) / (UMBRAL_PLATA - UMBRAL_BRONCE));
+                return ("Plata", UMBRAL_PLATA, (double)(puntos - UMBRAL_BRONCE) / (UMBRAL_PLATA - UMBRAL_BRONCE));
 
             if (puntos < UMBRAL_ORO)
-                return ("Plata", UMBRAL_ORO, (double)(puntos - UMBRAL_PLATA) / (UMBRAL_ORO - UMBRAL_PLATA));
+                return ("Oro", UMBRAL_ORO, (double)(puntos - UMBRAL_PLATA) / (UMBRAL_ORO - UMBRAL_PLATA));
 
             if (puntos < UMBRAL_PLATINO)
-                return ("Oro", UMBRAL_PLATINO, (double)(puntos - UMBRAL_ORO) / (UMBRAL_PLATINO - UMBRAL_ORO));
+                return ("Platino", UMBRAL_PLATINO, (double)(puntos - UMBRAL_ORO) / (UMBRAL_PLATINO - UMBRAL_ORO));
 
             if (puntos < UMBRAL_DIAMANTE)
-                return ("Platino", UMBRAL_DIAMANTE, (double)(puntos - UMBRAL_PLATINO) / (UMBRAL_DIAMANTE - UMBRAL_PLATINO));
+                return ("Diamante", UMBRAL_DIAMANTE, (double)(puntos - UMBRAL_PLATINO) / (UMBRAL_DIAMANTE - UMBRAL_PLATINO));
 
             if (puntos < UMBRAL_LEYENDA)
-                return ("Diamante", UMBRAL_LEYENDA, (double)(puntos - UMBRAL_DIAMANTE) / (UMBRAL_LEYENDA - UMBRAL_DIAMANTE));
+                return ("Leyenda", UMBRAL_LEYENDA, (double)(puntos - UMBRAL_DIAMANTE) / (UMBRAL_LEYENDA - UMBRAL_DIAMANTE));
 
             return ("Leyenda", puntos, 1.0); // Cap
+        }
+
+        public async Task<AnaliticaDto> ObtenerAnaliticaAsync(int usuarioId)
+        {
+            var entrenamientos = await _entrenamientoRepository.GetByUsuarioIdWithSeriesAsync(usuarioId);
+
+            var pesosList = entrenamientos
+                .SelectMany(e => e.SeriesRealizadas)
+                .Where(s => s.Peso > 0)
+                .Select(s => (double)s.Peso)
+                .TakeLast(7)
+                .ToList();
+
+            if (!pesosList.Any()) pesosList = new List<double> { 0, 0, 0, 0, 0, 0, 0 };
+
+            var volumenList = new List<double>();
+            var actividad = new List<ActividadMensualDto>();
+            var mesesTexto = new[] { "Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic" };
+            
+            for (int i = 0; i < 6; i++) {
+                int monthIdx = DateTime.Now.Month - 5 + i;
+                int yearOffset = 0;
+                if (monthIdx <= 0) {
+                    monthIdx += 12;
+                    yearOffset = -1;
+                }
+                
+                int month = monthIdx;
+                int year = DateTime.Now.Year + yearOffset;
+                
+                int totalEntrenos = entrenamientos.Count(e => e.Fecha.Year == year && e.Fecha.Month == month);
+                
+                actividad.Add(new ActividadMensualDto {
+                   Name = mesesTexto[month - 1],
+                   Total = totalEntrenos,
+                   Percent = totalEntrenos > 0 ? Math.Min(100, (totalEntrenos * 100) / 20) : 0
+                });
+
+                double volumenMes = entrenamientos
+                    .Where(e => e.Fecha.Year == year && e.Fecha.Month == month)
+                    .SelectMany(e => e.SeriesRealizadas)
+                    .Sum(s => (double)(s.Peso * s.Repeticiones));
+                    
+                volumenList.Add(volumenMes);
+            }
+
+            return new AnaliticaDto
+            {
+                Pesos = pesosList,
+                Volumen = volumenList,
+                ActividadMensual = actividad
+            };
         }
     }
 }

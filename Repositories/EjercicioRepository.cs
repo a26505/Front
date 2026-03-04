@@ -8,6 +8,11 @@ namespace REPS_backend.Repositories
         private readonly ApplicationDbContext _context;
         public EjercicioRepository(ApplicationDbContext context) { _context = context; }
 
+        public async Task<List<Ejercicio>> GetAllAsync()
+        {
+            return await _context.Ejercicios.ToListAsync();
+        }
+
         public async Task<List<Ejercicio>> GetAllPersonalizadosAsync(int userId)
         {
             return await _context.Ejercicios.Where(e => e.UsuarioCreadorId == null || e.UsuarioCreadorId == userId).ToListAsync();

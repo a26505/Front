@@ -2,6 +2,7 @@ namespace REPS_backend.DTOs.Usuarios
 {
     public class UsuarioPerfilDto
     {
+        public int Id { get; set; }
         public string Nombre { get; set; } = string.Empty;
         public string Email { get; set; } = string.Empty; 
         public string AvatarId { get; set; } = string.Empty;
@@ -13,6 +14,10 @@ namespace REPS_backend.DTOs.Usuarios
         public int PuntosTotales { get; set; }
         public int RachaDias { get; set; }
         public string RangoGeneral { get; set; } = string.Empty;
+        public string? Biografia { get; set; } = string.Empty;
         public bool EsPro { get; set; }
+        public bool EsPerfilPublico { get; set; }
+        public bool MostrarEstadisticas { get; set; }
+        public bool RankingVisible { get; set; }
     }
 }

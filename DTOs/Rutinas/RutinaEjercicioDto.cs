@@ -5,6 +5,8 @@ namespace REPS_backend.DTOs.Rutinas
     public class RutinaEjercicioDto
     {
         public int EjercicioId { get; set; }
+        public string NombreEjercicio { get; set; } = string.Empty;
+        public string GrupoMuscular { get; set; } = string.Empty;
         public int Series { get; set; }
         public int DescansoSegundos { get; set; }
         public TipoSerie Tipo { get; set; }

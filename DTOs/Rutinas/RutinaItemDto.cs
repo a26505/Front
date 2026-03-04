@@ -9,12 +9,11 @@ namespace REPS_backend.DTOs.Rutinas
         public string Nivel { get; set; } 
         
         public int DuracionMinutos { get; set; }
+        public string CreadorNombre { get; set; } = string.Empty;
+        public int Likes { get; set; }
         
         // ponemos el número total para que sepan si es larga o corta.
         public int CantidadEjercicios { get; set; } 
-
-        public string CreadorNombre { get; set; } = "Sistema";
-        public int Likes { get; set; }
-        public int TotalEjercicios { get; set; }
+        public int TotalEjercicios { get; set; } 
     }
 }

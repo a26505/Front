@@ -131,11 +131,7 @@
             class="px-4 py-2 text-xs font-black uppercase tracking-widest transition-all rounded-lg border"
             :class="[
               activeTab === tab.id 
-                ? (tab.id === 'friends' 
-                    ? 'bg-[#3B82F6]/20 text-[#3B82F6] border-[#3B82F6]/30' 
-                    : (tab.id === 'community' 
-                        ? 'bg-[#10B981]/20 text-[#10B981] border-[#10B981]/30' 
-                        : (tab.id === 'ai' ? 'bg-[#9333EA]/20 text-[#9333EA] border-[#9333EA]/30' : 'bg-[#DC2626]/20 text-[#DC2626] border-[#DC2626]/30')))
+                ? 'bg-[#DC2626]/20 text-[#DC2626] border-[#DC2626]/30'
                 : 'text-[#9CA3AF] border-transparent hover:text-white hover:bg-white/5'
             ]"
           >
@@ -146,12 +142,17 @@
         <!-- LISTA DE ENTRENAMIENTOS -->
         <div class="flex flex-col gap-4 animate-fade-in pb-12">
              <div v-if="activeTab === 'my'">
+                <div v-if="myWorkouts.length === 0" class="flex flex-col items-center justify-center py-12 px-6 bg-[rgba(31,41,55,0.2)] border border-dashed border-[#374151] rounded-[12px] mt-6">
+                  <p class="text-[#9CA3AF] text-center font-medium">No tienes ninguna rutina guardada.<br>Crea una nueva rutina o busca en la comunidad.</p>
+                </div>
                 <WorkoutCard 
                    v-for="workout in myWorkouts" 
                    :key="workout.id" 
                    :workout="workout" 
                    type="my"
                    @click="openDetail(workout)"
+                   @delete="deleteWorkout"
+                   @publish="publishWorkout"
                 />
              </div>
 
@@ -166,6 +167,12 @@
              </div>
 
              <div v-if="activeTab === 'community'">
+                <div v-if="communityWorkouts.length === 0" class="flex flex-col items-center justify-center py-12 px-6 bg-[rgba(31,41,55,0.2)] border border-dashed border-[#374151] rounded-[12px] mt-6">
+                  <p class="text-[#9CA3AF] text-center font-medium mb-4">Aquí saldrán las rutinas que te guardes de la comunidad o guarda tus primeras rutinas de la comunidad.</p>
+                  <router-link to="/community" class="bg-[#DC2626] text-white px-6 py-2 rounded-lg font-bold shadow-lg shadow-red-900/20 hover:scale-105 active:scale-95 transition-all">
+                    Ver Comunidad
+                  </router-link>
+                </div>
                 <WorkoutCard 
                    v-for="workout in communityWorkouts" 
                    :key="workout.id" 
@@ -209,12 +216,16 @@
                   </div>
                 </div>
 
+                <div v-if="aiWorkouts.length === 0" class="flex flex-col items-center justify-center py-12 px-6 bg-[rgba(31,41,55,0.2)] border border-dashed border-[#374151] rounded-[12px] mt-6">
+                  <p class="text-[#9CA3AF] text-center font-medium">No tienes entrenamientos generados con IA.<br>Usa el botón "Generar con IA" para crear uno.</p>
+                </div>
                 <WorkoutCard 
                    v-for="workout in aiWorkouts" 
                    :key="workout.id" 
                    :workout="workout" 
                    type="ai"
                    @click="openDetail(workout)"
+                   @delete="deleteWorkout"
                 />
              </div>
         </div>
@@ -222,31 +233,77 @@
     </div>
 
     <!-- MODALES -->
-    <CreateWorkoutModal v-if="showCreateModal" @close="showCreateModal = false" />
-    <AIGeneratorModal v-if="showIAModal" @close="showIAModal = false" />
+    <CreateWorkoutModal v-if="showCreateModal" @close="handleWorkoutCreated" />
+    <AIGeneratorModal v-if="showIAModal" @close="showIAModal = false" @generate="handleGenerateAI" />
     <WorkoutDetailModal v-if="selectedWorkout" :workout="selectedWorkout" @close="selectedWorkout = null" />
+
+    <!-- MODAL PERSONALIZADO DE ELIMINACIÓN -->
+    <div v-if="deleteModal.show" class="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+        <div class="bg-[#111827] border border-[#1F2937] rounded-xl p-6 max-w-sm w-full shadow-[0_0_30px_rgba(220,38,38,0.1)] slide-in-from-bottom-5">
+            <h3 class="text-xl font-bold text-white mb-2">Eliminar Rutina</h3>
+            <p class="text-[#9CA3AF] mb-6 text-sm">¿Estás seguro de que quieres eliminar esta rutina? Esta acción no se puede deshacer.</p>
+            <div class="flex gap-3 justify-end">
+                <button @click="deleteModal.show = false" class="px-4 py-2 rounded-lg text-white bg-[#1F2937] border border-[#374151] hover:bg-[#374151] font-bold transition-all text-sm">Cancelar</button>
+                <button @click="confirmDelete" class="px-5 py-2 rounded-lg text-white bg-[#DC2626] hover:bg-red-700 font-bold transition-all shadow-lg shadow-red-900/20 text-sm flex items-center gap-2" :disabled="isDeleting">
+                    <span v-if="isDeleting" class="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+                    Eliminar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL PERSONALIZADO DE PUBLICACIÓN -->
+    <div v-if="publishModal.show" class="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+        <div class="bg-[#111827] border border-[#1F2937] rounded-xl p-6 max-w-sm w-full shadow-[0_0_30px_rgba(59,130,246,0.1)] slide-in-from-bottom-5">
+            <h3 class="text-xl font-bold text-white mb-2 flex items-center gap-2">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-blue-500"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+              Publicar Rutina
+            </h3>
+            <p class="text-[#9CA3AF] mb-6 text-sm">Al publicar tu rutina, estará disponible para toda la comunidad y podrán usarla. ¿Quieres continuar?</p>
+            <div class="flex gap-3 justify-end">
+                <button @click="publishModal.show = false" class="px-4 py-2 rounded-lg text-white bg-[#1F2937] border border-[#374151] hover:bg-[#374151] font-bold transition-all text-sm">Cancelar</button>
+                <button @click="confirmPublish" class="px-5 py-2 rounded-lg text-white bg-blue-600 hover:bg-blue-700 font-bold transition-all shadow-lg shadow-blue-900/20 text-sm flex items-center gap-2" :disabled="isPublishing">
+                    <span v-if="isPublishing" class="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+                    Publicar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- TOAST PERSONALIZADO -->
+    <div v-if="toast.show" class="fixed top-20 right-4 md:right-8 z-[200] px-4 py-3 rounded-xl border font-bold text-sm shadow-2xl transition-all animate-in slide-in-from-top-5 duration-300" 
+         :class="toast.type === 'error' ? 'bg-[#DC2626]/10 text-[#FCA5A5] border-[#DC2626]/30' : 'bg-[#22C55E]/10 text-green-400 border-green-500/30'">
+         <div class="flex items-center gap-2">
+             <svg v-if="toast.type === 'error'" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+             <svg v-else width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+             {{ toast.message }}
+         </div>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import Sidebar from './Sidebar.vue';
 import WorkoutCard from './workouts/WorkoutCard.vue';
 import CreateWorkoutModal from './workouts/CreateWorkoutModal.vue';
 import AIGeneratorModal from './workouts/AIGeneratorModal.vue';
 import WorkoutDetailModal from './workouts/WorkoutDetailModal.vue';
+import { rutinasApi } from '../api';
+import { useAuthStore } from '../stores/auth';
 
+const authStore = useAuthStore();
 const activeTab = ref('my');
 const showFilters = ref(false);
 const showCreateModal = ref(false);
 const showIAModal = ref(false);
 const selectedWorkout = ref(null);
-const isPro = ref(false); // Simulación
+const isPro = computed(() => authStore.isPro);
 
-// Estados de Filtros
+// Filtros
 const searchQuery = ref('');
 const filterDifficulty = ref('Todas');
-const selectedMuscles = ref([]);
+const selectedMuscles = ref<string[]>([]);
 
 const difficulties = ['Todas', 'Principiante', 'Intermedio', 'Avanzado'];
 const muscles = ['Pecho', 'Espalda', 'Piernas', 'Hombros', 'Brazos', 'Core'];
@@ -270,29 +327,158 @@ const tabs = [
   { id: 'ai', name: 'Entrenamientos IA' }
 ];
 
-const myWorkouts = ref([
-  { id: 1, title: 'Empuje Superior A', difficulty: 'Intermedio', exercises: 6, duration: 45, muscles: ['Pecho', 'Hombros', 'Tríceps'], image: 'https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?auto=format&fit=crop&q=80&w=400', lastUsed: 'Hace 2 días' },
-  { id: 2, title: 'Tirón Superior A', difficulty: 'Intermedio', exercises: 6, duration: 50, muscles: ['Espalda', 'Bíceps'], image: 'https://images.unsplash.com/photo-1597452485669-2c7bb5fef90d?auto=format&fit=crop&q=80&w=400', lastUsed: 'Hace 4 días' },
-  { id: 3, title: 'Pierna A', difficulty: 'Avanzado', exercises: 7, duration: 60, muscles: ['Cuádriceps', 'Glúteos', 'Isquios'], image: 'https://images.unsplash.com/photo-1581009146145-b5ef03a726ec?auto=format&fit=crop&q=80&w=400', lastUsed: 'Hace 6 días' }
-]);
+// --- DATOS REALES ---
+const myWorkouts = ref<any[]>([]);
+const communityWorkouts = ref<any[]>([]);
+const aiWorkouts = ref<any[]>([]);
+const isLoading = ref(false);
+
+const mapToCard = (r: any) => ({
+  id: r.id,
+  title: r.nombre,
+  difficulty: r.nivel,
+  exercises: r.cantidadEjercicios,
+  duration: r.duracionMinutos,
+  muscles: r.musculosPrincipales ?? ['Todo el cuerpo'],
+  image: 'https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?auto=format&fit=crop&q=80&w=400',
+  author: r.creadorNombre,
+  likes: r.likes,
+  downloads: 0,
+  public: r.publico
+});
+
+const loadRutinas = async () => {
+  isLoading.value = true;
+  try {
+    const [misRes, comRes] = await Promise.all([
+      rutinasApi.getMisRutinas(),
+      rutinasApi.getComunidad()
+    ]);
+    const allMy = (misRes.data as any[]).map(mapToCard);
+    // Separar IA de normales si el nombre empieza por IA
+    myWorkouts.value = allMy.filter(r => !r.title.startsWith('IA -'));
+    aiWorkouts.value = allMy.filter(r => r.title.startsWith('IA -'));
+    communityWorkouts.value = (comRes.data as any[]).map(mapToCard);
+  } catch (e) {
+    console.error('Error cargando rutinas', e);
+  } finally {
+    isLoading.value = false;
+  }
+};
+
+const handleGenerateAI = async (formData: any) => {
+    showIAModal.value = false;
+    isLoading.value = true;
+    try {
+        // Asegurar tipos correctos para el DTO (Days debe ser int)
+        const payload = {
+            ...formData,
+            days: parseInt(formData.days) || 3 // Convert days to number, default to 3 if invalid
+        };
+        
+        const res = await rutinasApi.generarIA(payload);
+        const newRoutine = res.data;
+        
+        // Mapear al estilo de tarjeta que usa el front
+        const card = mapToCard(newRoutine);
+        aiWorkouts.value.unshift(card);
+        
+        activeTab.value = 'ai';
+        showToast('¡Rutina generada por IA con éxito!', 'success');
+    } catch (e) {
+        console.error("Error generating AI routine", e);
+        showToast('Error al generar la rutina. Asegúrate de tener conexión.', 'error');
+    } finally {
+        isLoading.value = false;
+    }
+};
+
+onMounted(loadRutinas);
 
 const friendsWorkouts = ref([
-  { id: 4, title: 'Upper Body Power', author: 'María García', avatar: 'https://i.pravatar.cc/150?u=maria', difficulty: 'Avanzado', exercises: 6, duration: 55, muscles: ['Pecho', 'Espalda'], image: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&q=80&w=400', lastUsed: 'Usado hace 1 día' },
-  { id: 5, title: 'Legs & Glutes Focus', author: 'Carlos Ruiz', avatar: 'https://i.pravatar.cc/150?u=carlos', difficulty: 'Intermedio', exercises: 8, duration: 70, muscles: ['Piernas', 'Glúteos'], image: 'https://images.unsplash.com/photo-1434596922112-19c563067271?auto=format&fit=crop&q=80&w=400', lastUsed: 'Usado hace 3 días' }
+    { id: 4, title: 'Upper Body Power', author: 'María García', avatar: 'https://i.pravatar.cc/150?u=maria', difficulty: 'Avanzado', exercises: 6, duration: 55, muscles: ['Pecho', 'Espalda'], image: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&q=80&w=400', lastUsed: 'Usado hace 1 día' },
+  { id: 5, title: 'Legs & Glutes Focus', author: 'Carlos Ruiz', avatar: 'https://i.pravatar.cc/150?u=carlos', difficulty: 'Intermedio', exercises: 8, duration: 70, muscles: ['Piernas', 'Glúteos'], image: 'https://images.unsplash.com/photo-1434596922112-19c563067271?auto=format&fit=crop&q=80&w=400', lastUsed: 'Usado hace 3 días' },
 ]);
 
-const communityWorkouts = ref([
-  { id: 6, title: 'Hipertrofia Full Body 3x', author: 'Carlos Fitness', avatar: 'https://i.pravatar.cc/150?u=carlosfit', likes: 245, downloads: 156, tags: ['Full Body', 'Hipertrofia'], difficulty: 'Intermedio', exercises: 8, duration: 60, muscles: ['Todo el cuerpo'], image: 'https://images.unsplash.com/photo-1554344728-77ad90d6ed35?auto=format&fit=crop&q=80&w=400' },
-  { id: 7, title: 'Push Pull Legs - Avanzado', author: 'María Pro', avatar: 'https://i.pravatar.cc/150?u=mariapro', likes: 389, downloads: 234, tags: ['PPL', 'Volumen'], difficulty: 'Avanzado', exercises: 10, duration: 75, muscles: ['Pecho', 'Espalda'], image: 'https://images.unsplash.com/photo-1574673130244-c7ec073998b5?auto=format&fit=crop&q=80&w=400' }
-]);
 
-const aiWorkouts = ref([
-  { id: 8, title: 'Full Body - Fuerza', aiBadge: 'Nuevo', difficulty: 'Personalizado', aiGenerated: true, exercises: 8, duration: 55, muscles: ['Todo el cuerpo'], image: 'https://images.unsplash.com/photo-1517836357463-d25dfeac3438?auto=format&fit=crop&q=80&w=400' },
-  { id: 9, title: 'Hipertrofia Pecho Intenso', aiBadge: 'Recomendado', difficulty: 'Avanzado', aiGenerated: true, exercises: 5, duration: 40, muscles: ['Pecho'], image: 'https://images.unsplash.com/photo-1534367507873-d2b7e2142712?auto=format&fit=crop&q=80&w=400' }
-]);
+const openDetail = async (workout: any) => {
+  try {
+    const res = await rutinasApi.getById(workout.id);
+    const detail = res.data;
+    // Mapear detalle a lo que espera el Modal (incluyendo imagen y autor que vienen del item original)
+    selectedWorkout.value = {
+        ...workout,
+        exercises: detail.ejercicios.length,
+        exerciseList: detail.ejercicios.map((e: any) => ({
+            name: e.nombreEjercicio,
+            sets: e.series,
+            reps: '10-12', // Podría venir del back si lo añadimos al DTO
+            rest: `${e.descansoSegundos}s`,
+            weight: 'Smart Weight',
+            muscle: e.grupoMuscular
+        }))
+    };
+  } catch (e) {
+    console.error("Error cargando detalle", e);
+    selectedWorkout.value = workout; // Fallback
+  }
+};
 
-const openDetail = (workout) => {
-  selectedWorkout.value = workout;
+// Recarga después de crear una nueva rutina
+const handleWorkoutCreated = async () => {
+  showCreateModal.value = false;
+  await loadRutinas();
+};
+// --- CUSTOM ALERTS & DELETE ---
+const deleteModal = ref({ show: false, id: -1 });
+const publishModal = ref({ show: false, id: -1 });
+const toast = ref({ show: false, message: '', type: 'success' });
+const isDeleting = ref(false);
+const isPublishing = ref(false);
+
+const showToast = (message: string, type: 'success' | 'error' = 'success') => {
+    toast.value = { show: true, message, type };
+    setTimeout(() => toast.value.show = false, 3000);
+};
+
+const deleteWorkout = (id: number) => {
+  deleteModal.value = { show: true, id };
+};
+
+const confirmDelete = async () => {
+    const id = deleteModal.value.id;
+    isDeleting.value = true;
+    try {
+        await rutinasApi.eliminar(id);
+        await loadRutinas();
+        showToast('Rutina eliminada correctamente!', 'success');
+        deleteModal.value.show = false;
+    } catch (e) {
+        console.error('Error deleting routine:', e);
+        showToast('No se pudo eliminar la rutina. Comprueba tu conexión.', 'error');
+    } finally {
+        isDeleting.value = false;
+    }
+};
+
+const publishWorkout = (id: number) => {
+    publishModal.value = { show: true, id };
+};
+
+const confirmPublish = async () => {
+    const id = publishModal.value.id;
+    isPublishing.value = true;
+    try {
+        await rutinasApi.publicar(id);
+        await loadRutinas();
+        showToast('Rutina publicada en la comunidad!', 'success');
+        publishModal.value.show = false;
+    } catch (e) {
+        console.error('Error publishing routine:', e);
+        showToast('No se pudo publicar la rutina.', 'error');
+    } finally {
+        isPublishing.value = false;
+    }
 };
 </script>
 

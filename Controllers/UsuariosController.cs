@@ -145,16 +145,18 @@ namespace REPS_backend.Controllers
             return Ok(new { mensaje = dto.Aceptar ? "¡Solicitud Aceptada! Ahora sois amigos." : "Solicitud rechazada." });
         }
 
+        public class UpdatePlanRequest { public int PlanId { get; set; } }
+
         [HttpPut("plan")]
-        public async Task<IActionResult> UpdatePlan([FromBody] int planId)
+        public async Task<IActionResult> UpdatePlan([FromBody] UpdatePlanRequest request)
         {
             var userIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (!int.TryParse(userIdStr, out int userId)) return Unauthorized();
 
-            if (!Enum.IsDefined(typeof(PlanSuscripcion), planId))
+            if (!Enum.IsDefined(typeof(PlanSuscripcion), request.PlanId))
                 return BadRequest("Plan no válido.");
 
-            var plan = (PlanSuscripcion)planId;
+            var plan = (PlanSuscripcion)request.PlanId;
             var exito = await _usuarioService.ActualizarPlanAsync(userId, plan);
 
             if (!exito) return BadRequest("No se pudo actualizar el plan.");

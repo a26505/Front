@@ -5,6 +5,7 @@
         public int Id { get; set; }
         public int RutinaId { get; set; }
         public int EjercicioId { get; set; }
+        public virtual Ejercicio Ejercicio { get; set; } = null!;
         public int Orden { get; set; } 
         
         public int Series { get; set; } 
@@ -15,7 +16,5 @@
         public decimal PorcentajeDelPeso { get; set; } = 1.0m; 
         
         public double PesoSugerido { get; set; } 
-
-        public Ejercicio? Ejercicio { get; set; }
     }
 }

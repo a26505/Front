@@ -18,7 +18,7 @@
         :to="item.path" 
         class="h-[50px] px-[17px] rounded-[10px] flex items-center gap-[12px] transition-all duration-200 group"
         :class="active === item.id 
-          ? 'bg-[rgba(231,0,11,0.15)] border border-[rgba(231,0,11,0.25)]' 
+          ? 'bg-[#DC2626]/20 border border-[#DC2626]/30' 
           : 'bg-transparent hover:bg-white/5 border border-transparent'"
       >
         <div 
@@ -37,7 +37,7 @@
 
     <!-- BOTÓN SALIR -->
     <div class="mt-auto px-4 py-8 border-t border-[#1E2939]/30">
-      <div class="flex items-center gap-[12px] cursor-pointer group transition-all duration-200">
+      <div @click="handleLogout" class="flex items-center gap-[12px] cursor-pointer group transition-all duration-200">
         <div class="text-[#9CA3AF] group-hover:text-white transition-colors">
           <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
             <path d="M7.5 17.5H4.16667C3.24583 17.5 2.5 16.7542 2.5 15.8333V4.16667C2.5 3.24583 3.24583 2.5 4.16667 2.5H7.5" stroke="currentColor" stroke-width="1.67" stroke-linecap="round" stroke-linejoin="round"/>
@@ -49,9 +49,30 @@
       </div>
     </div>
   </aside>
+
+  <!-- ANIMACIÓN FULL SCREEN DE CIERRE DE SESIÓN -->
+  <transition name="logout-anim">
+    <div v-if="isLoggingOut" class="fixed inset-0 z-[9999] bg-[#000000] flex flex-col items-center justify-center">
+      <div class="animate-pulse flex flex-col items-center scale-110">
+        <img src="/potential_logo_2.png" alt="REPS Logo" class="h-16 w-auto object-contain drop-shadow-[0_0_20px_rgba(220,38,38,0.8)]" />
+        <h2 class="text-white mt-6 text-xl tracking-widest font-black uppercase blur-[0.5px]">Cerrando sesión...</h2>
+        <div class="mt-4 w-48 h-1 bg-[#1F2937] rounded-full overflow-hidden">
+          <div class="h-full bg-[#DC2626] rounded-full w-full animate-loading-bar origin-left"></div>
+        </div>
+      </div>
+    </div>
+  </transition>
 </template>
 
 <script setup lang="ts">
+import { ref } from 'vue';
+import { useRouter } from 'vue-router';
+import { useAuthStore } from '../stores/auth';
+
+const router = useRouter();
+const authStore = useAuthStore();
+const isLoggingOut = ref(false);
+
 defineProps<{
   active: 'dashboard' | 'workouts' | 'progress' | 'community' | 'profile' | 'settings';
 }>();
@@ -84,20 +105,52 @@ const menuItems = [
   {
     id: 'community',
     label: 'Comunidad',
-    path: '#',
+    path: '/community',
     icon: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>`
   },
   {
     id: 'profile',
     label: 'Perfil',
-    path: '#',
+    path: '/profile',
     icon: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>`
   },
   {
     id: 'settings',
     label: 'Configuración',
-    path: '#',
+    path: '/settings',
     icon: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>`
   }
 ];
+
+const handleLogout = () => {
+  isLoggingOut.value = true;
+  // Duración de la animación
+  setTimeout(() => {
+    authStore.logout();
+    router.push('/login');
+  }, 1200);
+};
 </script>
+
+<style scoped>
+.logout-anim-enter-active {
+  transition: opacity 0.4s ease, backdrop-filter 0.4s ease;
+}
+.logout-anim-enter-from {
+  opacity: 0;
+  backdrop-filter: blur(0);
+}
+.logout-anim-enter-to {
+  opacity: 1;
+  backdrop-filter: blur(10px);
+}
+
+@keyframes loadBar {
+  0% { transform: scaleX(0); }
+  50% { transform: scaleX(0.7); }
+  100% { transform: scaleX(1); }
+}
+.animate-loading-bar {
+  animation: loadBar 1.2s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+</style>

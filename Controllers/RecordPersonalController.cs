@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 namespace REPS_backend.Controllers
 {
     [Route("api/[controller]")]
+    [Authorize]
     [ApiController]
     public class RecordPersonalController : ControllerBase
     {
@@ -18,7 +19,6 @@ namespace REPS_backend.Controllers
         }
 
         [HttpPost("registrar")]
-        // [Authorize] // Descomentar cuando la auth esté lista y se requiera
         public async Task<IActionResult> RegistrarLevantamiento([FromQuery] int ejercicioId, [FromQuery] double peso)
         {
             var userId = GetCurrentUserId();

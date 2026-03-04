@@ -100,11 +100,11 @@ namespace REPS_backend.Services
             // En el futuro esto debería venir de una tabla en DB o config más compleja.
             
             // Umbrales base (ejemplo para ejercicios compuestos grandes)
-            double baseBronce = 40;
             double basePlata = 80;
             double baseOro = 110;
-            double baseDiamante = 140;
-            double baseElite = 180;
+            double basePlatino = 140;
+            double baseDiamante = 170;
+            double baseLeyenda = 200;
 
             // Ajustes según grupo muscular (multiplicadores aproximados)
             double multiplier = 1.0;
@@ -120,13 +120,13 @@ namespace REPS_backend.Services
                 default: multiplier = 0.5; break;
             }
 
-            if (peso >= baseElite * multiplier) return Rango.Elite;
+            if (peso >= baseLeyenda * multiplier) return Rango.Leyenda;
             if (peso >= baseDiamante * multiplier) return Rango.Diamante;
+            if (peso >= basePlatino * multiplier) return Rango.Platino;
             if (peso >= baseOro * multiplier) return Rango.Oro;
             if (peso >= basePlata * multiplier) return Rango.Plata;
-            if (peso >= baseBronce * multiplier) return Rango.Bronce;
             
-            return Rango.SinRango;
+            return Rango.Bronce;
         }
 
         public async Task<List<REPS_backend.DTOs.Ranking.LeaderboardItemDto>> GetLeaderboardAsync()
@@ -195,11 +195,12 @@ namespace REPS_backend.Services
 
         private REPS_backend.DTOs.Ranking.MuscleProgressDto CalculateMuscleProgress(GrupoMuscular grupo, double peso)
         {
-            double baseBronce = 40;
+            double baseBronce = 0;
             double basePlata = 80;
             double baseOro = 110;
-            double baseDiamante = 140;
-            double baseElite = 180;
+            double basePlatino = 140;
+            double baseDiamante = 170;
+            double baseLeyenda = 200;
 
             double multiplier = 1.0;
             switch (grupo)
@@ -217,19 +218,21 @@ namespace REPS_backend.Services
             double umbralBronce = baseBronce * multiplier;
             double umbralPlata = basePlata * multiplier;
             double umbralOro = baseOro * multiplier;
+            double umbralPlatino = basePlatino * multiplier;
             double umbralDiamante = baseDiamante * multiplier;
-            double umbralElite = baseElite * multiplier;
+            double umbralLeyenda = baseLeyenda * multiplier;
 
-            string rangoActual = "Sin Rango";
-            string nextRank = "Bronce";
-            double nextThreshold = umbralBronce;
+            string rangoActual = "Bronce";
+            string nextRank = "Plata";
+            double nextThreshold = umbralPlata;
             double prevThreshold = 0;
 
-            if (peso >= umbralElite) { rangoActual = "Elite"; nextRank = "Max"; nextThreshold = peso; prevThreshold = umbralElite; }
-            else if (peso >= umbralDiamante) { rangoActual = "Diamante"; nextRank = "Elite"; nextThreshold = umbralElite; prevThreshold = umbralDiamante; }
-            else if (peso >= umbralOro) { rangoActual = "Oro"; nextRank = "Diamante"; nextThreshold = umbralDiamante; prevThreshold = umbralOro; }
+            if (peso >= umbralLeyenda) { rangoActual = "Leyenda"; nextRank = "Max"; nextThreshold = peso; prevThreshold = umbralLeyenda; }
+            else if (peso >= umbralDiamante) { rangoActual = "Diamante"; nextRank = "Leyenda"; nextThreshold = umbralLeyenda; prevThreshold = umbralDiamante; }
+            else if (peso >= umbralPlatino) { rangoActual = "Platino"; nextRank = "Diamante"; nextThreshold = umbralDiamante; prevThreshold = umbralPlatino; }
+            else if (peso >= umbralOro) { rangoActual = "Oro"; nextRank = "Platino"; nextThreshold = umbralPlatino; prevThreshold = umbralOro; }
             else if (peso >= umbralPlata) { rangoActual = "Plata"; nextRank = "Oro"; nextThreshold = umbralOro; prevThreshold = umbralPlata; }
-            else if (peso >= umbralBronce) { rangoActual = "Bronce"; nextRank = "Plata"; nextThreshold = umbralPlata; prevThreshold = umbralBronce; }
+            else { rangoActual = "Bronce"; nextRank = "Plata"; nextThreshold = umbralPlata; prevThreshold = umbralBronce; }
 
             double progressPct = 0;
             if (nextRank != "Max")

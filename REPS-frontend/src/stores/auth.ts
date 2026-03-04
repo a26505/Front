@@ -1,78 +1,113 @@
 import { defineStore } from 'pinia';
-import { ref } from 'vue';
-import axios from 'axios';
+import { ref, computed } from 'vue';
+import { authApi, usuariosApi } from '../api';
 
-// Define the API URL based on launchSettings.json usually, or environment variable.
-// For now, hardcoding based on previous research: http://localhost:5148
-const API_URL = 'http://localhost:5148/api/Auth';
+export interface UserProfile {
+    id: number;
+    nombre: string;
+    email: string;
+    avatarId: string;
+    codigoAmigo: string;
+    fechaRegistro: string;
+    rol: string;
+    puntosTotales: number;
+    nivel: number;
+    rachaDias: number;
+    rangoGeneral: string;
+    biografia: string;
+    esPro: boolean;
+    esPerfilPublico: boolean;
+    mostrarEstadisticas: boolean;
+    rankingVisible: boolean;
+}
 
 export const useAuthStore = defineStore('auth', () => {
-    const user = ref(null);
-    const isAuthenticated = ref(false);
-    const token = ref(localStorage.getItem('token') || null);
+    const token = ref<string | null>(localStorage.getItem('token'));
+    const profile = ref<UserProfile | null>(null);
+    const isAuthenticated = ref<boolean>(!!token.value);
 
-    if (token.value) {
-        isAuthenticated.value = true;
-        // Optionally valid token or fetch user profile here
+    const userName = computed(() => profile.value?.nombre ?? '');
+    const userRank = computed(() => profile.value?.rangoGeneral ?? 'Bronce');
+    const isPro = computed(() => profile.value?.esPro ?? false);
+    const userStreak = computed(() => profile.value?.rachaDias ?? 0);
+    const userId = computed(() => {
+        if (!token.value) return null;
+        try {
+            const payload = JSON.parse(atob(token.value.split('.')[1]));
+            // El claim estándar de .NET es 'nameid' o el largo
+            return (
+                payload['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier'] ??
+                payload['nameid'] ??
+                payload['sub'] ??
+                null
+            );
+        } catch {
+            return null;
+        }
+    });
+
+    // Carga el perfil desde el back
+    async function fetchProfile() {
+        try {
+            const res = await usuariosApi.getMiPerfil();
+            profile.value = res.data;
+        } catch (e) {
+            console.warn('No se pudo cargar el perfil', e);
+        }
     }
 
     async function login(email: string, password: string) {
         try {
-            const response = await axios.post(`${API_URL}/login`, {
-                email,
-                password
-            });
-
-            const authToken = response.data.token;
+            const res = await authApi.login(email, password);
+            const authToken = res.data.token;
             token.value = authToken;
             localStorage.setItem('token', authToken);
             isAuthenticated.value = true;
-
-            // Decode token or fetch user details if needed. For now just setting a placeholder or derived data if possible.
-            // Assuming the token is all we need for now.
-            user.value = { email } as any;
-
+            await fetchProfile();
             return true;
-        } catch (error: any) {
-            console.error('Login failed', error);
-            throw new Error(error.response?.data?.mensaje || 'Error al iniciar sesión');
+        } catch (e) {
+            throw e;
         }
     }
 
-    async function register(userData: any) {
+    async function register(nombre: string, email: string, password: string) {
         try {
-            const response = await axios.post(`${API_URL}/register`, {
-                nombre: userData.nombre,
-                email: userData.email,
-                password: userData.password
-            });
-
-            const authToken = response.data.token;
+            const res = await authApi.register(nombre, email, password);
+            const authToken = res.data.token;
             token.value = authToken;
             localStorage.setItem('token', authToken);
             isAuthenticated.value = true;
-
-            user.value = { name: userData.nombre, email: userData.email } as any;
+            await fetchProfile();
             return true;
-        } catch (error: any) {
-            console.error('Registration failed', error);
-            throw new Error(error.response?.data?.mensaje || 'Error al registrarse');
+        } catch (e) {
+            throw e;
         }
     }
 
     function logout() {
         token.value = null;
-        localStorage.removeItem('token');
+        profile.value = null;
         isAuthenticated.value = false;
-        user.value = null;
+        localStorage.removeItem('token');
+    }
+
+    // Si existe token al inicializar, cargar perfil
+    if (token.value) {
+        fetchProfile();
     }
 
     return {
-        user,
-        isAuthenticated,
         token,
+        profile,
+        isAuthenticated,
+        userName,
+        userRank,
+        isPro,
+        userStreak,
+        userId,
         login,
         register,
-        logout
+        logout,
+        fetchProfile,
     };
 });

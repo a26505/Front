@@ -16,27 +16,15 @@ namespace REPS_backend.Data
         public DbSet<RutinaEjercicio> RutinaEjercicios { get; set; }
         public DbSet<Sesion> Sesiones { get; set; }
         public DbSet<RecordPersonal> RecordsPersonales { get; set; }
-        public DbSet<Entrenamiento> Entrenamientos { get; set; }
         public DbSet<Logro> Logros { get; set; }
         public DbSet<UsuarioLogro> UsuarioLogros { get; set; }
         public DbSet<Amistad> Amistades { get; set; }
-        public DbSet<SerieLog> SerieLogs { get; set; }
+        public DbSet<Entrenamiento> Entrenamientos { get; set; }
+        public DbSet<SerieLog> SeriesLogs { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
-
-            modelBuilder.Entity<Amistad>()
-                .HasOne(a => a.Solicitante)
-                .WithMany()
-                .HasForeignKey(a => a.SolicitanteId)
-                .OnDelete(DeleteBehavior.Restrict);
-
-            modelBuilder.Entity<Amistad>()
-                .HasOne(a => a.Receptor)
-                .WithMany()
-                .HasForeignKey(a => a.ReceptorId)
-                .OnDelete(DeleteBehavior.Restrict);
         }
     }
 }

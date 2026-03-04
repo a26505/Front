@@ -2,7 +2,6 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
-using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using REPS_backend.Data;
@@ -12,8 +11,8 @@ using REPS_backend.Data;
 namespace REPS_backend.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260216182456_InitialCreate")]
-    partial class InitialCreate
+    [Migration("20260304020452_InitialMySql")]
+    partial class InitialMySql
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -21,9 +20,7 @@ namespace REPS_backend.Migrations
 #pragma warning disable 612, 618
             modelBuilder
                 .HasAnnotation("ProductVersion", "8.0.0")
-                .HasAnnotation("Relational:MaxIdentifierLength", 128);
-
-            SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
+                .HasAnnotation("Relational:MaxIdentifierLength", 64);
 
             modelBuilder.Entity("REPS_backend.Models.Amistad", b =>
                 {
@@ -31,13 +28,11 @@ namespace REPS_backend.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
                     b.Property<bool>("Aceptada")
-                        .HasColumnType("bit");
+                        .HasColumnType("tinyint(1)");
 
                     b.Property<DateTime>("FechaAmistad")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("datetime(6)");
 
                     b.Property<int>("ReceptorId")
                         .HasColumnType("int");
@@ -60,21 +55,19 @@ namespace REPS_backend.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
                     b.Property<string>("DescripcionImpacto")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("longtext");
 
                     b.Property<int>("EjercicioId")
                         .HasColumnType("int");
 
                     b.Property<bool>("EsPrincipal")
-                        .HasColumnType("bit");
+                        .HasColumnType("tinyint(1)");
 
                     b.Property<string>("NombreMusculo")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("longtext");
 
                     b.HasKey("Id");
 
@@ -89,22 +82,20 @@ namespace REPS_backend.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
                     b.Property<string>("DescripcionTecnica")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("longtext");
 
                     b.Property<int>("GrupoMuscular")
                         .HasColumnType("int");
 
                     b.Property<string>("ImagenMusculosUrl")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("longtext");
 
                     b.Property<string>("Nombre")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("longtext");
 
                     b.Property<int?>("UsuarioCreadorId")
                         .HasColumnType("int");
@@ -120,17 +111,15 @@ namespace REPS_backend.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
                     b.Property<int>("DuracionMinutos")
                         .HasColumnType("int");
 
                     b.Property<DateTime>("Fecha")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("datetime(6)");
 
                     b.Property<string>("Nombre")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("longtext");
 
                     b.Property<int?>("RutinaId")
                         .HasColumnType("int");
@@ -153,22 +142,20 @@ namespace REPS_backend.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
                     b.Property<string>("Descripcion")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("longtext");
 
                     b.Property<string>("IconoUrl")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("longtext");
 
                     b.Property<int>("Puntos")
                         .HasColumnType("int");
 
                     b.Property<string>("Titulo")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("longtext");
 
                     b.HasKey("Id");
 
@@ -181,19 +168,17 @@ namespace REPS_backend.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
                     b.Property<int>("EjercicioId")
                         .HasColumnType("int");
 
                     b.Property<DateTime>("FechaRecord")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("datetime(6)");
 
                     b.Property<decimal>("PesoAnterior")
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(65,30)");
 
                     b.Property<decimal>("PesoMaximo")
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(65,30)");
 
                     b.Property<int>("UsuarioId")
                         .HasColumnType("int");
@@ -211,30 +196,28 @@ namespace REPS_backend.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
                     b.Property<int>("Descargas")
                         .HasColumnType("int");
 
                     b.Property<string>("Descripcion")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("longtext");
 
                     b.Property<int>("DuracionMinutos")
                         .HasColumnType("int");
 
                     b.Property<bool>("EsGeneradaPorIA")
-                        .HasColumnType("bit");
+                        .HasColumnType("tinyint(1)");
 
                     b.Property<bool>("EsPublica")
-                        .HasColumnType("bit");
+                        .HasColumnType("tinyint(1)");
 
                     b.Property<int>("Estado")
                         .HasColumnType("int");
 
                     b.Property<string>("ImagenUrl")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("longtext");
 
                     b.Property<int>("Likes")
                         .HasColumnType("int");
@@ -244,7 +227,7 @@ namespace REPS_backend.Migrations
 
                     b.Property<string>("Nombre")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("longtext");
 
                     b.Property<int>("UsuarioId")
                         .HasColumnType("int");
@@ -262,8 +245,6 @@ namespace REPS_backend.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
                     b.Property<int>("DescansoSegundos")
                         .HasColumnType("int");
 
@@ -274,14 +255,14 @@ namespace REPS_backend.Migrations
                         .HasColumnType("int");
 
                     b.Property<double>("PesoSugerido")
-                        .HasColumnType("float");
+                        .HasColumnType("double");
 
                     b.Property<decimal>("PorcentajeDelPeso")
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(65,30)");
 
                     b.Property<string>("Repeticiones")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("longtext");
 
                     b.Property<int>("RutinaId")
                         .HasColumnType("int");
@@ -307,10 +288,8 @@ namespace REPS_backend.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
                     b.Property<bool>("Completada")
-                        .HasColumnType("bit");
+                        .HasColumnType("tinyint(1)");
 
                     b.Property<int>("EjercicioId")
                         .HasColumnType("int");
@@ -322,7 +301,7 @@ namespace REPS_backend.Migrations
                         .HasColumnType("int");
 
                     b.Property<decimal>("PesoUsado")
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(65,30)");
 
                     b.Property<int>("RepsRealizadas")
                         .HasColumnType("int");
@@ -338,7 +317,7 @@ namespace REPS_backend.Migrations
 
                     b.HasIndex("SesionId");
 
-                    b.ToTable("SerieLogs");
+                    b.ToTable("SeriesLogs");
                 });
 
             modelBuilder.Entity("REPS_backend.Models.Sesion", b =>
@@ -347,20 +326,18 @@ namespace REPS_backend.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
                     b.Property<int>("DuracionRealMinutos")
                         .HasColumnType("int");
 
                     b.Property<bool>("EstaFinalizada")
-                        .HasColumnType("bit");
+                        .HasColumnType("tinyint(1)");
 
                     b.Property<DateTime>("Fecha")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("datetime(6)");
 
                     b.Property<string>("NombreRutinaSnapshot")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("longtext");
 
                     b.Property<int>("PuntosGanados")
                         .HasColumnType("int");
@@ -379,42 +356,40 @@ namespace REPS_backend.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
                     b.Property<string>("AvatarId")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("longtext");
 
                     b.Property<string>("CodigoAmigo")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("longtext");
 
                     b.Property<string>("Email")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("longtext");
 
                     b.Property<bool>("EstaActivo")
-                        .HasColumnType("bit");
+                        .HasColumnType("tinyint(1)");
 
                     b.Property<bool>("EstaBorrado")
-                        .HasColumnType("bit");
+                        .HasColumnType("tinyint(1)");
 
                     b.Property<DateTime>("FechaFinSuscripcion")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("datetime(6)");
 
                     b.Property<DateTime>("FechaRegistro")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("datetime(6)");
 
                     b.Property<DateTime?>("FechaUltimaActividad")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("datetime(6)");
 
                     b.Property<string>("Nombre")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("longtext");
 
                     b.Property<string>("PasswordHash")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("longtext");
 
                     b.Property<int>("PlanActual")
                         .HasColumnType("int");
@@ -436,7 +411,7 @@ namespace REPS_backend.Migrations
 
                     b.Property<string>("Rol")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("longtext");
 
                     b.HasKey("Id");
 
@@ -449,19 +424,17 @@ namespace REPS_backend.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
                     b.Property<bool>("Desbloqueado")
-                        .HasColumnType("bit");
+                        .HasColumnType("tinyint(1)");
 
-                    b.Property<DateTime>("FechaObtencion")
-                        .HasColumnType("datetime2");
+                    b.Property<DateTime?>("FechaObtencion")
+                        .HasColumnType("datetime(6)");
 
                     b.Property<int>("LogroId")
                         .HasColumnType("int");
 
                     b.Property<double>("Progreso")
-                        .HasColumnType("float");
+                        .HasColumnType("double");
 
                     b.Property<int>("UsuarioId")
                         .HasColumnType("int");
@@ -478,13 +451,13 @@ namespace REPS_backend.Migrations
                     b.HasOne("REPS_backend.Models.Usuario", "Receptor")
                         .WithMany()
                         .HasForeignKey("ReceptorId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("REPS_backend.Models.Usuario", "Solicitante")
                         .WithMany()
                         .HasForeignKey("SolicitanteId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Receptor");

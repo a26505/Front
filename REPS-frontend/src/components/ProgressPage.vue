@@ -1,26 +1,28 @@
 <template>
-  <div class="flex min-h-screen bg-black text-white font-sans selection:bg-red-500/30 overflow-x-hidden">
+  <div class="flex min-h-screen bg-[#000000] text-white">
     <!-- SIDEBAR -->
     <Sidebar active="progress" />
 
     <!-- MAIN CONTENT -->
-    <div class="flex-1 ml-0 md:ml-[256px] transition-all duration-300">
+    <div class="flex-1 md:ml-[256px] min-h-screen flex flex-col">
       <!-- HEADER -->
-      <header class="sticky top-0 z-40 bg-black/90 backdrop-blur-xl border-b border-[#1F2937] px-6 py-4 flex justify-between items-center">
-        <h1 class="text-2xl md:text-3xl font-bold tracking-tight">Mi Progreso</h1>
-        
-        <button class="flex items-center gap-2 px-4 py-2 border border-[#1F2937] rounded-lg text-sm font-medium hover:border-[#DC2626] hover:text-[#DC2626] transition-all duration-300">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
-            <line x1="16" y1="2" x2="16" y2="6"/>
-            <line x1="8" y1="2" x2="8" y2="6"/>
-            <line x1="3" y1="10" x2="21" y2="10"/>
-          </svg>
-          Este Mes
-        </button>
+      <header class="sticky top-0 z-40 bg-black/95 backdrop-blur-md py-4 px-6 flex items-center border-b border-[#1F2937]/50">
+        <h1 class="text-3xl font-bold text-white tracking-tight">Mi Progreso</h1>
       </header>
 
-      <main class="p-6 max-w-[1600px] mx-auto">
+      <main class="flex-1 p-6 max-w-[1600px] mx-auto w-full relative z-10">
+        
+        <v-alert
+          v-if="hasError"
+          type="error"
+          variant="tonal"
+          color="red"
+          class="mb-6 rounded-xl border border-red-900/50"
+          closable
+        >
+          {{ errorText || 'Hubo un problema al cargar tus estadísticas.' }}
+        </v-alert>
+
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
           
           <!-- LEFT COLUMN (60%) -->
@@ -33,28 +35,28 @@
               </h2>
               <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div v-for="muscle in muscleRanks" :key="muscle.name" 
-                  class="bg-[#111827]/50 border border-[#1F2937] rounded-xl p-5 hover:border-[#DC2626]/50 transition-all duration-300 group shadow-lg shadow-black/20">
+                  class="bg-[#111827]/50 border border-[#1F2937] rounded-xl p-5 hover:border-[#DC2626]/50 transition-all duration-300 group shadow-lg shadow-black/20 select-none">
                   
                   <div class="flex justify-between items-center mb-4">
-                    <span class="text-lg font-bold group-hover:text-red-500 transition-colors">{{ muscle.name }}</span>
-                    <div :class="['w-10 h-10 rounded-xl flex items-center justify-center shadow-lg bg-gradient-to-br', getRankGradient(muscle.rank)]">
-                      <component :is="getRankIcon(muscle.rank)" class="w-6 h-6 text-white drop-shadow-md" />
-                    </div>
+                    <span class="text-lg font-bold transition-colors">{{ muscle.name }}</span>
+                    <RankIcon :rank="muscle.rank" :size="40" />
+
                   </div>
+
 
                   <div class="flex justify-between items-center text-sm mb-2">
                     <span :class="getRankTextColor(muscle.rank)" class="font-bold uppercase tracking-wider text-xs">{{ muscle.rank }}</span>
                     <span class="text-gray-400 font-medium">{{ formatNumber(muscle.points) }} pts</span>
                   </div>
 
-                  <!-- Progress Bar -->
-                  <div class="w-full h-2 bg-[#1F2937] rounded-full overflow-hidden mb-3 relative progress-bar">
+                  <div class="w-full h-2 bg-[#1F2937] rounded-full overflow-hidden mb-3 relative">
                     <div 
                       class="h-full rounded-full transition-all duration-1000 ease-out bg-gradient-to-r"
                       :class="getRankGradient(muscle.rank)"
                       :style="{ width: `${muscle.progress}%` }"
                     ></div>
                   </div>
+
 
                   <div class="flex justify-between items-center text-[11px] text-gray-500 font-medium">
                     <span>{{ muscle.isMax ? '¡Rango máximo alcanzado! 🎉' : `${formatNumber(muscle.nextTarget)} pts para ${muscle.nextRank}` }}</span>
@@ -71,18 +73,21 @@
                   <span class="w-1 h-5 bg-[#DC2626] rounded-full"></span>
                   Récords Personales
                 </h2>
-                <div class="p-2 rounded-lg bg-yellow-500/10 border border-yellow-500/20">
-                  <svg class="text-yellow-500 w-5 h-5 drop-shadow-glow" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M18 2H6v7a6 6 0 0012 0V2zM4 22h16M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22M6 9H4.5a2.5 2.5 0 010-5H6M18 9h1.5a2.5 2.5 0 000-5H18"/>
+                <div class="w-[40px] h-[40px] rounded-[10px] bg-[rgba(234,179,8,0.15)] flex items-center justify-center border border-[rgba(234,179,8,0.2)]">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M6 9H4.5A2.5 2.5 0 0 1 2 6.5V6A2.5 2.5 0 0 1 4.5 3.5H6M18 9h1.5A2.5 2.5 0 0 0 22 6.5V6A2.5 2.5 0 0 0 19.5 3.5H18M4 22h16M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22M18 2H6v7a6 6 0 0 0 12 0V2Z" 
+                      fill="#EAB308" stroke="#EAB308" stroke-width="0.5" stroke-linejoin="round"/>
                   </svg>
                 </div>
+
+
               </div>
 
               <div class="divide-y divide-[#1F2937]/20">
                 <div v-for="record in personalRecords" :key="record.exercise"
-                  class="flex justify-between items-center px-6 py-5 hover:bg-white/5 transition-all duration-300 group">
+                  class="flex justify-between items-center px-6 py-5 hover:bg-white/5 transition-all duration-300 group select-none">
                   <div class="space-y-1">
-                    <h4 class="font-bold text-sm tracking-wide group-hover:text-red-500 transition-colors uppercase">{{ record.exercise }}</h4>
+                    <h4 class="font-bold text-sm tracking-wide transition-colors uppercase">{{ record.exercise }}</h4>
                     <p class="text-[10px] text-gray-500 font-medium">{{ record.date }}</p>
                   </div>
                   <div class="text-right">
@@ -108,11 +113,16 @@
               <h2 class="text-lg font-semibold mb-6 relative z-10">Rango General</h2>
               
               <div class="flex justify-center mb-8 relative z-10">
-                <div :class="['w-32 h-32 rounded-3xl flex flex-col items-center justify-center shadow-2xl bg-gradient-to-br transition-all duration-500 transform hover:scale-105', getRankGradient(allRanks[currentOverallRankIndex].name)]">
-                  <component :is="getRankIcon(allRanks[currentOverallRankIndex].name)" class="w-14 h-14 text-white drop-shadow-xl mb-2" />
-                  <span class="text-xs font-black uppercase tracking-widest text-white shadow-sm">{{ allRanks[currentOverallRankIndex].name }}</span>
+                <div class="flex flex-col items-center transform hover:scale-105 transition-all duration-500">
+                  <RankIcon :rank="allRanks[currentOverallRankIndex].name" :size="120" />
+                  <span :class="['mt-4 text-2xl font-black uppercase tracking-widest', getRankTextColor(allRanks[currentOverallRankIndex].name)]">
+                    {{ allRanks[currentOverallRankIndex].name }}
+                  </span>
+
                 </div>
+
               </div>
+
 
               <div class="grid grid-cols-6 gap-2 relative z-10">
                 <div v-for="(rank, index) in allRanks" :key="rank.name"
@@ -181,8 +191,9 @@
                      :style="{ backgroundImage: `linear-gradient(to right, ${stat.glowColor}, transparent)` }"></div>
                 
                 <div class="relative z-10 flex justify-between items-center mb-6">
-                  <div class="w-10 h-10 rounded-xl bg-black/30 border border-white/5 group-hover:border-white/10 transition-all flex items-center justify-center shadow-inner shrink-0">
-                    <div v-html="stat.icon" :class="['w-6 h-6 drop-shadow-glow transition-transform group-hover:rotate-6 duration-300', stat.iconColor]"></div>
+                  <div class="w-10 h-10 rounded-xl bg-black/30 border border-white/5 group-hover:border-white/10 transition-all flex items-center justify-center shadow-inner shrink-0 relative overflow-hidden">
+                    <RankIcon v-if="stat.label === 'Rango'" :rank="rangoGeneral" :size="32" class="p-1" />
+                    <div v-else v-html="stat.icon" :class="['w-6 h-6 drop-shadow-glow transition-transform group-hover:rotate-6 duration-300', stat.iconColor]"></div>
                   </div>
                   <div class="text-2xl sm:text-3xl font-black tracking-tighter transition-all duration-300 drop-shadow-sm group-hover:scale-105 ml-2" :class="stat.accentColor">
                     {{ stat.value }}
@@ -196,66 +207,79 @@
           </div>
         </div>
       </main>
-
-      <footer class="p-8 border-t border-[#1F2937] text-center text-gray-600 text-[11px] font-medium tracking-widest uppercase">
-        © 2026 REPS - Tu sistema de entrenamiento definitivo
-      </footer>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import Sidebar from './Sidebar.vue';
+import RankIcon from './common/RankIcon.vue';
+import { progresoApi, recordsApi } from '../api';
+import { useAuthStore } from '../stores/auth';
+import { getErrorMessage } from '../utils/error-handler';
+
+const authStore = useAuthStore();
 
 // --- SVGS AS STRINGS ---
 const FlameIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15.362 5.214A8.252 8.252 0 0 1 12 21 8.25 8.25 0 0 1 6.038 7.047 8.287 8.287 0 0 0 9 9.601a8.983 8.983 0 0 1 3.361-6.867 8.21 8.21 0 0 0 3 2.48Z" /><path stroke-linecap="round" stroke-linejoin="round" d="M12 18a3.75 3.75 0 0 0 .495-7.468 5.99 5.99 0 0 0-1.925 3.547 5.975 5.975 0 0 1-2.133-1.001A3.75 3.75 0 0 0 12 18Z" /></svg>`;
-
-const DumbbellIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.4 14.4 9.6 9.6"/><path d="M18.657 21.485a2 2 0 1 1-2.829-2.828l-1.768 1.768a2 2 0 1 1-2.829-2.829l6.364-6.364a2 2 0 1 1 2.829 2.828l-1.768 1.768a2 2 0 1 1 2.828 2.829z"/><path d="m21.5 21.5-1.4-1.4"/><path d="M3.9 3.9 2.5 2.5"/><path d="M6.404 12.768a2 2 0 1 1-2.829-2.829l1.768-1.767a2 2 0 1 1-2.828-2.829l2.828-2.828a2 2 0 1 1 2.829 2.828l1.767-1.768a2 2 0 1 1 2.829 2.829z"/></svg>`;
-
+const DumbbellIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.4 14.4 9.6 9.6" stroke="#DC2626" stroke-width="3"/><path d="M18.657 21.485a2 2 0 1 1-2.829-2.828l-1.768 1.768a2 2 0 1 1-2.829-2.829l6.364-6.364a2 2 0 1 1 2.829 2.828l-1.768 1.768a2 2 0 1 1 2.828 2.829z"/><path d="m21.5 21.5-1.4-1.4"/><path d="M3.9 3.9 2.5 2.5"/><path d="M6.404 12.768a2 2 0 1 1-2.829-2.829l1.768-1.767a2 2 0 1 1-2.828-2.829l2.828-2.828a2 2 0 1 1 2.829 2.828l1.767-1.768a2 2 0 1 1 2.829 2.829z"/></svg>`;
 const ConsistenciaIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>`;
-
 const AchievementIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89 17 22l-5-3-5 3 1.523-9.11"/></svg>`;
 
-// --- SVGS AS COMPONENTS (for dynamic ranks) ---
-const MedalIcon = {
-  template: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7.21 15 2.66 7.14a2 2 0 0 1 .13-2.2L4.4 2.8A2 2 0 0 1 6 2h12a2 2 0 0 1 1.6.8l1.62 2.14a2 2 0 0 1 .13 2.2L16.79 15"/><circle cx="12" cy="15" r="7"/><path d="M12 12c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/></svg>`
-};
-
-const TrophyIcon = {
-  template: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2z"/></svg>`
-};
-
-const StarIcon = {
-  template: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>`
-};
-
-const ShieldIcon = {
-  template: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>`
-};
-
-const DiamondIcon = {
-  template: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h12l4 6-10 13L2 9l4-6z"/><path d="M11 3 8 9l3 13m2-22 3 6-3 13M2 9h20"/></svg>`
-};
-
-const CrownIcon = {
-  template: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m2 4 3 12h14l3-12-6 7-4-7-4 7-6-7z"/></svg>`
-};
-
-const TargetIcon = {
-  template: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>`
-};
-
-// --- DATA ---
+// --- DATA REACTIVA ---  
 const activeChartTab = ref<'workouts' | 'volume'>('workouts');
 
-const muscleRanks = ref([
-  { name: 'Pecho', rank: 'Leyenda', points: 3200, progress: 95, workouts: 145, nextRank: 'Máximo', nextTarget: 0, isMax: true },
-  { name: 'Espalda', rank: 'Diamante', points: 2800, progress: 60, workouts: 88, nextRank: 'Leyenda', nextTarget: 5200 },
-  { name: 'Piernas', rank: 'Platino', points: 4100, progress: 20, workouts: 52, nextRank: 'Diamante', nextTarget: 5900 },
-  { name: 'Hombros', rank: 'Oro', points: 1800, progress: 53, workouts: 28, nextRank: 'Platino', nextTarget: 700 },
-  { name: 'Brazos', rank: 'Plata', points: 2200, progress: 80, workouts: 32, nextRank: 'Oro', nextTarget: 300 },
-  { name: 'Core', rank: 'Bronce', points: 1500, progress: 33, workouts: 25, nextRank: 'Plata', nextTarget: 1000 },
+// Rangos musculares desde backend
+const muscleRanks = ref<any[]>([]);
+const personalRecords = ref<any[]>([]);
+const rangoGeneral = ref('Bronce');
+const puntosTotales = ref(0);
+const hasError = ref(false);
+const errorText = ref('');
+
+// General stats: (racha, entrenamientos, etc. vienen del perfil)
+const generalStats = computed(() => [
+  {
+    label: 'Racha (días)',
+    value: String(authStore.profile?.rachaDias ?? 0),
+    icon: FlameIcon,
+    iconColor: 'text-[#F97316]',
+    accentColor: 'text-[#F97316]',
+    gradient: 'linear-gradient(152.983deg, rgba(245, 73, 0, 0.25) 0%, rgba(126, 42, 12, 0.2) 100%)',
+    borderColor: 'rgba(245, 73, 0, 0.5)',
+    glowColor: '#F54900'
+  },
+  {
+    label: 'Pts Totales',
+    value: String(puntosTotales.value),
+    icon: DumbbellIcon,
+    iconColor: 'text-white',
+    accentColor: 'text-red-500',
+    gradient: 'linear-gradient(152.983deg, rgba(220, 38, 38, 0.2) 0%, rgba(153, 27, 27, 0.15) 100%)',
+    borderColor: 'rgba(220, 38, 38, 0.4)',
+    glowColor: '#DC2626'
+  },
+  {
+    label: 'Rango',
+    value: rangoGeneral.value,
+    icon: ConsistenciaIcon,
+    iconColor: computed(() => getRankTextColor(rangoGeneral.value).replace('text-', 'text-')),
+    accentColor: computed(() => getRankTextColor(rangoGeneral.value)),
+    gradient: 'linear-gradient(152.983deg, rgba(59, 130, 246, 0.2) 0%, rgba(29, 78, 216, 0.15) 100%)',
+    borderColor: 'rgba(59, 130, 246, 0.4)',
+    glowColor: '#3B82F6'
+  },
+  {
+    label: 'Récords',
+    value: String(personalRecords.value.length),
+    icon: AchievementIcon,
+    iconColor: 'text-[#D8B4FE]',
+    accentColor: 'text-[#D8B4FE]',
+    gradient: 'linear-gradient(152.983deg, rgba(152, 16, 250, 0.25) 0%, rgba(89, 22, 139, 0.2) 100%)',
+    borderColor: 'rgba(152, 16, 250, 0.5)',
+    glowColor: '#9810FA'
+  },
 ]);
 
 const allRanks = [
@@ -267,64 +291,70 @@ const allRanks = [
   { name: 'Leyenda' }
 ];
 
-const currentOverallRankIndex = ref(2); // Oro
+const currentOverallRankIndex = computed(() => {
+  const idx = allRanks.findIndex(r => r.name.toLowerCase() === rangoGeneral.value.toLowerCase());
+  return idx >= 0 ? idx : 0;
+});
 
-const personalRecords = ref([
-  { exercise: 'Sentadilla', value: '140 kg', date: 'Hace 3 días', improvement: '10 kg' },
-  { exercise: 'Press Banca', value: '100 kg', date: 'Hace 1 semana', improvement: '5 kg' },
-  { exercise: 'Peso Muerto', value: '160 kg', date: 'Hace 2 semanas', improvement: '15 kg' },
-  { exercise: 'Dominadas', value: '+20 kg', date: 'Hace 5 días', improvement: '5 kg' },
-]);
+// --- CARGA DE DATOS ---
+onMounted(async () => {
+  try {
+    const [muscularRes, generalRes, recordsRes, analiticaRes] = await Promise.all([
+      progresoApi.getMuscular(),
+      progresoApi.getGeneral(),
+      recordsApi.getMisRecords(),
+      progresoApi.getAnalitica(),
+    ]);
 
-const generalStats = ref([
-  { 
-    label: 'Racha (días)', 
-    value: '30', 
-    icon: FlameIcon, 
-    iconColor: 'text-[#F97316]',
-    accentColor: 'text-[#FF8533]',
-    gradient: 'linear-gradient(152.983deg, rgba(245, 73, 0, 0.25) 0%, rgba(126, 42, 12, 0.2) 100%)',
-    borderColor: 'rgba(245, 73, 0, 0.5)',
-    glowColor: '#F54900'
-  },
-  { 
-    label: 'Entrenamientos', 
-    value: '87', 
-    icon: DumbbellIcon, 
-    iconColor: 'text-[#EF4444]',
-    accentColor: 'text-red-500',
-    gradient: 'linear-gradient(152.983deg, rgba(220, 38, 38, 0.2) 0%, rgba(153, 27, 27, 0.15) 100%)',
-    borderColor: 'rgba(220, 38, 38, 0.4)',
-    glowColor: '#DC2626'
-  },
-  { 
-    label: 'Consistencia', 
-    value: '95%', 
-    icon: ConsistenciaIcon, 
-    iconColor: 'text-blue-400',
-    accentColor: 'text-blue-500',
-    gradient: 'linear-gradient(152.983deg, rgba(59, 130, 246, 0.2) 0%, rgba(29, 78, 216, 0.15) 100%)',
-    borderColor: 'rgba(59, 130, 246, 0.4)',
-    glowColor: '#3B82F6'
-  },
-  { 
-    label: 'Logros', 
-    value: '12', 
-    icon: AchievementIcon, 
-    iconColor: 'text-[#D8B4FE]',
-    accentColor: 'text-[#D8B4FE]',
-    gradient: 'linear-gradient(152.983deg, rgba(152, 16, 250, 0.25) 0%, rgba(89, 22, 139, 0.2) 100%)',
-    borderColor: 'rgba(152, 16, 250, 0.5)',
-    glowColor: '#9810FA'
-  },
-]);
+    // Rangos musculares
+    muscleRanks.value = (muscularRes.data as any[]).map((m: any) => ({
+      name: m.grupoMuscular,
+      rank: m.rango,
+      points: m.puntosActuales,
+      progress: Math.round(m.porcentaje * 100),
+      workouts: m.entrenamientosRealizados,
+      nextRank: 'Siguiente',
+      nextTarget: m.siguienteNivelPuntos,
+      isMax: m.porcentaje >= 1,
+    }));
 
-// --- CHARTS CONFIG ---
-const barChartSeries = [{
-  name: 'Peso (kg)',
-  data: [80, 82.5, 82.5, 85, 85, 87.5, 90]
-}];
+    // General
+    rangoGeneral.value = generalRes.data.rangoGeneral ?? 'Bronce';
+    puntosTotales.value = generalRes.data.puntosTotales ?? 0;
 
+    // Records personales
+    personalRecords.value = (recordsRes.data as any[]).map((r: any) => ({
+      exercise: r.nombreEjercicio,
+      value: `${r.pesoMaximo} kg`,
+      date: r.fechaRecord ? new Date(r.fechaRecord).toLocaleDateString('es-ES') : '',
+      improvement: '',
+    }));
+
+    if (analiticaRes.data) {
+        barChartSeries.value = [{ name: 'Peso (kg)', data: analiticaRes.data.pesos }];
+        lineChartSeries.value = [{ name: 'Volumen', data: analiticaRes.data.volumen }];
+    }
+  } catch (e: any) {
+    console.error('Error cargando progreso', e);
+    hasError.value = true;
+    errorText.value = getErrorMessage(e);
+    
+    // Fallback a datos de muestra si back no disponible o error
+    muscleRanks.value = [
+      { name: 'Pecho', rank: 'Bronce', points: 0, progress: 0, workouts: 0, nextRank: 'Plata', nextTarget: 1000, isMax: false },
+      { name: 'Espalda', rank: 'Bronce', points: 0, progress: 0, workouts: 0, nextRank: 'Plata', nextTarget: 1000 },
+      { name: 'Piernas', rank: 'Bronce', points: 0, progress: 0, workouts: 0, nextRank: 'Plata', nextTarget: 1000 },
+      { name: 'Hombros', rank: 'Bronce', points: 0, progress: 0, workouts: 0, nextRank: 'Plata', nextTarget: 1000 },
+      { name: 'Brazos', rank: 'Bronce', points: 0, progress: 0, workouts: 0, nextRank: 'Plata', nextTarget: 1000 },
+      { name: 'Core', rank: 'Bronce', points: 0, progress: 0, workouts: 0, nextRank: 'Plata', nextTarget: 1000 },
+    ];
+    barChartSeries.value = [{ name: 'Peso (kg)', data: [0, 0, 0, 0, 0, 0, 0] }];
+    lineChartSeries.value = [{ name: 'Volumen', data: [0, 0, 0, 0, 0, 0] }];
+  }
+});
+
+// --- CHARTS CONFIG (estáticos de momento) ---
+const barChartSeries = ref([{ name: 'Peso (kg)', data: [80, 82.5, 82.5, 85, 85, 87.5, 90] }]);
 const barChartOptions = {
   chart: { toolbar: { show: false }, background: 'transparent' },
   colors: ['#DC2626'],
@@ -335,27 +365,13 @@ const barChartOptions = {
     axisBorder: { show: false },
     axisTicks: { show: false }
   },
-  yaxis: { 
-    labels: { style: { colors: '#9CA3AF' } },
-    min: 0,
-    max: 100,
-    tickAmount: 5
-  },
-  grid: { 
-    borderColor: 'rgba(255, 255, 255, 0.05)', 
-    strokeDashArray: 0,
-    xaxis: { lines: { show: false } },
-    yaxis: { lines: { show: true } }
-  },
+  yaxis: { labels: { style: { colors: '#9CA3AF' } }, min: 0, max: 100, tickAmount: 5 },
+  grid: { borderColor: 'rgba(255, 255, 255, 0.05)', strokeDashArray: 0, xaxis: { lines: { show: false } }, yaxis: { lines: { show: true } } },
   tooltip: { theme: 'dark', x: { show: true } },
   dataLabels: { enabled: false }
 };
 
-const lineChartSeries = [{
-  name: 'Volumen',
-  data: [45000, 52000, 48000, 61000, 55000, 67000]
-}];
-
+const lineChartSeries = ref([{ name: 'Volumen', data: [45000, 52000, 48000, 61000, 55000, 67000] }]);
 const lineChartOptions = {
   chart: { toolbar: { show: false }, background: 'transparent' },
   colors: ['#DC2626'],
@@ -366,18 +382,8 @@ const lineChartOptions = {
     axisBorder: { show: false }
   },
   yaxis: { labels: { style: { colors: '#9CA3AF' } } },
-  grid: { 
-    borderColor: 'rgba(255, 255, 255, 0.05)', 
-    strokeDashArray: 0,
-    xaxis: { lines: { show: false } }
-  },
-  markers: { 
-    size: 4, 
-    colors: ['#DC2626'], 
-    strokeColors: '#000', 
-    strokeWidth: 2,
-    hover: { size: 6 }
-  },
+  grid: { borderColor: 'rgba(255, 255, 255, 0.05)', strokeDashArray: 0, xaxis: { lines: { show: false } } },
+  markers: { size: 4, colors: ['#DC2626'], strokeColors: '#000', strokeWidth: 2, hover: { size: 6 } },
   tooltip: { theme: 'dark' },
   dataLabels: { enabled: false }
 };
@@ -397,69 +403,20 @@ const getRankGradient = (rank: string) => {
 
 const getRankTextColor = (rank: string) => {
   switch (rank) {
-    case 'Bronce': return 'text-orange-400';
-    case 'Plata': return 'text-slate-300';
-    case 'Oro': return 'text-yellow-400';
-    case 'Platino': return 'text-teal-400';
-    case 'Diamante': return 'text-blue-400';
-    case 'Leyenda': return 'text-red-500';
-    default: return 'text-white';
-  }
-};
-
-const getRankIcon = (rank: string) => {
-  switch (rank) {
-    case 'Bronce': return ShieldIcon;
-    case 'Plata': return MedalIcon;
-    case 'Oro': return TrophyIcon;
-    case 'Platino': return StarIcon;
-    case 'Diamante': return DiamondIcon;
-    case 'Leyenda': return CrownIcon;
-    default: return MedalIcon;
+    case 'Bronce': return 'text-[#F97316]';
+    case 'Plata': return 'text-[#CBD5E1]';
+    case 'Oro': return 'text-[#FACC15]';
+    case 'Platino': return 'text-[#22D3EE]';
+    case 'Diamante': return 'text-[#3B82F6]';
+    case 'Leyenda': return 'text-[#EF4444]';
+    default: return 'text-gray-400';
   }
 };
 
 const formatNumber = (num: number) => {
-  return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+  return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 };
 </script>
 
 <style scoped>
-.progress-bar::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: linear-gradient(
-    to right,
-    transparent,
-    rgba(255, 255, 255, 0.2),
-    transparent
-  );
-  animation: shimmer 3s infinite;
-}
-
-@keyframes shimmer {
-  0% { transform: translateX(-100%); }
-  100% { transform: translateX(100%); }
-}
-
-.animate-shimmer {
-  animation: shimmer 1.5s infinite;
-}
-
-.progress-bar-glow {
-  box-shadow: inset 0 2px 4px rgba(0,0,0,0.5), 0 0 10px rgba(220, 38, 38, 0.1);
-}
-
-@keyframes float {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-5px); }
-}
-
-.animate-float {
-  animation: float 4s ease-in-out infinite;
-}
 </style>

@@ -2,6 +2,7 @@
 import { ref, watch } from 'vue';
 import { useAuthStore } from '../../stores/auth'; // Adjust path if necessary
 import { useRouter } from 'vue-router'
+import { getErrorMessage } from '../../utils/error-handler';
 
 const props = defineProps(['modelValue']);
 const emit = defineEmits(['update:modelValue']);
@@ -14,6 +15,7 @@ const isLogin = ref(true) // Default to Login
 const name = ref('')
 const email = ref('')
 const password = ref('')
+const showPassword = ref(false)
 const isLoading = ref(false)
 const errorMessage = ref('')
 
@@ -46,25 +48,16 @@ const handleSubmit = async () => {
     try {
         if (isLogin.value) {
             await authStore.login(email.value, password.value)
+            dialog.value = false
+            router.push('/dashboard')
         } else {
-            await authStore.register({
-                nombre: name.value,
-                email: email.value,
-                password: password.value
-            })
-        }
-        // Success
-        dialog.value = false; // Close dialog
-        
-        if (!isLogin.value) {
+            await authStore.register(name.value, email.value, password.value)
+            dialog.value = false
             router.push('/select-plan')
-        } else {
-            router.push('/') // Ensure we are on home/dashboard (or reload to update state)
         }
-        
-        // Optionally show success message
     } catch (error: any) {
-        errorMessage.value = error.message || 'Ocurrió un error. Verifica tus datos.'
+        console.error('Auth Error:', error)
+        errorMessage.value = getErrorMessage(error)
     } finally {
         isLoading.value = false
     }
@@ -77,8 +70,8 @@ const handleSubmit = async () => {
         <v-btn icon="mdi-close" variant="text" color="grey" class="position-absolute top-0 right-0 ma-4" @click="dialog = false"></v-btn>
         
         <div class="mb-8 text-center">
-            <div class="d-inline-block px-3 py-1 mb-4 border border-red-900 rounded bg-black/50">
-                 <span class="text-h6 font-weight-black text-white tracking-widest">REPS<span class="text-red">.</span></span>
+            <div class="d-inline-block p-1 mb-4 rounded-xl bg-black/50 border border-red-900/30">
+                 <img src="/potential_logo_2.png" alt="REPS Logo" style="height: 60px; width: auto;" />
             </div>
 
             <h2 class="text-h4 font-weight-bold lh-1 text-white text-uppercase" style="font-family: 'Outfit', sans-serif;">
@@ -104,7 +97,25 @@ const handleSubmit = async () => {
             </v-expand-transition>
 
              <v-text-field v-model="email" placeholder="Email" variant="underlined" color="red" bg-color="transparent" class="mb-2 text-white font-weight-medium" style="font-family: 'Outfit', sans-serif;"></v-text-field>
-             <v-text-field v-model="password" placeholder="Contraseña" type="password" variant="underlined" color="red" bg-color="transparent" class="mb-6 text-white font-weight-medium" style="font-family: 'Outfit', sans-serif;"></v-text-field>
+             <v-text-field 
+                v-model="password" 
+                placeholder="Contraseña" 
+                :type="showPassword ? 'text' : 'password'" 
+                variant="underlined" 
+                color="red" 
+                bg-color="transparent" 
+                class="mb-6 text-white font-weight-medium" 
+                style="font-family: 'Outfit', sans-serif;"
+             >
+                <template v-slot:append-inner>
+                    <v-icon 
+                        :icon="showPassword ? 'mdi-eye' : 'mdi-eye-off'"
+                        @click="showPassword = !showPassword"
+                        color="grey-lighten-1"
+                        class="cursor-pointer"
+                    ></v-icon>
+                </template>
+             </v-text-field>
 
             <!-- Error Alert -->
             <v-alert
