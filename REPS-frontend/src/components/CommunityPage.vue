@@ -104,8 +104,7 @@
 
               <!-- DERECHA: ACCIONES -->
               <div class="flex items-center gap-2">
-                <button class="flex-1 md:flex-none bg-[#1F2937]/50 hover:bg-[#374151] border border-[#374151] text-white px-5 py-2.5 rounded-[10px] font-bold text-[13px] transition-all">Ver Perfil</button>
-                <button class="flex-1 md:flex-none bg-[#DC2626] hover:bg-[#B91C1C] text-white px-5 py-2.5 rounded-[10px] font-bold text-[13px] transition-all">Rutinas</button>
+                <button @click="viewFriendProfile(friend)" class="flex-1 md:flex-none bg-[#1F2937]/50 hover:bg-[#374151] border border-[#374151] text-white px-5 py-2.5 rounded-[10px] font-bold text-[13px] transition-all">Ver Perfil</button>
               </div>
             </div>
           </div>
@@ -399,6 +398,45 @@
             </footer>
         </div>
     </div>
+
+    <!-- 9️⃣ MODAL: VER PERFIL DE AMIGO -->
+    <div v-if="selectedFriend" class="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <!-- Overlay -->
+        <div @click="selectedFriend = null" class="absolute inset-0 bg-black/80 backdrop-blur-sm"></div>
+        
+        <!-- Modal Content -->
+        <div class="relative bg-gradient-to-b from-[#1F2937] to-[#111827] border border-[#374151] rounded-[16px] w-full max-w-[400px] overflow-hidden shadow-2xl animate-in zoom-in-95 duration-200">
+            <header class="p-6 border-b border-[#374151]/50 flex justify-between items-start relative z-10">
+                <div class="w-20 h-20 rounded-full border-4 border-[#111827] bg-[#1F2937] flex items-center justify-center overflow-hidden shadow-xl">
+                    <img :src="getAvatarUrl(selectedFriend.avatarId)" class="w-full h-full object-cover" />
+                </div>
+                <button @click="selectedFriend = null" class="text-[#9CA3AF] hover:text-white transition-colors bg-black/20 rounded-full p-1">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </button>
+            </header>
+            
+            <div class="p-6 pt-4 text-center">
+                <h2 class="text-[24px] font-bold text-white flex justify-center items-center gap-2">
+                    {{ selectedFriend.name }}
+                    <span class="w-3 h-3 rounded-full" :class="selectedFriend.online ? 'bg-[#22C55E]' : 'bg-[#6B7280]'"></span>
+                </h2>
+                <div class="text-[14px] text-[#DC2626] font-bold uppercase tracking-widest mt-1 mb-4">{{ selectedFriend.statusText }}</div>
+                
+                <p v-if="selectedFriend.bio" class="text-[14px] text-[#9CA3AF] italic mb-6">"{{ selectedFriend.bio }}"</p>
+                
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="bg-[#111827]/50 border border-[#374151] rounded-[12px] p-4 flex flex-col items-center">
+                        <span class="text-[24px] font-extrabold text-[#FBBF24]">{{ selectedFriend.streak }}</span>
+                        <span class="text-[12px] text-[#9CA3AF] uppercase font-bold tracking-wider">Días Racha</span>
+                    </div>
+                    <div class="bg-[#111827]/50 border border-[#374151] rounded-[12px] p-4 flex flex-col items-center">
+                        <span class="text-[24px] font-extrabold text-[#38BDF8]">{{ selectedFriend.workouts }}</span>
+                        <span class="text-[12px] text-[#9CA3AF] uppercase font-bold tracking-wider">Entrenos</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
   </div>
 </template>
 
@@ -463,6 +501,11 @@ const getAvatarUrl = (id?: string) => {
 
 // --- AMIGOS (REALES) ---
 const friendsList = ref<any[]>([]);
+const selectedFriend = ref<any>(null);
+
+const viewFriendProfile = (friend: any) => {
+    selectedFriend.value = friend;
+};
 
 const loadAmigos = async () => {
   try {
