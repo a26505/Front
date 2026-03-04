@@ -72,12 +72,12 @@ const confirmPlan = async () => {
       
       <!-- Plan Gratis -->
       <div 
-        class="pricing-card blue group cursor-pointer transition-all duration-300"
+        class="pricing-card blue group mt-4 relative cursor-pointer transition-all duration-300"
         :class="{ 'active-plan blue-border': selectedPlanId === 0 }"
         @click="selectPlanLocal(0)"
       >
-        <div class="flex flex-col h-full">
-            <div class="mb-8">
+        <div class="flex flex-col h-full relative z-10">
+            <div class="mb-8 pt-4">
                 <div class="flex justify-between items-start">
                     <h3 class="text-2xl font-black text-blue-400 uppercase tracking-widest mb-4">Gratis</h3>
                     <div v-if="selectedPlanId === 0" class="bg-blue-600 text-[10px] font-bold px-3 py-1 rounded-full uppercase">Seleccionado</div>
