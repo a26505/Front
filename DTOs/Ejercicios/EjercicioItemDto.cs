@@ -8,5 +8,7 @@ namespace REPS_backend.DTOs.Ejercicios
         public string Nombre { get; set; }
         public GrupoMuscular GrupoMuscular { get; set; }
         public string ImagenMusculosUrl { get; set; }
+        public bool EsUnilateral { get; set; }
+        public bool EsCardio { get; set; }
     }
 }

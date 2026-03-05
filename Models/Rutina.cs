@@ -1,4 +1,4 @@
-﻿namespace REPS_backend.Models
+namespace REPS_backend.Models
 {
     public class Rutina
     {
@@ -20,6 +20,11 @@
         public bool EsGeneradaPorIA { get; set; } 
         public int Likes { get; set; } 
         public int Descargas { get; set; }
+        
+        /// <summary>
+        /// ID de la rutina original de comunidad si es una copia guardada. Null si es original.
+        /// </summary>
+        public int? RutinaOrigenId { get; set; }
 
         public List<RutinaEjercicio> Ejercicios { get; set; } = new List<RutinaEjercicio>();
 

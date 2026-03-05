@@ -1,4 +1,4 @@
-﻿namespace REPS_backend.Models
+namespace REPS_backend.Models
 {
     public class RutinaEjercicio
     {
@@ -16,5 +16,10 @@
         public decimal PorcentajeDelPeso { get; set; } = 1.0m; 
         
         public double PesoSugerido { get; set; } 
+        
+        /// <summary>
+        /// Duracion en minutos para ejercicios de cardio (en vez de series/reps)
+        /// </summary>
+        public int? DuracionMinutosCardio { get; set; }
     }
 }

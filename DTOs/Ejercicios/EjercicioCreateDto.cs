@@ -9,5 +9,8 @@ namespace REPS_backend.DTOs.Ejercicios
         
         public string? DescripcionTecnica { get; set; }
         public string? ImagenMusculosUrl { get; set; }
+        
+        public bool EsUnilateral { get; set; } = false;
+        public bool EsCardio { get; set; } = false;
     }
 }

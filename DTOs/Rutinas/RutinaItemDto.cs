@@ -15,6 +15,21 @@ namespace REPS_backend.DTOs.Rutinas
         
         // ponemos el número total para que sepan si es larga o corta.
         public int CantidadEjercicios { get; set; } 
-        public int TotalEjercicios { get; set; } 
+        public int TotalEjercicios { get; set; }
+        
+        /// <summary>
+        /// ID de la rutina original si es copia de comunidad. Null si es original.
+        /// </summary>
+        public int? RutinaOrigenId { get; set; }
+        
+        /// <summary>
+        /// Indica si esta rutina fue guardada/copiada de la comunidad
+        /// </summary>
+        public bool EsCopiaDeComunidad => RutinaOrigenId != null;
+        
+        /// <summary>
+        /// Indica si el usuario actual ya dio like a esta rutina
+        /// </summary>
+        public bool UsuarioLeDioLike { get; set; } = false;
     }
 }
