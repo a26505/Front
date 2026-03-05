@@ -575,19 +575,25 @@ const onFinalizar = async () => {
     recordsPersonal.forEach((rec: any) => {
       const rawMuscle = rec.grupoMuscular || 'Otro';
       const normalizedMuscle = normalizeMuscle(rawMuscle);
-      // Añadir bonus de 30 pts al músculo del récord
+      // Anadir bonus de 30 pts al musculo del record (solo fallback local)
       localMuscleBreakdown[normalizedMuscle] = (localMuscleBreakdown[normalizedMuscle] || 0) + 30;
     });
 
-    // Usar puntos del servidor si están disponibles, si no calcular local
+    // Preferir desglose del backend si esta disponible, sino usar el calculo local
+    const serverDesglose = res.data?.desgloseMuscular;
+    const muscleBreakdown = (serverDesglose && Object.keys(serverDesglose).length > 0)
+      ? serverDesglose
+      : localMuscleBreakdown;
+
+    // Usar puntos del servidor si estan disponibles, si no calcular local
     const serverPoints = res.data?.puntosGanados;
     const totalPoints = (serverPoints != null && serverPoints > 0)
       ? serverPoints
-      : Object.values(localMuscleBreakdown).reduce((acc: number, pts: any) => acc + Number(pts), 0);
+      : Object.values(muscleBreakdown).reduce((acc: number, pts: any) => acc + Number(pts), 0);
 
     summaryData.value = {
       puntos: totalPoints,
-      muscleBreakdown: localMuscleBreakdown,
+      muscleBreakdown: muscleBreakdown,
       records: recordsPersonal,
       logros: res.data?.logrosDesbloqueados || [],
       resumen: `¡Brutal! Has completado ${completedExsList.length} ejercicio${completedExsList.length !== 1 ? 's' : ''}. Sigue así.`,

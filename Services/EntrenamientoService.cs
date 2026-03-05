@@ -9,15 +9,18 @@ namespace REPS_backend.Services
         private readonly IEntrenamientoRepository _entrenamientoRepository;
         private readonly IRecordPersonalService _recordService;
         private readonly ILogroService _logroService;
+        private readonly IEjercicioRepository _ejercicioRepository;
 
         public EntrenamientoService(
             IEntrenamientoRepository entrenamientoRepository,
             IRecordPersonalService recordService,
-            ILogroService logroService)
+            ILogroService logroService,
+            IEjercicioRepository ejercicioRepository)
         {
             _entrenamientoRepository = entrenamientoRepository;
             _recordService = recordService;
             _logroService = logroService;
+            _ejercicioRepository = ejercicioRepository;
         }
 
         public async Task<FinalizarResultadoDto> FinalizarEntrenamientoAsync(int usuarioId, FinalizarEntrenamientoDto dto)
@@ -37,6 +40,7 @@ namespace REPS_backend.Services
             var recordsNuevos = new List<RecordEnSesionDto>();
             int puntosGanados = 0;
             const int PUNTOS_POR_EJERCICIO = 10;
+            var desgloseMuscular = new Dictionary<string, int>();
 
             if (dto.Ejercicios != null)
             {
@@ -46,6 +50,10 @@ namespace REPS_backend.Services
                 foreach (var ejDto in dto.Ejercicios)
                 {
                     decimal pesoMaximoEjercicio = 0;
+
+                    // Obtener grupo muscular real del ejercicio desde la BD
+                    var ejercicioDB = await _ejercicioRepository.GetByIdAsync(ejDto.EjercicioId);
+                    var grupoMuscular = ejercicioDB?.GrupoMuscular.ToString() ?? "Otro";
 
                     if (ejDto.Series != null)
                     {
@@ -69,7 +77,14 @@ namespace REPS_backend.Services
                     // Sumar puntos por ejercicio (si hay al menos una serie completada)
                     bool tieneSeriesCompletadas = ejDto.Series?.Any(s => s.Completada) ?? false;
                     if (tieneSeriesCompletadas)
+                    {
                         puntosGanados += PUNTOS_POR_EJERCICIO;
+                        // Acumular en desglose por grupo muscular
+                        if (desgloseMuscular.ContainsKey(grupoMuscular))
+                            desgloseMuscular[grupoMuscular] += PUNTOS_POR_EJERCICIO;
+                        else
+                            desgloseMuscular[grupoMuscular] = PUNTOS_POR_EJERCICIO;
+                    }
 
                     // 3. Procesar Record Personal
                     if (pesoMaximoEjercicio > 0)
@@ -99,6 +114,11 @@ namespace REPS_backend.Services
                                 {
                                     musculosConRecord.Add(musculo);
                                     puntosGanados += 30; // Bonus por batir récord en este músculo
+                                    // Acumular bonus en desglose por grupo muscular
+                                    if (desgloseMuscular.ContainsKey(musculo))
+                                        desgloseMuscular[musculo] += 30;
+                                    else
+                                        desgloseMuscular[musculo] = 30;
                                 }
                             }
                         }
@@ -127,7 +147,8 @@ namespace REPS_backend.Services
                 Mensaje = "Entrenamiento guardado y récords actualizados.",
                 PuntosGanados = puntosGanados,
                 RecordsPersonal = recordsNuevos,
-                LogrosDesbloqueados = logrosDesbloqueadosEnSesion
+                LogrosDesbloqueados = logrosDesbloqueadosEnSesion,
+                DesgloseMuscular = desgloseMuscular
             };
         }
 

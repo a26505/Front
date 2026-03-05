@@ -19,6 +19,13 @@ namespace REPS_backend.DTOs.Entrenamientos
 
         [JsonPropertyName("logrosDesbloqueados")]
         public List<LogroEnSesionDto> LogrosDesbloqueados { get; set; } = new();
+
+        /// <summary>
+        /// Desglose de puntos ganados por grupo muscular en esta sesión.
+        /// Clave: nombre del grupo muscular (e.g. "Pierna"), Valor: puntos ganados.
+        /// </summary>
+        [JsonPropertyName("desgloseMuscular")]
+        public Dictionary<string, int> DesgloseMuscular { get; set; } = new();
     }
 
     public class RecordEnSesionDto
