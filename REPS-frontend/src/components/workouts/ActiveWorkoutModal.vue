@@ -523,7 +523,8 @@ const normalizeMuscle = (raw: string): string => {
     'tricep': 'Tríceps', 'triceps': 'Tríceps', 'tríceps': 'Tríceps', 'trícep': 'Tríceps',
     'brazos': 'Bíceps',
     'core': 'Abdomen', 'abdomen': 'Abdomen', 'abdominales': 'Abdomen', 'abs': 'Abdomen',
-    'pantorrilla': 'Pierna', 'gemelos': 'Pierna'
+    'pantorrilla': 'Pierna', 'gemelos': 'Pierna',
+    'cardio': 'Cardio', 'fullbody': 'Full Body', 'otro': 'Otro'
   };
   const key = (raw || 'otro').trim().toLowerCase();
   return muscleMap[key] || (raw.charAt(0).toUpperCase() + raw.slice(1));
@@ -581,9 +582,17 @@ const onFinalizar = async () => {
 
     // Preferir desglose del backend si esta disponible, sino usar el calculo local
     const serverDesglose = res.data?.desgloseMuscular;
-    const muscleBreakdown = (serverDesglose && Object.keys(serverDesglose).length > 0)
-      ? serverDesglose
-      : localMuscleBreakdown;
+    let muscleBreakdown: Record<string, number>;
+    if (serverDesglose && Object.keys(serverDesglose).length > 0) {
+      // Normalizar claves del backend (enum names) para consistencia visual
+      muscleBreakdown = {};
+      for (const [key, val] of Object.entries(serverDesglose)) {
+        const normalized = normalizeMuscle(key);
+        muscleBreakdown[normalized] = (muscleBreakdown[normalized] || 0) + Number(val);
+      }
+    } else {
+      muscleBreakdown = localMuscleBreakdown;
+    }
 
     // Usar puntos del servidor si estan disponibles, si no calcular local
     const serverPoints = res.data?.puntosGanados;
