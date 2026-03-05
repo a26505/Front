@@ -10,6 +10,13 @@
         <h1 class="text-3xl font-bold text-white tracking-tight">Mis Entrenamientos</h1>
         
         <div class="flex gap-3">
+          <button @click="showCiclosModal = true" class="bg-[#2563EB] hover:bg-[#1D4ED8] rounded-lg px-4 py-2 flex items-center gap-2 text-sm font-bold transition-all hover:scale-105 active:scale-95 shadow-lg shadow-blue-500/20">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line>
+            </svg>
+            Mi Ciclo
+          </button>
+          
           <button @click="openIAGenerator" class="bg-[#9333EA] hover:bg-[#7C3AED] rounded-lg px-4 py-2 flex items-center gap-2 text-sm font-bold transition-all hover:scale-105 active:scale-95">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
               <path d="m12 3 1.912 5.813a2 2 0 0 0 1.275 1.275L21 12l-5.813 1.912a2 2 0 0 0-1.275 1.275L12 21l-1.912-5.813a2 2 0 0 0-1.275-1.275L3 12l5.813-1.912a2 2 0 0 0 1.275-1.275L12 3Z"/>
@@ -157,34 +164,25 @@
                 />
              </div>
 
-             <div v-if="activeTab === 'friends'">
-                <div v-if="filteredFriendsWorkouts.length === 0" class="flex flex-col items-center justify-center py-12 px-6 bg-[rgba(31,41,55,0.2)] border border-dashed border-[#374151] rounded-[12px] mt-6">
-                  <p class="text-[#9CA3AF] text-center font-medium">No se encontraron rutinas de tus amigos.</p>
+
+             <div v-if="activeTab === 'community_saved'">
+                <div v-if="filteredCommunitySavedWorkouts.length === 0" class="flex flex-col items-center justify-center py-12 px-6 bg-[rgba(31,41,55,0.2)] border border-dashed border-[#374151] rounded-[12px] mt-6">
+                  <p class="text-[#9CA3AF] text-center font-medium mb-4">Aquí saldrán las rutinas que te guardes de la comunidad.</p>
+                  <button @click="router.push('/community')" class="bg-[#DC2626] text-white px-6 py-2 rounded-lg font-bold shadow-lg shadow-red-900/20 hover:scale-105 active:scale-95 transition-all">
+                    Explorar Comunidad
+                  </button>
                 </div>
                 <WorkoutCard 
-                   v-for="workout in filteredFriendsWorkouts" 
+                   v-for="workout in filteredCommunitySavedWorkouts" 
                    :key="workout.id" 
                    :workout="workout" 
-                   type="friends"
+                   type="community_saved"
                    @click="openDetail(workout)"
+                   @delete="deleteWorkout"
+                   @edit="openEditModal"
                 />
              </div>
 
-             <div v-if="activeTab === 'community'">
-                <div v-if="filteredCommunityWorkouts.length === 0" class="flex flex-col items-center justify-center py-12 px-6 bg-[rgba(31,41,55,0.2)] border border-dashed border-[#374151] rounded-[12px] mt-6">
-                  <p class="text-[#9CA3AF] text-center font-medium mb-4">Aquí saldrán las rutinas que te guardes de la comunidad o guarda tus primeras rutinas de la comunidad.</p>
-                  <router-link to="/community" class="bg-[#DC2626] text-white px-6 py-2 rounded-lg font-bold shadow-lg shadow-red-900/20 hover:scale-105 active:scale-95 transition-all">
-                    Ver Comunidad
-                  </router-link>
-                </div>
-                <WorkoutCard 
-                   v-for="workout in filteredCommunityWorkouts" 
-                   :key="workout.id" 
-                   :workout="workout" 
-                   type="community"
-                   @click="openDetail(workout)"
-                />
-             </div>
 
              <div v-if="activeTab === 'ai'">
                 <!-- Banner Pro for AI Tab -->
@@ -247,6 +245,12 @@
       @close="showEditModal = false; workoutToEdit = null"
       @save="handleWorkoutEdited"
     />
+    <CiclosModal
+      v-if="showCiclosModal"
+      :myWorkouts="myWorkouts"
+      @close="showCiclosModal = false"
+      @save="onCicloSave"
+    />
 
     <!-- MODAL PERSONALIZADO DE ELIMINACIÓN -->
     <div v-if="deleteModal.show" class="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-in fade-in duration-200">
@@ -301,6 +305,7 @@ import CreateWorkoutModal from './workouts/CreateWorkoutModal.vue';
 import AIGeneratorModal from './workouts/AIGeneratorModal.vue';
 import WorkoutDetailModal from './workouts/WorkoutDetailModal.vue';
 import EditWorkoutModal from './workouts/EditWorkoutModal.vue';
+import CiclosModal from './workouts/CiclosModal.vue';
 import { rutinasApi } from '../api';
 import { useAuthStore } from '../stores/auth';
 
@@ -309,6 +314,7 @@ const activeTab = ref('my');
 const showFilters = ref(false);
 const showCreateModal = ref(false);
 const showIAModal = ref(false);
+const showCiclosModal = ref(false);
 const showEditModal = ref(false);
 const workoutToEdit = ref<any>(null);
 const selectedWorkout = ref(null);
@@ -320,7 +326,7 @@ const filterDifficulty = ref('Todas');
 const selectedMuscles = ref<string[]>([]);
 
 const difficulties = ['Todas', 'Principiante', 'Intermedio', 'Avanzado'];
-const muscles = ['Pecho', 'Espalda', 'Piernas', 'Hombros', 'Brazos', 'Core'];
+const muscles = ['Pecho', 'Espalda', 'Pierna', 'Hombro', 'Biceps', 'Triceps', 'Abdomen', 'Cardio', 'FullBody', 'Otro'];
 
 const toggleMuscleFilter = (muscle: string) => {
   const index = selectedMuscles.value.indexOf(muscle);
@@ -332,6 +338,10 @@ const clearFilters = () => {
   searchQuery.value = '';
   filterDifficulty.value = 'Todas';
   selectedMuscles.value = [];
+};
+
+const onCicloSave = () => {
+  showToast('¡Ciclo organizado correctamente!', 'success');
 };
 
 import { useRouter } from 'vue-router';
@@ -366,20 +376,18 @@ const filterWorkouts = (list: any[]) => {
 };
 
 const filteredMyWorkouts = computed(() => filterWorkouts(myWorkouts.value));
-const filteredCommunityWorkouts = computed(() => filterWorkouts(communityWorkouts.value));
+const filteredCommunitySavedWorkouts = computed(() => filterWorkouts(communitySavedWorkouts.value));
 const filteredAiWorkouts = computed(() => filterWorkouts(aiWorkouts.value));
-const filteredFriendsWorkouts = computed(() => filterWorkouts(friendsWorkouts.value));
 
 const tabs = [
   { id: 'my', name: 'Mis Rutinas' },
-  { id: 'friends', name: 'Rutinas de Amigos' },
-  { id: 'community', name: 'Comunidad' },
+  { id: 'community_saved', name: 'Mis Rutinas Comunidad' },
   { id: 'ai', name: 'Entrenamientos IA' }
 ];
 
 // --- DATOS REALES ---
 const myWorkouts = ref<any[]>([]);
-const communityWorkouts = ref<any[]>([]);
+const communitySavedWorkouts = ref<any[]>([]);
 const aiWorkouts = ref<any[]>([]);
 const isLoading = ref(false);
 
@@ -387,28 +395,34 @@ const mapToCard = (r: any) => ({
   id: r.id,
   title: r.nombre,
   difficulty: r.nivel,
-  exercises: r.cantidadEjercicios,
+  exercises: r.cantidadEjercicios || (r.ejercicios ? r.ejercicios.length : 0),
   duration: r.duracionMinutos,
-  muscles: r.musculosPrincipales ?? ['Todo el cuerpo'],
-  image: 'https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?auto=format&fit=crop&q=80&w=400',
+  muscles: (r.musculosPrincipales && r.musculosPrincipales.length > 0) 
+           ? r.musculosPrincipales 
+           : (r.parteCuerpo ? [r.parteCuerpo] : ['Cuerpo completo']),
+  image: r.urlImagen || 'https://res.cloudinary.com/dgtahwqpj/image/upload/v1772038108/descarga_w22ggj.jpg',
   author: r.creadorNombre,
+  creatorId: r.creadorId,
   likes: r.likes,
+  liked: r.liked,
   downloads: 0,
-  public: r.publico
+  public: r.estado === 'Publicada',
+  isGeneradaPorIA: r.esGeneradaPorIA || r.nombre?.startsWith('IA -'),
+  isCopia: r.esCopia || (r.creadorId && Number(r.creadorId) !== Number(authStore.userId))
 });
 
 const loadRutinas = async () => {
   isLoading.value = true;
   try {
-    const [misRes, comRes] = await Promise.all([
+    const [misRes] = await Promise.all([
       rutinasApi.getMisRutinas(),
-      rutinasApi.getComunidad()
     ]);
     const allMy = (misRes.data as any[]).map(mapToCard);
-    // Separar IA de normales si el nombre empieza por IA
-    myWorkouts.value = allMy.filter(r => !r.title.startsWith('IA -'));
-    aiWorkouts.value = allMy.filter(r => r.title.startsWith('IA -'));
-    communityWorkouts.value = (comRes.data as any[]).map(mapToCard);
+    
+    // Separar IA de normales usando el flag isGeneradaPorIA o el prefijo
+    myWorkouts.value = allMy.filter(r => !r.isGeneradaPorIA && !r.isCopia);
+    communitySavedWorkouts.value = allMy.filter(r => r.isCopia);
+    aiWorkouts.value = allMy.filter(r => r.isGeneradaPorIA);
   } catch (e) {
     console.error('Error cargando rutinas', e);
   } finally {
@@ -443,12 +457,15 @@ const handleGenerateAI = async (formData: any) => {
     }
 };
 
-onMounted(loadRutinas);
+onMounted(async () => {
+    await loadRutinas();
+    // Manejar redirección desde comunidad
+    const queryTab = router.currentRoute.value.query.tab;
+    if (queryTab === 'community_saved') {
+        activeTab.value = 'community_saved';
+    }
+});
 
-const friendsWorkouts = ref([
-    { id: 4, title: 'Upper Body Power', author: 'María García', avatar: 'https://i.pravatar.cc/150?u=maria', difficulty: 'Avanzado', exercises: 6, duration: 55, muscles: ['Pecho', 'Espalda'], image: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&q=80&w=400', lastUsed: 'Usado hace 1 día' },
-  { id: 5, title: 'Legs & Glutes Focus', author: 'Carlos Ruiz', avatar: 'https://i.pravatar.cc/150?u=carlos', difficulty: 'Intermedio', exercises: 8, duration: 70, muscles: ['Piernas', 'Glúteos'], image: 'https://images.unsplash.com/photo-1434596922112-19c563067271?auto=format&fit=crop&q=80&w=400', lastUsed: 'Usado hace 3 días' },
-]);
 
 
 const openDetail = async (workout: any) => {
@@ -458,13 +475,15 @@ const openDetail = async (workout: any) => {
     // Mapear detalle a lo que espera el Modal (incluyendo imagen y autor que vienen del item original)
     selectedWorkout.value = {
         ...workout,
-        exercises: detail.ejercicios.length,
-        exerciseList: detail.ejercicios.map((e: any) => ({
+        exercises: detail.ejercicios ? detail.ejercicios.length : 0,
+        exerciseList: (detail.ejercicios || []).map((e: any) => ({
+            ejercicioId: e.ejercicioId || e.id,
+            id: e.ejercicioId || e.id,
             name: e.nombreEjercicio,
             sets: e.series,
-            reps: '10-12', // Podría venir del back si lo añadimos al DTO
-            rest: `${e.descansoSegundos}s`,
-            weight: 'Smart Weight',
+            reps: e.repeticiones || '10-12',
+            rest: e.descansoSegundos ? `${e.descansoSegundos}s` : '90s',
+            weight: e.ultimoPeso || '0',
             muscle: e.grupoMuscular
         }))
     };
@@ -567,6 +586,7 @@ const confirmPublish = async () => {
         isPublishing.value = false;
     }
 };
+
 </script>
 
 <style scoped>

@@ -12,10 +12,12 @@ namespace REPS_backend.Controllers
     public class EntrenamientosController : ControllerBase
     {
         private readonly IEntrenamientoService _entrenamientoService;
+        private readonly IRankingService _rankingService;
 
-        public EntrenamientosController(IEntrenamientoService entrenamientoService)
+        public EntrenamientosController(IEntrenamientoService entrenamientoService, IRankingService rankingService)
         {
             _entrenamientoService = entrenamientoService;
+            _rankingService = rankingService;
         }
 
         [HttpPost("finalizar")]
@@ -24,8 +26,13 @@ namespace REPS_backend.Controllers
             var userId = GetCurrentUserId();
             if (userId == 0) return Unauthorized();
 
-            await _entrenamientoService.FinalizarEntrenamientoAsync(userId, dto);
-            return Ok(new { Message = "Entrenamiento guardado y records actualizados." });
+            var resultado = await _entrenamientoService.FinalizarEntrenamientoAsync(userId, dto);
+
+            // Recalcular ranking y racha después de cada entrenamiento
+            await _rankingService.UpdateUserRankAsync(userId);
+            await _rankingService.UpdateStreakAsync(userId);
+
+            return Ok(resultado);
         }
 
         [HttpGet]

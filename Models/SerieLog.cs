@@ -3,7 +3,7 @@
     public class SerieLog
     {
         public int Id { get; set; }
-        public int SesionId { get; set; }
+        public int? SesionId { get; set; }
         public int EjercicioId { get; set; } 
         public virtual Ejercicio Ejercicio { get; set; } = null!;
         

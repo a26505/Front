@@ -13,10 +13,12 @@ namespace REPS_backend.Controllers
     public class UsuariosController : ControllerBase
     {
         private readonly IUsuarioService _usuarioService;
+        private readonly ICloudinaryService _cloudinaryService;
 
-        public UsuariosController(IUsuarioService usuarioService)
+        public UsuariosController(IUsuarioService usuarioService, ICloudinaryService cloudinaryService)
         {
             _usuarioService = usuarioService;
+            _cloudinaryService = cloudinaryService;
         }
 
 

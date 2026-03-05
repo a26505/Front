@@ -14,8 +14,9 @@
           <button @click="weightUnit = 'kg'" :class="weightUnit === 'kg' ? 'bg-[#DC2626] text-white shadow-[0_0_10px_rgba(220,38,38,0.5)]' : 'text-gray-400 hover:text-white'" class="px-4 py-1.5 rounded-lg text-xs font-black tracking-widest transition-all">KG</button>
           <button @click="weightUnit = 'lbs'" :class="weightUnit === 'lbs' ? 'bg-[#DC2626] text-white shadow-[0_0_10px_rgba(220,38,38,0.5)]' : 'text-gray-400 hover:text-white'" class="px-4 py-1.5 rounded-lg text-xs font-black tracking-widest transition-all">LBS</button>
         </div>
-        <button @click="onFinalizar" class="bg-gradient-to-r from-[#DC2626] to-[#991B1B] hover:from-[#B91C1C] hover:to-[#7F1D1D] text-white px-6 py-2.5 rounded-xl font-black transition-all shadow-[0_0_20px_rgba(220,38,38,0.3)] active:scale-95 text-sm uppercase tracking-wider border border-red-500/30">
-          Finalizar
+        <button @click="onFinalizar" :disabled="isFinalizing" class="bg-gradient-to-r from-[#DC2626] to-[#991B1B] hover:from-[#B91C1C] hover:to-[#7F1D1D] text-white px-6 py-2.5 rounded-xl font-black transition-all shadow-[0_0_20px_rgba(220,38,38,0.3)] active:scale-95 text-sm uppercase tracking-wider border border-red-500/30 flex items-center gap-2">
+          <span v-if="isFinalizing" class="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+          {{ isFinalizing ? 'Finalizando...' : 'Finalizar' }}
         </button>
       </div>
     </header>
@@ -58,9 +59,22 @@
                 </div>
               </div>
               
-              <!-- Expand icon when selected -->
-              <div v-if="currentExerciseIndex === i" class="text-[#DC2626]">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
+              <!-- Expand icon and Info icon when selected -->
+              <div v-if="currentExerciseIndex === i" class="flex items-center gap-3">
+                <button 
+                  @click.stop="openVideoInstructions(ex)"
+                  class="text-[#9CA3AF] hover:text-white transition-colors bg-[#1F2937] hover:bg-[#374151] p-1.5 rounded-full"
+                  title="Video de técnica e instrucciones"
+                >
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <path d="M12 8v4"></path>
+                    <path d="M12 16h.01"></path>
+                  </svg>
+                </button>
+                <div class="text-[#DC2626]">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                </div>
               </div>
             </div>
 
@@ -76,8 +90,10 @@
                    <div class="text-white font-medium">{{ ex.reps || ex.ejercicio?.repeticiones || '10-12' }}</div>
                  </div>
                   <div>
-                    <label class="block text-[10px] text-[#DC2626] uppercase font-black tracking-widest mb-1">Peso Sug. ({{ weightUnit }})</label>
-                    <div class="text-white font-bold text-lg">{{ ex.weight || 'Smart Weight' }}</div>
+                    <label class="block text-[10px] text-white/50 uppercase font-black tracking-widest mb-1 flex items-center gap-1.5">
+                      Último Peso ({{ weightUnit }})
+                    </label>
+                    <div class="text-white font-bold text-lg">{{ ex.weight && String(ex.weight).toLowerCase() !== 'smart weight' && String(ex.weight) !== '0' && String(ex.weight) !== '0 kg' ? ex.weight : '0' }}</div>
                   </div>
                </div>
 
@@ -108,7 +124,9 @@
                <!-- Series -->
                <div v-else-if="ex.isStarted && !ex.completed" class="mt-6">
                  <h5 class="text-[11px] font-black text-gray-500 uppercase tracking-widest mb-3 flex items-center justify-between">
-                   <span>Registrar Series</span>
+                   <div class="flex items-center gap-3">
+                     <span>Registrar Series</span>
+                   </div>
                    <span class="text-[#DC2626]">Serie {{ ex.currentSet }} / {{ ex.seriesData.length }}</span>
                  </h5>
                  
@@ -119,7 +137,7 @@
                        <div class="w-8 flex justify-center text-sm font-black text-gray-400">{{ Number(sIdx) + 1 }}</div>
                        
                        <div class="relative flex-1 group/input">
-                         <input type="number" v-model="serie.peso" :disabled="Number(sIdx) !== ex.currentSet - 1" :placeholder="ex.weight || 'Smart'" class="w-full bg-[#1F2937] border border-[#374151] focus:bg-[#111827] rounded-lg text-white font-black text-center text-lg py-2 focus:outline-none focus:border-[#DC2626] focus:ring-2 focus:ring-[#DC2626]/50 transition-all placeholder:text-gray-600 disabled:opacity-50 disabled:cursor-not-allowed shadow-inner">
+                         <input type="number" v-model="serie.peso" :disabled="Number(sIdx) !== ex.currentSet - 1" :placeholder="ex.weight && ex.weight !== 'Smart Weight' && ex.weight !== '0 kg' ? String(ex.weight).replace(' kg', '') : '0'" class="w-full bg-[#1F2937] border border-[#374151] focus:bg-[#111827] rounded-lg text-white font-black text-center text-lg py-2 focus:outline-none focus:border-[#DC2626] focus:ring-2 focus:ring-[#DC2626]/50 transition-all placeholder:text-gray-600 disabled:opacity-50 disabled:cursor-not-allowed shadow-inner">
                          <span class="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] text-gray-400 font-bold uppercase tracking-widest">{{ weightUnit }}</span>
                        </div>
                        
@@ -135,6 +153,13 @@
                        <div v-else class="w-12 h-10 flex items-center justify-center text-green-500 shrink-0 bg-green-500/10 rounded-lg">
                          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
                        </div>
+                     </div>
+                     <!-- Error validacion serie -->
+                     <div
+                       v-if="serieError && serieErrorIndex && serieErrorIndex.i === Number(i) && serieErrorIndex.sIdx === Number(sIdx)"
+                       class="text-xs font-bold text-red-400 bg-red-500/10 border border-red-500/30 px-3 py-2 rounded-lg mt-2 flex items-center gap-2"
+                     >
+                       {{ serieError }}
                      </div>
                    </div>
                  </div>
@@ -155,12 +180,203 @@
         </div>
       </div>
     </main>
+    <!-- INSTRUCTION VIDEO MODAL -->
+    <div v-if="showVideoModal" class="fixed inset-0 z-[150] flex items-center justify-center p-4 bg-black/95 backdrop-blur-xl animate-fade-in" @click="showVideoModal = false">
+      <div class="relative w-full max-w-4xl bg-[#0A0A0A] border border-[#1F2937] rounded-3xl overflow-hidden shadow-[0_0_50px_rgba(0,0,0,1)]" @click.stop>
+        <!-- Header -->
+        <div class="p-6 flex items-center justify-between border-b border-[#1F2937]">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 bg-[#DC2626]/10 rounded-xl flex items-center justify-center text-[#DC2626]">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+            </div>
+            <div>
+              <h3 class="text-xl font-bold text-white">{{ selectedExForVideo?.name || selectedExForVideo?.nombreEjercicio || 'Técnica del Ejercicio' }}</h3>
+              <p class="text-xs text-[#9CA3AF] uppercase font-bold tracking-widest mt-0.5">Instrucciones y Ejecución</p>
+            </div>
+          </div>
+          <button @click="showVideoModal = false" class="w-10 h-10 bg-[#1F2937] hover:bg-[#374151] rounded-full flex items-center justify-center text-white transition-all">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6L6 18M6 6l12 12"/></svg>
+          </button>
+        </div>
+
+        <!-- Video -->
+        <div class="aspect-video bg-black relative">
+           <video 
+             src="https://res.cloudinary.com/dgtahwqpj/video/upload/v1772039401/Video_Generado_Sin_Fuego_l8s9iz.mp4" 
+             controls 
+             autoplay 
+             class="w-full h-full"
+           ></video>
+        </div>
+
+        <!-- Instructions -->
+        <div class="p-8 bg-gradient-to-t from-[#0A0A0A] to-[#111827]">
+           <h4 class="text-sm font-black text-[#DC2626] uppercase tracking-[0.2em] mb-4">Guía de Ejecución:</h4>
+           <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div class="space-y-4">
+                 <div class="flex gap-4">
+                    <div class="w-6 h-6 rounded-full bg-[#DC2626] flex-shrink-0 flex items-center justify-center text-xs font-bold text-white">1</div>
+                    <p class="text-sm text-gray-300">Mantén una postura estable y el núcleo activado.</p>
+                 </div>
+                 <div class="flex gap-4">
+                    <div class="w-6 h-6 rounded-full bg-[#DC2626] flex-shrink-0 flex items-center justify-center text-xs font-bold text-white">2</div>
+                    <p class="text-sm text-gray-300">Realiza el movimiento de forma controlada, sintiendo el músculo.</p>
+                 </div>
+              </div>
+              <div class="space-y-4">
+                 <div class="flex gap-4">
+                    <div class="w-6 h-6 rounded-full bg-[#DC2626] flex-shrink-0 flex items-center justify-center text-xs font-bold text-white">3</div>
+                    <p class="text-sm text-gray-300">Exhala en el esfuerzo máximo e inhala en el retorno.</p>
+                 </div>
+                 <div class="flex gap-4">
+                    <div class="w-6 h-6 rounded-full bg-[#DC2626] flex-shrink-0 flex items-center justify-center text-xs font-bold text-white">4</div>
+                    <p class="text-sm text-gray-300">Concentración total en la conexión mente-músculo.</p>
+                 </div>
+              </div>
+           </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SUMMARY SCREEN OVERLAY -->
+    <div v-if="showSummary" class="fixed inset-0 z-[100] bg-black/95 backdrop-blur-xl flex items-center justify-center p-4 animate-fade-in">
+      <div class="w-full max-w-[500px] bg-[#0A0A0A] border-2 border-[#1F2937] rounded-3xl p-8 flex flex-col items-center text-center shadow-[0_0_80px_rgba(220,38,38,0.2)]">
+        
+        <!-- Trophy/Icon -->
+        <div class="w-24 h-24 bg-gradient-to-br from-[#DC2626] to-[#991B1B] rounded-full flex items-center justify-center mb-6 shadow-[0_0_30px_rgba(220,38,38,0.5)] animate-bounce-slow">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/>
+          </svg>
+        </div>
+
+        <h2 class="text-3xl font-black text-white italic uppercase tracking-tighter mb-2">¡Entrenamiento Brutal!</h2>
+        <p class="text-gray-400 font-medium mb-8">{{ summaryData.resumen }}</p>
+
+        <!-- Stats Grid -->
+        <div class="grid grid-cols-2 gap-4 w-full mb-6">
+          <div class="bg-[#111827] border border-[#1F2937] p-4 rounded-2xl">
+            <div class="text-[10px] text-red-500 font-black uppercase tracking-widest mb-1">Puntos Ganados</div>
+            <div class="text-3xl font-black text-white">+{{ summaryData.puntos }}</div>
+          </div>
+          <div class="bg-[#111827] border border-[#1F2937] p-4 rounded-2xl">
+            <div class="text-[10px] text-blue-500 font-black uppercase tracking-widest mb-1">Récords Batidos</div>
+            <div class="text-3xl font-black text-white">{{ summaryData.records.length }}</div>
+          </div>
+        </div>
+
+        <!-- Muscle Breakdown -->
+        <div v-if="summaryData.muscleBreakdown && Object.keys(summaryData.muscleBreakdown).length > 0" class="w-full text-left mb-6">
+            <h4 class="text-[11px] font-black uppercase tracking-widest text-gray-500 mb-3 ml-1">Desglose por Músculo</h4>
+            <div class="space-y-2">
+                <div v-for="(pts, muscle) in summaryData.muscleBreakdown" :key="muscle" class="flex items-center justify-between bg-[#111827]/50 border border-[#1F2937] px-4 py-2.5 rounded-xl">
+                   <div class="flex items-center gap-2">
+                      <div class="w-1.5 h-1.5 rounded-full bg-red-500"></div>
+                      <span class="text-xs font-bold text-gray-200">{{ muscle }}</span>
+                   </div>
+                   <span class="text-xs font-black text-white">+{{ pts }} pts</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Récords Batidos (detalle) -->
+        <div v-if="summaryData.records && summaryData.records.length > 0" class="w-full text-left mb-6">
+            <h4 class="text-[11px] font-black uppercase tracking-widest text-blue-400 mb-3 ml-1 flex items-center gap-2">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                Récords Batidos
+            </h4>
+            <div class="space-y-2">
+                <div
+                    v-for="rec in summaryData.records"
+                    :key="rec.ejercicioId"
+                    class="flex justify-between items-center bg-[#0A0F1E] border border-blue-500/20 px-4 py-3 rounded-xl"
+                >
+                    <div class="flex items-center gap-3 flex-1 min-w-0">
+                        <div class="w-9 h-9 bg-blue-500/20 rounded-xl flex items-center justify-center text-blue-400 shrink-0">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>
+                        </div>
+                        <div class="flex flex-col min-w-0">
+                            <span class="text-sm font-bold text-white truncate">
+                                {{ rec.ejercicioNombre || rec.nombre || 'Ejercicio' }}
+                            </span>
+                            <span class="text-[10px] text-gray-400 uppercase tracking-widest">
+                                {{ rec.grupoMuscular || rec.muscle || '¡Nuevo récord personal!' }}
+                            </span>
+                        </div>
+                    </div>
+                    <div class="flex flex-col items-end gap-0.5 shrink-0 ml-2">
+                        <span class="text-base font-black text-blue-400">{{ rec.pesoMaximo ?? rec.peso }} kg</span>
+                        <div v-if="rec.mejora > 0" class="flex items-center gap-0.5 text-[11px] font-bold text-green-400">
+                            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+                            +{{ rec.mejora }} kg
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- AI Improvements (PRO) -->
+        <div v-if="isPro && summaryData.mejorasIA" class="w-full bg-gradient-to-r from-purple-900/40 to-indigo-900/40 border border-purple-500/30 rounded-2xl p-6 mb-6 text-left relative overflow-hidden group">
+          <div class="absolute -top-10 -right-10 w-32 h-32 bg-purple-500/10 blur-[50px] rounded-full"></div>
+          <div class="flex items-center gap-2 mb-3">
+             <div class="bg-purple-500 p-1 rounded-md">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="m12 3 1.912 5.813a2 2 0 0 0 1.275 1.275L21 12l-5.813 1.912a2 2 0 0 0-1.275 1.275L12 21l-1.912-5.813a2 2 0 0 0-1.275-1.275L3 12l5.813-1.912a2 2 0 0 0 1.275-1.275L12 3Z"/>
+                </svg>
+             </div>
+             <span class="text-[11px] font-black uppercase tracking-widest text-purple-300">Mejoras IA Pro</span>
+          </div>
+          <p class="text-[13px] text-gray-200 leading-relaxed italic">"{{ summaryData.mejorasIA }}"</p>
+        </div>
+
+        <!-- Logros Desbloqueados -->
+        <div v-if="summaryData.logros && summaryData.logros.length > 0" class="w-full text-left mb-8">
+            <h4 class="text-[11px] font-black uppercase tracking-widest text-yellow-500 mb-2">Logros Desbloqueados 🏆</h4>
+            <div class="flex flex-col gap-2">
+                <div v-for="logro in summaryData.logros" :key="logro.id" class="flex items-center gap-3 bg-yellow-500/5 border border-yellow-500/20 p-3 rounded-xl">
+                   <div class="w-8 h-8 bg-yellow-500 rounded-full flex items-center justify-center text-black shrink-0">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                   </div>
+                   <div class="text-left">
+                      <div class="text-xs font-bold text-white">{{ logro.titulo || logro.nombre }}</div>
+                      <div class="text-[10px] text-gray-400 leading-none mt-1">+{{ logro.puntos || 50 }} pts bonus</div>
+                   </div>
+                </div>
+            </div>
+        </div>
+
+        <button @click="emit('completed')" class="w-full py-4 bg-white text-black hover:bg-red-500 hover:text-white rounded-2xl font-black text-lg uppercase tracking-widest transition-all duration-300 shadow-[0_10px_30px_rgba(0,0,0,0.5)] active:scale-95">
+          Continuar
+        </button>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onBeforeUnmount } from 'vue';
+import { ref, onBeforeUnmount, computed } from 'vue';
 import { entrenamientosApi } from '../../api';
+import { useAuthStore } from '../../stores/auth';
+
+const authStore = useAuthStore();
+const isPro = computed(() => authStore.isPro);
+const showSummary = ref(false);
+const isFinalizing = ref(false);
+const summaryData = ref<any>({
+  puntos: 0,
+  records: [],
+  logros: [],
+  resumen: '',
+  mejorasIA: ''
+});
+
+// Video Modal state
+const showVideoModal = ref(false);
+const selectedExForVideo = ref<any>(null);
+
+const openVideoInstructions = (ex: any) => {
+  selectedExForVideo.value = ex;
+  showVideoModal.value = true;
+};
 
 const props = defineProps<{
   workout: any;
@@ -233,11 +449,42 @@ const skipRest = (index: number) => {
     endRest(index);
 };
 
+// Estado de error de validación de serie
+const serieError = ref<string | null>(null);
+const serieErrorIndex = ref<{i: number, sIdx: number} | null>(null);
+
 const finishSeries = (index: number, sIdx: number) => {
     const ex = exercises.value[index];
-    ex.seriesData[sIdx].completada = true;
+    const serie = ex.seriesData[sIdx];
+
+    // ── VALIDACIÓN: exigir peso > 0 y reps > 0 ──
+    const peso = Number(serie.peso);
+    const reps = Number(serie.reps);
+    if (!peso || peso <= 0 || !reps || reps <= 0) {
+        serieError.value = !peso || peso <= 0
+            ? '⚠ Introduce el peso antes de completar la serie'
+            : '⚠ Introduce las repeticiones antes de completar la serie';
+        serieErrorIndex.value = { i: index, sIdx };
+        // Auto-ocultar el mensaje
+        setTimeout(() => {
+            serieError.value = null;
+            serieErrorIndex.value = null;
+        }, 2500);
+        // Shake animation en los inputs
+        const btn = document.getElementById(`finishSerieBtn_${index}_${sIdx}`);
+        if (btn) {
+            btn.classList.add('animate-shake');
+            setTimeout(() => btn.classList.remove('animate-shake'), 500);
+        }
+        return;
+    }
+
+    serieError.value = null;
+    serieErrorIndex.value = null;
+    serie.completada = true;
     
     if (ex.currentSet < ex.seriesData.length) {
+        // Hay más series: descanso
         ex.isResting = true;
         ex.restRemaining = ex.descansoSegundos || 90;
         
@@ -249,36 +496,131 @@ const finishSeries = (index: number, sIdx: number) => {
             }
         }, 1000);
     } else {
+        // Última serie completada → marcar ejercicio como terminado
         ex.completed = true;
+        ex.isStarted = true;
+        ex.isResting = false;
+        if (timerInterval) clearInterval(timerInterval);
+        
+        // Avanzar automáticamente al siguiente ejercicio incompleto
+        const nextIncomplete = exercises.value.findIndex((e: any, idx: number) => idx > index && !e.completed);
+        if (nextIncomplete !== -1) {
+            currentExerciseIndex.value = nextIncomplete;
+        }
     }
 };
 
+// Normalizar nombre de músculo a nombre canónico
+const normalizeMuscle = (raw: string): string => {
+  const muscleMap: Record<string, string> = {
+    'pierna': 'Pierna', 'piernas': 'Pierna', 'cuadriceps': 'Pierna',
+    'cuádriceps': 'Pierna', 'femoral': 'Pierna', 'gluteo': 'Pierna',
+    'glúteo': 'Pierna', 'gluteos': 'Pierna', 'glúteos': 'Pierna',
+    'pecho': 'Pecho', 'pectoral': 'Pecho', 'pectorales': 'Pecho',
+    'espalda': 'Espalda', 'dorsales': 'Espalda', 'lumbar': 'Espalda',
+    'hombro': 'Hombros', 'hombros': 'Hombros', 'deltoides': 'Hombros',
+    'bicep': 'Bíceps', 'biceps': 'Bíceps', 'bíceps': 'Bíceps', 'bícep': 'Bíceps',
+    'tricep': 'Tríceps', 'triceps': 'Tríceps', 'tríceps': 'Tríceps', 'trícep': 'Tríceps',
+    'brazos': 'Bíceps',
+    'core': 'Abdomen', 'abdomen': 'Abdomen', 'abdominales': 'Abdomen', 'abs': 'Abdomen',
+    'pantorrilla': 'Pierna', 'gemelos': 'Pierna'
+  };
+  const key = (raw || 'otro').trim().toLowerCase();
+  return muscleMap[key] || (raw.charAt(0).toUpperCase() + raw.slice(1));
+};
+
 const onFinalizar = async () => {
+  if (isFinalizing.value) return;
+  isFinalizing.value = true;
+
+  // 1. Calcular desglose local de puntos por músculo (10 pts por ejercicio completado)
+  const localMuscleBreakdown: Record<string, number> = {};
+  const completedExsList = exercises.value.filter((e: any) => e.completed);
+
+  completedExsList.forEach((e: any) => {
+    const rawMuscle = e.muscle || e.ejercicio?.grupoMuscular || e.grupoMuscular || 'Otro';
+    const normalizedMuscle = normalizeMuscle(rawMuscle);
+    localMuscleBreakdown[normalizedMuscle] = (localMuscleBreakdown[normalizedMuscle] || 0) + 10;
+  });
+
   try {
-    const completedExs = exercises.value.filter((e: any) => e.completed).map((e: any, idx: number) => {
-        return {
-            ejercicioId: e.ejercicioId || e.id || idx + 1,
-            series: e.seriesData.map((s: any) => ({
-                numeroSerie: s.numeroSerie,
-                peso: parseFloat(s.peso) || 0,
-                reps: parseInt(s.reps) || parseInt(e.reps) || e.ejercicio?.repeticiones || 10,
-                completada: s.completada
-            }))
-        }
+    const completedExsPayload = completedExsList.map((e: any) => {
+      let idReal = e.ejercicioId || e.ejercicio?.id || e.id;
+      if (typeof idReal === 'string' && idReal.includes('_')) {
+        idReal = idReal.split('_')[1] || idReal.split('_')[0];
+      }
+      return {
+        ejercicioId: Number(idReal) || 0,
+        series: e.seriesData.map((s: any) => ({
+          numeroSerie: Number(s.numeroSerie),
+          peso: Number(s.peso) || 0,
+          reps: Number(s.reps) || Number(e.reps) || 10,
+          completada: true
+        }))
+      };
     });
 
     const payload = {
-        rutinaId: props.workout.id || null, 
-        nombre: props.workout.title || props.workout.nombre || 'Entrenamiento libre',
-        duracionMinutos: props.workout.duration || props.workout.duracionMinutos || 45,
-        ejercicios: completedExs
+      rutinaId: typeof props.workout.id === 'number' ? props.workout.id : null,
+      nombre: props.workout.title || props.workout.nombre || 'Entrenamiento libre',
+      fecha: new Date().toISOString(),
+      duracionMinutos: Math.round(Number(props.workout.duration || props.workout.duracionMinutos || 45)),
+      ejercicios: completedExsPayload
     };
 
-    await entrenamientosApi.finalizar(payload);
-    emit('completed');
+    const res = await entrenamientosApi.finalizar(payload);
+    const entrenamientoId = res.data?.id;
+
+    const recordsPersonal = res.data?.recordsPersonal || [];
+    recordsPersonal.forEach((rec: any) => {
+      const rawMuscle = rec.grupoMuscular || 'Otro';
+      const normalizedMuscle = normalizeMuscle(rawMuscle);
+      // Añadir bonus de 30 pts al músculo del récord
+      localMuscleBreakdown[normalizedMuscle] = (localMuscleBreakdown[normalizedMuscle] || 0) + 30;
+    });
+
+    // Usar puntos del servidor si están disponibles, si no calcular local
+    const serverPoints = res.data?.puntosGanados;
+    const totalPoints = (serverPoints != null && serverPoints > 0)
+      ? serverPoints
+      : Object.values(localMuscleBreakdown).reduce((acc: number, pts: any) => acc + Number(pts), 0);
+
+    summaryData.value = {
+      puntos: totalPoints,
+      muscleBreakdown: localMuscleBreakdown,
+      records: recordsPersonal,
+      logros: res.data?.logrosDesbloqueados || [],
+      resumen: `¡Brutal! Has completado ${completedExsList.length} ejercicio${completedExsList.length !== 1 ? 's' : ''}. Sigue así.`,
+      mejorasIA: ''
+    };
+
+    if (isPro.value && entrenamientoId) {
+      try {
+        const iaRes = await entrenamientosApi.getMejorasIA(entrenamientoId);
+        summaryData.value.mejorasIA = iaRes.data?.mejoras || iaRes.data?.ejes || iaRes.data?.feedback || iaRes.data;
+      } catch {
+        summaryData.value.mejorasIA = 'Excelente trabajo. Mantén este ritmo para ver resultados constantes.';
+      }
+    }
+
+    authStore.fetchProfile();
+    showSummary.value = true;
   } catch (error) {
-    console.error("Error finalizing workout:", error);
-    emit('completed');
+    console.error('Error finalizing workout:', error);
+
+    // Fallback: mostrar puntos locales aunque falle el backend
+    const totalPoints = Object.values(localMuscleBreakdown).reduce((acc, pts) => acc + pts, 0);
+    summaryData.value = {
+      puntos: totalPoints,
+      muscleBreakdown: localMuscleBreakdown,
+      records: [],
+      logros: [],
+      resumen: 'Entrenamiento finalizado. Nota: Hubo un problema al sincronizar, los puntos se guardarán en la próxima conexión.',
+      mejorasIA: isPro.value ? 'Sigue así, estás progresando constantemente.' : ''
+    };
+    showSummary.value = true;
+  } finally {
+    isFinalizing.value = false;
   }
 };
 
@@ -295,6 +637,27 @@ onBeforeUnmount(() => {
   from { opacity: 0; transform: translateY(20px); }
   to { opacity: 1; transform: translateY(0); }
 }
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes bounceSlow {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-5px); }
+}
+.animate-fade-in {
+  animation: fadeIn 0.5s ease-out forwards;
+}
+.animate-bounce-slow {
+  animation: bounceSlow 3s ease-in-out infinite;
+}
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
 .custom-scrollbar::-webkit-scrollbar {
   width: 6px;
 }
@@ -304,5 +667,15 @@ onBeforeUnmount(() => {
 .custom-scrollbar::-webkit-scrollbar-thumb {
   background: #374151;
   border-radius: 10px;
+}
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-6px); }
+  40% { transform: translateX(6px); }
+  60% { transform: translateX(-4px); }
+  80% { transform: translateX(4px); }
+}
+.animate-shake {
+  animation: shake 0.4s ease-in-out;
 }
 </style>

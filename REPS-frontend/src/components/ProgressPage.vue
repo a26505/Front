@@ -114,27 +114,24 @@
               
               <div class="flex justify-center mb-8 relative z-10">
                 <div class="flex flex-col items-center transform hover:scale-105 transition-all duration-500">
-                  <RankIcon :rank="allRanks[currentOverallRankIndex].name" :size="120" />
-                  <span :class="['mt-4 text-2xl font-black uppercase tracking-widest', getRankTextColor(allRanks[currentOverallRankIndex].name)]">
-                    {{ allRanks[currentOverallRankIndex].name }}
+                  <RankIcon :rank="calculatedRangoGeneral" :size="120" />
+                  <span :class="['mt-4 text-2xl font-black uppercase tracking-widest', getRankTextColor(calculatedRangoGeneral)]">
+                    {{ calculatedRangoGeneral }}
                   </span>
-
                 </div>
-
               </div>
-
 
               <div class="grid grid-cols-6 gap-2 relative z-10">
                 <div v-for="(rank, index) in allRanks" :key="rank.name"
                   :class="[
                     'h-1.5 rounded-full transition-all duration-500',
-                    currentOverallRankIndex >= index ? 'bg-red-600' : 'bg-gray-800'
+                    currentCalculatedRankIndex >= index ? 'bg-red-600 shadow-[0_0_10px_rgba(220,38,38,0.5)]' : 'bg-gray-800'
                   ]"
                 ></div>
               </div>
               
               <div class="mt-6 text-center relative z-10">
-                <p class="text-sm text-gray-400 font-medium">Promedio: <span class="text-white">2,600 pts</span></p>
+                <p class="text-sm text-gray-400 font-medium">Promedio: <span class="text-white">{{ formatNumber(averagePoints) }} pts</span></p>
               </div>
             </section>
 
@@ -215,7 +212,7 @@
 import { ref, computed, onMounted } from 'vue';
 import Sidebar from './Sidebar.vue';
 import RankIcon from './common/RankIcon.vue';
-import { progresoApi, recordsApi } from '../api';
+import { progresoApi, recordsApi, logrosApi } from '../api';
 import { useAuthStore } from '../stores/auth';
 import { getErrorMessage } from '../utils/error-handler';
 
@@ -223,7 +220,7 @@ const authStore = useAuthStore();
 
 // --- SVGS AS STRINGS ---
 const FlameIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15.362 5.214A8.252 8.252 0 0 1 12 21 8.25 8.25 0 0 1 6.038 7.047 8.287 8.287 0 0 0 9 9.601a8.983 8.983 0 0 1 3.361-6.867 8.21 8.21 0 0 0 3 2.48Z" /><path stroke-linecap="round" stroke-linejoin="round" d="M12 18a3.75 3.75 0 0 0 .495-7.468 5.99 5.99 0 0 0-1.925 3.547 5.975 5.975 0 0 1-2.133-1.001A3.75 3.75 0 0 0 12 18Z" /></svg>`;
-const DumbbellIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.4 14.4 9.6 9.6" stroke="#DC2626" stroke-width="3"/><path d="M18.657 21.485a2 2 0 1 1-2.829-2.828l-1.768 1.768a2 2 0 1 1-2.829-2.829l6.364-6.364a2 2 0 1 1 2.829 2.828l-1.768 1.768a2 2 0 1 1 2.828 2.829z"/><path d="m21.5 21.5-1.4-1.4"/><path d="M3.9 3.9 2.5 2.5"/><path d="M6.404 12.768a2 2 0 1 1-2.829-2.829l1.768-1.767a2 2 0 1 1-2.828-2.829l2.828-2.828a2 2 0 1 1 2.829 2.828l1.767-1.768a2 2 0 1 1 2.829 2.829z"/></svg>`;
+const DumbbellIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10" /></svg>`;
 const ConsistenciaIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>`;
 const AchievementIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89 17 22l-5-3-5 3 1.523-9.11"/></svg>`;
 
@@ -235,8 +232,32 @@ const muscleRanks = ref<any[]>([]);
 const personalRecords = ref<any[]>([]);
 const rangoGeneral = ref('Bronce');
 const puntosTotales = ref(0);
+const unlockedCount = ref(0);
 const hasError = ref(false);
 const errorText = ref('');
+
+// Promedio de puntos: solo músculos que tienen puntos > 0 (no diluye con ceros)
+const averagePoints = computed(() => {
+  const withPoints = muscleRanks.value.filter((m: any) => (m.points || 0) > 0);
+  if (withPoints.length === 0) return 0;
+  const total = withPoints.reduce((acc: number, m: any) => acc + (m.points || 0), 0);
+  return Math.round(total / withPoints.length);
+});
+
+const calculatedRangoGeneral = computed(() => {
+  const pts = averagePoints.value;
+  if (pts >= 1000) return 'Leyenda';
+  if (pts >= 700) return 'Diamante';
+  if (pts >= 400) return 'Platino';
+  if (pts >= 250) return 'Oro';
+  if (pts >= 100) return 'Plata';
+  return 'Bronce';
+});
+
+const currentCalculatedRankIndex = computed(() => {
+  const idx = allRanks.findIndex(r => r.name === calculatedRangoGeneral.value);
+  return idx >= 0 ? idx : 0;
+});
 
 // General stats: (racha, entrenamientos, etc. vienen del perfil)
 const generalStats = computed(() => [
@@ -251,8 +272,8 @@ const generalStats = computed(() => [
     glowColor: '#F54900'
   },
   {
-    label: 'Pts Totales',
-    value: String(puntosTotales.value),
+    label: 'Ranking Pts',
+    value: String(Math.round(averagePoints.value + unlockedCount.value)),
     icon: DumbbellIcon,
     iconColor: 'text-white',
     accentColor: 'text-red-500',
@@ -262,10 +283,10 @@ const generalStats = computed(() => [
   },
   {
     label: 'Rango',
-    value: rangoGeneral.value,
+    value: calculatedRangoGeneral.value,
     icon: ConsistenciaIcon,
-    iconColor: computed(() => getRankTextColor(rangoGeneral.value).replace('text-', 'text-')),
-    accentColor: computed(() => getRankTextColor(rangoGeneral.value)),
+    iconColor: computed(() => getRankTextColor(calculatedRangoGeneral.value).replace('text-', '')),
+    accentColor: computed(() => getRankTextColor(calculatedRangoGeneral.value)),
     gradient: 'linear-gradient(152.983deg, rgba(59, 130, 246, 0.2) 0%, rgba(29, 78, 216, 0.15) 100%)',
     borderColor: 'rgba(59, 130, 246, 0.4)',
     glowColor: '#3B82F6'
@@ -291,11 +312,6 @@ const allRanks = [
   { name: 'Leyenda' }
 ];
 
-const currentOverallRankIndex = computed(() => {
-  const idx = allRanks.findIndex(r => r.name.toLowerCase() === rangoGeneral.value.toLowerCase());
-  return idx >= 0 ? idx : 0;
-});
-
 // --- CARGA DE DATOS ---
 onMounted(async () => {
   try {
@@ -306,17 +322,49 @@ onMounted(async () => {
       progresoApi.getAnalitica(),
     ]);
 
+    if (authStore.profile?.id) {
+      try {
+        const logsRes = await logrosApi.getMisLogros(authStore.profile.id);
+        unlockedCount.value = (logsRes.data || []).filter((l: any) => l.desbloqueado).length;
+      } catch (e) {
+        console.warn("No se pudieron cargar logros en progreso", e);
+      }
+    }
+
     // Rangos musculares
-    muscleRanks.value = (muscularRes.data as any[]).map((m: any) => ({
-      name: m.grupoMuscular,
-      rank: m.rango,
-      points: m.puntosActuales,
-      progress: Math.round(m.porcentaje * 100),
-      workouts: m.entrenamientosRealizados,
-      nextRank: 'Siguiente',
-      nextTarget: m.siguienteNivelPuntos,
-      isMax: m.porcentaje >= 1,
-    }));
+    const muscleMap: Record<string, string> = {
+      'Piernas': 'Pierna',
+      'Pierna': 'Pierna',
+      'Pecho': 'Pecho',
+      'Pectorales': 'Pecho',
+      'Espalda': 'Espalda',
+      'Hombros': 'Hombro',
+      'Hombro': 'Hombro',
+      'Bíceps': 'Biceps',
+      'Tríceps': 'Triceps',
+      'Brazos': 'Biceps',
+      'Core': 'Abdomen',
+      'Abdominales': 'Abdomen'
+    };
+
+    muscleRanks.value = (muscularRes.data as any[]).map((m: any) => {
+      // Normalizar a PascalCase (ej: PIERNA -> Pierna, piernas -> Pierna)
+      let rawName = m.grupoMuscular || 'Otro';
+      let formattedName = rawName.charAt(0).toUpperCase() + rawName.slice(1).toLowerCase();
+      
+      const normalizedName = muscleMap[formattedName] || formattedName;
+      
+      return {
+        name: normalizedName,
+        rank: m.rango || 'Bronce',
+        points: m.puntosActuales || 0,
+        progress: Math.round((m.porcentaje || 0) * 100),
+        workouts: m.entrenamientosRealizados || 0,
+        nextRank: 'Siguiente',
+        nextTarget: m.siguienteNivelPuntos || 500,
+        isMax: m.porcentaje >= 1,
+      };
+    });
 
     // General
     rangoGeneral.value = generalRes.data.rangoGeneral ?? 'Bronce';
@@ -324,10 +372,10 @@ onMounted(async () => {
 
     // Records personales
     personalRecords.value = (recordsRes.data as any[]).map((r: any) => ({
-      exercise: r.nombreEjercicio,
+      exercise: r.ejercicioNombre || r.nombreEjercicio || 'Ejercicio Desconocido',
       value: `${r.pesoMaximo} kg`,
-      date: r.fechaRecord ? new Date(r.fechaRecord).toLocaleDateString('es-ES') : '',
-      improvement: '',
+      date: r.tiempoAtras || (r.fecha ? new Date(r.fecha).toLocaleDateString('es-ES') : (r.fechaRecord ? new Date(r.fechaRecord).toLocaleDateString('es-ES') : '')),
+      improvement: r.mejora > 0 ? `+${r.mejora} kg` : '',
     }));
 
     if (analiticaRes.data) {
@@ -343,10 +391,14 @@ onMounted(async () => {
     muscleRanks.value = [
       { name: 'Pecho', rank: 'Bronce', points: 0, progress: 0, workouts: 0, nextRank: 'Plata', nextTarget: 1000, isMax: false },
       { name: 'Espalda', rank: 'Bronce', points: 0, progress: 0, workouts: 0, nextRank: 'Plata', nextTarget: 1000 },
-      { name: 'Piernas', rank: 'Bronce', points: 0, progress: 0, workouts: 0, nextRank: 'Plata', nextTarget: 1000 },
-      { name: 'Hombros', rank: 'Bronce', points: 0, progress: 0, workouts: 0, nextRank: 'Plata', nextTarget: 1000 },
-      { name: 'Brazos', rank: 'Bronce', points: 0, progress: 0, workouts: 0, nextRank: 'Plata', nextTarget: 1000 },
-      { name: 'Core', rank: 'Bronce', points: 0, progress: 0, workouts: 0, nextRank: 'Plata', nextTarget: 1000 },
+      { name: 'Pierna', rank: 'Bronce', points: 0, progress: 0, workouts: 0, nextRank: 'Plata', nextTarget: 1000 },
+      { name: 'Hombro', rank: 'Bronce', points: 0, progress: 0, workouts: 0, nextRank: 'Plata', nextTarget: 1000 },
+      { name: 'Biceps', rank: 'Bronce', points: 0, progress: 0, workouts: 0, nextRank: 'Plata', nextTarget: 1000 },
+      { name: 'Triceps', rank: 'Bronce', points: 0, progress: 0, workouts: 0, nextRank: 'Plata', nextTarget: 1000 },
+      { name: 'Abdomen', rank: 'Bronce', points: 0, progress: 0, workouts: 0, nextRank: 'Plata', nextTarget: 1000 },
+      { name: 'Cardio', rank: 'Bronce', points: 0, progress: 0, workouts: 0, nextRank: 'Plata', nextTarget: 1000 },
+      { name: 'FullBody', rank: 'Bronce', points: 0, progress: 0, workouts: 0, nextRank: 'Plata', nextTarget: 1000 },
+      { name: 'Otro', rank: 'Bronce', points: 0, progress: 0, workouts: 0, nextRank: 'Plata', nextTarget: 1000 },
     ];
     barChartSeries.value = [{ name: 'Peso (kg)', data: [0, 0, 0, 0, 0, 0, 0] }];
     lineChartSeries.value = [{ name: 'Volumen', data: [0, 0, 0, 0, 0, 0] }];

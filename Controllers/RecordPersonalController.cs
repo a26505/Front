@@ -40,8 +40,15 @@ namespace REPS_backend.Controllers
             var userId = GetCurrentUserId();
             if (userId == 0) return Unauthorized("Usuario no identificado");
 
-            var records = await _recordService.ObtenerRecordsUsuarioAsync(userId);
-            return Ok(records);
+            try 
+            {
+                var records = await _recordService.ObtenerRecordsUsuarioAsync(userId);
+                return Ok(records);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
 
         private int GetCurrentUserId()

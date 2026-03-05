@@ -129,12 +129,7 @@
                       </svg>
                       {{ friend.level }} pts
                     </div>
-                    <div class="flex items-center gap-1">
-                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M14.4 14.4 9.6 9.6"/><path d="M18.657 21.485a2 2 0 1 1-2.829-2.828l-1.768 1.768a2 2 0 1 1-2.829-2.829l6.364-6.364a2 2 0 1 1 2.829 2.828l-1.768 1.768a2 2 0 1 1 2.828 2.829z"/><path d="m21.5 21.5-1.4-1.4"/><path d="M3.9 3.9 2.5 2.5"/><path d="M6.404 12.768a2 2 0 1 1-2.829-2.829l1.768-1.767a2 2 0 1 1-2.828-2.829l2.828-2.828a2 2 0 1 1 2.829 2.828l1.767-1.768a2 2 0 1 1 2.829 2.829z"/>
-                      </svg>
-                      {{ friend.workouts }}
-                    </div>
+                      {{ friend.workouts }} entrenamientos
                     <div class="flex items-center gap-1">
                       <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#F97316" stroke-width="2">
                         <path d="M15.362 5.214A8.252 8.252 0 0 1 12 21 8.25 8.25 0 0 1 6.038 7.047 8.287 8.287 0 0 0 9 9.601a8.983 8.983 0 0 1 3.361-6.867 8.21 8.21 0 0 0 3 2.48Z"/><path d="M12 18a3.75 3.75 0 0 0 .495-7.468 5.99 5.99 0 0 0-1.925 3.547 5.975 5.975 0 0 1-2.133-1.001A3.75 3.75 0 0 0 12 18Z"/>
@@ -242,7 +237,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, h, onMounted, computed } from 'vue';
+import { ref, h, onMounted, computed, watch } from 'vue';
 import Sidebar from './Sidebar.vue';
 import RankIcon from './common/RankIcon.vue';
 import { useAuthStore } from '../stores/auth';
@@ -306,15 +301,26 @@ const handleCopyCode = () => {
 
 // --- AVATAR SELECTION ---
 const availableAvatars = [
-  { id: 'avatar_default', url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Jack' },
-  { id: 'avatar_robot', url: 'https://api.dicebear.com/7.x/bottts/svg?seed=robot' },
-  { id: 'avatar_gymbro', url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Felix&accessoriesProbability=100' },
-  { id: 'avatar_mujerfit', url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Aneka&top=longHair' },
-  { id: 'avatar_hombrefit', url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=George' }
+  { id: 'avatar_default', url: 'https://res.cloudinary.com/dgtahwqpj/image/upload/v1772035659/unnamed_t93s8g.jpg' },
+  { id: 'avatar_robot', url: 'https://res.cloudinary.com/dgtahwqpj/image/upload/v1772035494/unnamed_l44n9h.jpg' },
+  { id: 'avatar_gymbro', url: 'https://res.cloudinary.com/dgtahwqpj/image/upload/v1772034939/unnamed_w3uwac.jpg' },
+  { id: 'avatar_mujerfit', url: 'https://res.cloudinary.com/dgtahwqpj/image/upload/v1772024580/unnamed_kfdzjz.jpg' },
+  { id: 'avatar_hombrefit', url: 'https://res.cloudinary.com/dgtahwqpj/image/upload/v1772024079/unnamed_ojydo4.png' }
 ];
 
-const selectedAvatarId = ref(authStore.profile?.avatarId ?? 'avatar_default');
+const selectedAvatarId = ref('avatar_default');
+
+// Sincronizar con el store cuando cargue el perfil
+watch(() => authStore.profile?.avatarId, (newId) => {
+  if (newId) {
+    selectedAvatarId.value = newId;
+  }
+}, { immediate: true });
+
 const avatarUrl = computed(() => {
+  if (selectedAvatarId.value?.startsWith('http')) {
+    return selectedAvatarId.value;
+  }
   const avatar = availableAvatars.find(a => a.id === selectedAvatarId.value);
   return avatar ? avatar.url : availableAvatars[0].url;
 });
@@ -325,12 +331,19 @@ const selectAvatar = async (id: string) => {
     selectedAvatarId.value = id;
     showAvatarDropdown.value = false;
     try {
-        await usuariosApi.updatePerfil({ avatarId: id });
+        // Actualizar en el servidor
+        await usuariosApi.updatePerfil({ 
+          avatarId: id,
+          // Enviamos también el nombre para evitar que el back lo vea vacío si el DTO no es nullable
+          nombre: authStore.profile?.nombre 
+        });
+        
+        // Actualizar store localmente para feedback inmediato
         if (authStore.profile) {
             authStore.profile.avatarId = id;
         }
     } catch (e) {
-        console.error("Error Updating avatar", e);
+        console.error("Error updating avatar", e);
     }
 }
 
@@ -452,7 +465,7 @@ const records = computed(() => personalRecords.value.slice(0, 3).map((r: any) =>
   label: r.ejercicioNombre || r.nombreEjercicio || 'Ejercicio Desconocido',
   value: `${r.pesoMaximo} kg`,
   color: '#DC2626',
-  icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M14.4 14.4 9.6 9.6"/><path d="M18.657 21.485a2 2 0 1 1-2.829-2.828l-1.768 1.768a2 2 0 1 1-2.829-2.829l6.364-6.364a2 2 0 1 1 2.829 2.828l-1.768 1.768a2 2 0 1 1 2.828 2.829z"/></svg>'
+  icon: '<svg width="12" height="12" viewBox="0 0 24 24" fill="white"><circle cx="12" cy="12" r="8"/></svg>'
 })));
 
 const unlockedCount = computed(() => achievements.value.filter(a => !a.locked).length);

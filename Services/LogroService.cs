@@ -29,7 +29,9 @@ namespace REPS_backend.Services
             
             var allLogros = await _logroRepository.GetAllAsync();
             var userLogros = await _logroRepository.GetUserLogrosAsync(userId);
-            var userLogrosMap = userLogros.ToDictionary(ul => ul.LogroId);
+            var userLogrosMap = userLogros
+                .GroupBy(ul => ul.LogroId)
+                .ToDictionary(g => g.Key, g => g.First());
 
             var result = new List<LogroDTO>();
 

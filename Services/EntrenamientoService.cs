@@ -8,16 +8,19 @@ namespace REPS_backend.Services
     {
         private readonly IEntrenamientoRepository _entrenamientoRepository;
         private readonly IRecordPersonalService _recordService;
+        private readonly ILogroService _logroService;
 
         public EntrenamientoService(
             IEntrenamientoRepository entrenamientoRepository,
-            IRecordPersonalService recordService)
+            IRecordPersonalService recordService,
+            ILogroService logroService)
         {
             _entrenamientoRepository = entrenamientoRepository;
             _recordService = recordService;
+            _logroService = logroService;
         }
 
-        public async Task FinalizarEntrenamientoAsync(int usuarioId, FinalizarEntrenamientoDto dto)
+        public async Task<FinalizarResultadoDto> FinalizarEntrenamientoAsync(int usuarioId, FinalizarEntrenamientoDto dto)
         {
             // 1. Crear el entrenamiento
             var entrenamiento = new Entrenamiento
@@ -31,8 +34,15 @@ namespace REPS_backend.Services
             };
 
             // 2. Procesar ejercicios y series
+            var recordsNuevos = new List<RecordEnSesionDto>();
+            int puntosGanados = 0;
+            const int PUNTOS_POR_EJERCICIO = 10;
+
             if (dto.Ejercicios != null)
             {
+                // Track de músculos donde se batió récord (para evitar duplicar bonus)
+                var musculosConRecord = new HashSet<string>();
+
                 foreach (var ejDto in dto.Ejercicios)
                 {
                     decimal pesoMaximoEjercicio = 0;
@@ -51,25 +61,76 @@ namespace REPS_backend.Services
                             };
                             entrenamiento.SeriesRealizadas.Add(serieLog);
 
-                            // Actualizar máximo local
-                            if (serieDto.Peso > pesoMaximoEjercicio)
-                            {
+                            if (serieDto.Completada && serieDto.Peso > pesoMaximoEjercicio)
                                 pesoMaximoEjercicio = serieDto.Peso;
-                            }
                         }
                     }
 
-                    // 3. Procesar Record Personal si hubo levantamiento
+                    // Sumar puntos por ejercicio (si hay al menos una serie completada)
+                    bool tieneSeriesCompletadas = ejDto.Series?.Any(s => s.Completada) ?? false;
+                    if (tieneSeriesCompletadas)
+                        puntosGanados += PUNTOS_POR_EJERCICIO;
+
+                    // 3. Procesar Record Personal
                     if (pesoMaximoEjercicio > 0)
                     {
-                        await _recordService.RegistrarNuevoLevantamientoAsync(usuarioId, ejDto.EjercicioId, pesoMaximoEjercicio);
+                        bool esRecord = await _recordService.RegistrarNuevoLevantamientoAsync(usuarioId, ejDto.EjercicioId, pesoMaximoEjercicio);
+
+                        if (esRecord)
+                        {
+                            // Obtener info del ejercicio para devolver al frontend
+                            var records = await _recordService.ObtenerRecordsUsuarioAsync(usuarioId);
+                            var recordInfo = records.FirstOrDefault(r => r.EjercicioId == ejDto.EjercicioId);
+
+                            if (recordInfo != null)
+                            {
+                                recordsNuevos.Add(new RecordEnSesionDto
+                                {
+                                    EjercicioId = ejDto.EjercicioId,
+                                    EjercicioNombre = recordInfo.EjercicioNombre,
+                                    GrupoMuscular = recordInfo.GrupoMuscular ?? string.Empty,
+                                    PesoMaximo = recordInfo.PesoMaximo,
+                                    Mejora = recordInfo.Mejora
+                                });
+
+                                // Bonus de puntos por músculo (solo 1 vez por músculo por sesión)
+                                var musculo = recordInfo.GrupoMuscular ?? "Otro";
+                                if (!musculosConRecord.Contains(musculo))
+                                {
+                                    musculosConRecord.Add(musculo);
+                                    puntosGanados += 30; // Bonus por batir récord en este músculo
+                                }
+                            }
+                        }
                     }
                 }
             }
 
             // 4. Guardar todo (Entrenamiento + Series en cascada)
             await _entrenamientoRepository.AddAsync(entrenamiento);
+
+            // 5. Verificar logros desbloqueados en esta sesión
+            var logrosActuales = await _logroService.GetLogrosForUserAsync(usuarioId);
+            var logrosDesbloqueadosEnSesion = logrosActuales
+                .Where(l => l.Desbloqueado && l.FechaObtencion.HasValue &&
+                            (DateTime.UtcNow - l.FechaObtencion.Value).TotalMinutes < 5)
+                .Select(l => new LogroEnSesionDto
+                {
+                    Id = l.Id,
+                    Titulo = l.Titulo,
+                    Puntos = l.Puntos
+                })
+                .ToList();
+
+            return new FinalizarResultadoDto
+            {
+                Mensaje = "Entrenamiento guardado y récords actualizados.",
+                PuntosGanados = puntosGanados,
+                RecordsPersonal = recordsNuevos,
+                LogrosDesbloqueados = logrosDesbloqueadosEnSesion
+            };
         }
+
         public async Task<List<EntrenamientoHistorialDto>> ObtenerHistorialUsuarioAsync(int usuarioId)
         {
             var entrenamientos = await _entrenamientoRepository.GetByUsuarioIdWithSeriesAsync(usuarioId);

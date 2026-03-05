@@ -10,12 +10,18 @@ namespace REPS_backend.Services
         private readonly IRutinaRepository _repository;
         private readonly IEjercicioRepository _ejercicioRepository;
         private readonly IAIService _aiService;
+        private readonly IEntrenamientoRepository? _entrenamientoRepository;
 
-        public RutinaService(IRutinaRepository repository, IEjercicioRepository ejercicioRepository, IAIService aiService)
+        public RutinaService(
+            IRutinaRepository repository, 
+            IEjercicioRepository ejercicioRepository, 
+            IAIService aiService, 
+            IEntrenamientoRepository? entrenamientoRepository = null)
         {
             _repository = repository;
             _ejercicioRepository = ejercicioRepository;
             _aiService = aiService;
+            _entrenamientoRepository = entrenamientoRepository;
         }
 
         public async Task<RutinaDetalleDto> CrearRutinaAsync(RutinaCreateDto dto, int usuarioId)
@@ -26,6 +32,7 @@ namespace REPS_backend.Services
                 UsuarioId = usuarioId,
                 Nombre = dto.Nombre,
                 Nivel = dto.Nivel,
+                ImagenUrl = dto.ImagenUrl ?? string.Empty,
                 Estado = EstadoRutina.Privada,
                 Ejercicios = new List<RutinaEjercicio>()
             };
@@ -71,6 +78,7 @@ namespace REPS_backend.Services
                 Nombre = r.Nombre,
                 Nivel = r.Nivel.ToString(),
                 DuracionMinutos = r.DuracionMinutos,
+                UrlImagen = r.ImagenUrl,
                 CantidadEjercicios = r.Ejercicios?.Count ?? 0,
                 TotalEjercicios = r.Ejercicios?.Count ?? 0,
                 CreadorNombre = r.Usuario != null ? r.Usuario.Nombre : "Sistema",
@@ -88,6 +96,7 @@ namespace REPS_backend.Services
                 Nombre = r.Nombre,
                 Nivel = r.Nivel.ToString(),
                 DuracionMinutos = r.DuracionMinutos,
+                UrlImagen = r.ImagenUrl,
                 CantidadEjercicios = r.Ejercicios?.Count ?? 0,
                 TotalEjercicios = r.Ejercicios?.Count ?? 0,
                 CreadorNombre = "Tú",
@@ -95,11 +104,25 @@ namespace REPS_backend.Services
             }).ToList();
         }
 
-        public async Task<RutinaDetalleDto> ObtenerDetalleRutinaAsync(int rutinaId)
+        public async Task<RutinaDetalleDto> ObtenerDetalleRutinaAsync(int rutinaId, int usuarioId = 0)
         {
             var rutina = await _repository.GetByIdAsync(rutinaId);
 
             if (rutina == null) return null;
+
+            // Si tenemos usuarioId, enriquecer con el último peso
+            if (usuarioId > 0 && _entrenamientoRepository != null)
+            {
+                var entrenamientos = await _entrenamientoRepository.GetByUsuarioIdWithSeriesAsync(usuarioId);
+                var ultimosPesos = entrenamientos?
+                    .OrderByDescending(e => e.Fecha)
+                    .SelectMany(e => e.SeriesRealizadas ?? new List<SerieLog>())
+                    .Where(s => s.PesoUsado > 0)
+                    .GroupBy(s => s.EjercicioId)
+                    .ToDictionary(g => g.Key, g => g.First().PesoUsado);
+
+                return MapToDetalleDto(rutina, ultimosPesos);
+            }
 
             return MapToDetalleDto(rutina);
         }
@@ -215,7 +238,7 @@ namespace REPS_backend.Services
             return MapToDetalleDto(copia);
         }
 
-        private RutinaDetalleDto MapToDetalleDto(Rutina r)
+        private RutinaDetalleDto MapToDetalleDto(Rutina r, Dictionary<int, decimal>? ultimosPesos = null)
         {
             return new RutinaDetalleDto
             {
@@ -223,6 +246,7 @@ namespace REPS_backend.Services
                 Nombre = r.Nombre,
                 Nivel = r.Nivel.ToString(),
                 DuracionMinutos = r.DuracionMinutos,
+                UrlImagen = r.ImagenUrl ?? string.Empty,
                 Estado = r.Estado.ToString(),
                 Ejercicios = r.Ejercicios?.Select(e => new RutinaEjercicioDto
                 {
@@ -232,7 +256,8 @@ namespace REPS_backend.Services
                     Series = e.Series,
                     DescansoSegundos = e.DescansoSegundos,
                     Tipo = e.Tipo,
-                    Repeticiones = e.Repeticiones
+                    Repeticiones = e.Repeticiones,
+                    UltimoPeso = ultimosPesos != null && ultimosPesos.TryGetValue(e.EjercicioId, out var peso) ? peso : 0
                 }).ToList() ?? new List<RutinaEjercicioDto>()
             };
         }
@@ -274,6 +299,8 @@ namespace REPS_backend.Services
             // 1. Actualizar datos básicos
             rutina.Nombre = dto.Nombre;
             rutina.Nivel = dto.Nivel;
+            if (dto.ImagenUrl != null)
+                rutina.ImagenUrl = dto.ImagenUrl;
 
             // 2. Limpiar ejercicios anteriores e insertar los nuevos
             rutina.Ejercicios.Clear();

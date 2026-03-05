@@ -2,12 +2,17 @@
  * Transforma un error de Axios o un error genérico en un mensaje de usuario en español.
  */
 export const getErrorMessage = (error: any): string => {
+    // Si no es un error de Axios
+    if (!error.isAxiosError) {
+        return `Error interno (Frontend): ${error.message || 'Desconocido'}`;
+    }
+
     // Error de red (sin respuesta del servidor)
     if (!error.response) {
         if (error.code === 'ECONNABORTED') {
             return 'La conexión ha tardado demasiado tiempo. Revisa tu conexión.';
         }
-        return 'No se pudo conectar con el servidor. Revisa tu conexión a internet.';
+        return 'No se pudo conectar con el servidor. Revisate si el proxy o backend está corriendo.';
     }
 
     const status = error.response.status;
@@ -30,6 +35,7 @@ export const getErrorMessage = (error: any): string => {
                 return 'Este correo electrónico ya está registrado.';
             }
             // Mensaje de error personalizado del back si existe
+            if (data?.mensaje) return data.mensaje;
             if (data?.message) return data.message;
             if (typeof data === 'string') return data;
 

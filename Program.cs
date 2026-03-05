@@ -38,7 +38,11 @@ builder.Services.AddScoped<IRecordPersonalService, RecordPersonalService>();
 builder.Services.AddScoped<IDashboardService, DashboardService>();
 builder.Services.AddScoped<IAIService, GeminiService>();
 
-// 4. CORS: Permitir frontend (Vite por defecto es 5173 o similar)
+// 4. Cloudinary
+builder.Services.Configure<REPS_backend.Configurations.CloudinarySettings>(builder.Configuration.GetSection("CloudinarySettings"));
+builder.Services.AddScoped<ICloudinaryService, CloudinaryService>();
+
+// 5. CORS: Permitir frontend (Vite por defecto es 5173 o similar)
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontend", policy =>

@@ -23,6 +23,64 @@
             class="w-full bg-[#0A0A0A] border border-[#374151] rounded-lg p-3 text-white focus:border-[#DC2626] outline-none transition-all"
           >
         </div>
+        
+        <!-- Nivel de Dificultad -->
+        <div class="mb-6">
+          <label class="block text-sm font-semibold text-white mb-2">Dificultad</label>
+          <div class="grid grid-cols-3 gap-3">
+            <button 
+              v-for="(label, value) in { 0: 'Principiante', 1: 'Intermedio', 2: 'Avanzado' }" 
+              :key="value"
+              @click="difficulty = parseInt(value)"
+              type="button"
+              class="py-2.5 rounded-lg text-xs font-bold transition-all border uppercase tracking-widest"
+              :class="difficulty === parseInt(value) ? 'bg-[#DC2626] border-[#DC2626] text-white shadow-[0_0_15px_rgba(220,38,38,0.4)]' : 'bg-[#0A0A0A] border-[#374151] text-[#9CA3AF] hover:border-white'"
+            >
+              {{ label }}
+            </button>
+          </div>
+        </div>
+
+        <div class="mb-6">
+          <label class="block text-sm font-semibold text-white mb-2">Imagen de la rutina</label>
+          <div class="flex flex-col gap-3">
+            <div class="flex gap-3">
+              <input 
+                type="text" 
+                v-model="imagenUrl"
+                placeholder="URL de la imagen o selecciona un archivo"
+                class="flex-1 bg-[#0A0A0A] border border-[#374151] rounded-lg p-3 text-sm text-white focus:border-[#DC2626] outline-none transition-all"
+              >
+              <div v-if="imagenUrl" class="w-12 h-12 shrink-0 rounded-lg overflow-hidden border border-[#374151]">
+                <img :src="imagenUrl" class="w-full h-full object-cover" />
+              </div>
+            </div>
+            
+            <div class="flex items-center gap-3">
+              <button 
+                @click="triggerFileInput" 
+                type="button"
+                class="flex-1 bg-[#1F2937] hover:bg-[#374151] border border-[#374151] rounded-lg p-2.5 text-xs font-bold text-white transition-all flex items-center justify-center gap-2 uppercase tracking-widest"
+                :disabled="isUploading"
+              >
+                <svg v-if="!isUploading" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                  <polyline points="17 8 12 3 7 8"></polyline>
+                  <line x1="12" y1="3" x2="12" y2="15"></line>
+                </svg>
+                <span v-if="isUploading" class="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+                {{ isUploading ? 'Subiendo...' : 'Subir Imagen' }}
+              </button>
+              <input 
+                type="file" 
+                ref="fileInput" 
+                class="hidden" 
+                @change="onFileSelected" 
+                accept="image/*"
+              >
+            </div>
+          </div>
+        </div>
 
         <!-- Selección de Ejercicios -->
         <div class="mb-6">
@@ -43,14 +101,14 @@
           <div class="bg-[#0A0A0A] border border-[#374151] rounded-lg p-2 max-h-48 overflow-y-auto custom-scrollbar mb-6">
             <div 
               v-for="ex in filteredExercises" 
-              :key="ex.name"
+              :key="ex.id"
               class="p-2.5 flex justify-between items-center rounded-md hover:bg-[#1F2937] cursor-pointer group transition-colors"
               @click="addExercise(ex)"
             >
               <span class="text-sm text-white">{{ ex.name }}</span>
               <div class="flex items-center gap-3">
                 <span class="bg-[rgba(220,38,38,0.15)] px-2 py-0.5 rounded text-[10px] text-[#FCA5A5] uppercase font-bold">{{ ex.muscle }}</span>
-                <div class="w-7 h-7 bg-[#DC2626] rounded flex items-center justify-center text-white font-bold transition-transform group-hover:scale-110">+</div>
+                <div @click.stop="addExercise(ex)" class="w-7 h-7 bg-[#DC2626] rounded flex items-center justify-center text-white font-bold transition-transform group-hover:scale-125 hover:bg-red-500 shadow-lg shadow-red-900/20 active:scale-90">+</div>
               </div>
             </div>
           </div>
@@ -79,9 +137,9 @@
                   <span class="font-bold text-white">{{ item.name }}</span>
                 </div>
                 <div class="flex gap-2">
-                  <button class="p-2 border border-[#374151] rounded-md text-[#9CA3AF] hover:border-[#DC2626] transition-colors">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
-                  </button>
+                  <div class="px-1 border border-[#374151] rounded-md flex items-center bg-[#0A0A0A]">
+                    <img src="https://res.cloudinary.com/dgtahwqpj/image/upload/v1772038108/descarga_w22ggj.jpg" class="w-8 h-8 rounded-sm object-cover" alt="Ejercicio" />
+                  </div>
                   <button @click="removeExercise(index)" class="p-2 border border-[#374151] rounded-md text-[#9CA3AF] hover:border-[#DC2626] hover:text-[#DC2626] transition-colors">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
                   </button>
@@ -141,16 +199,57 @@ import { rutinasApi, ejerciciosApi } from '../../api';
 const emit = defineEmits(['close', 'save']);
 
 const name = ref('');
+const difficulty = ref(1); // 0: Principiante, 1: Intermedio, 2: Avanzado
+const imagenUrl = ref('');
 const selectedExercises = ref<any[]>([]);
 const isSaving = ref(false);
+const isUploading = ref(false);
 const saveError = ref('');
+const fileInput = ref<HTMLInputElement | null>(null);
+
+const triggerFileInput = () => {
+  fileInput.value?.click();
+};
+
+const onFileSelected = async (event: any) => {
+  const file = event.target.files[0];
+  if (!file) return;
+  
+  isUploading.value = true;
+  try {
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('upload_preset', 'ml_default'); // Intentamos con el preset por defecto de Cloudinary
+    
+    // Cloudinary upload API
+    const response = await fetch('https://api.cloudinary.com/v1_1/dgtahwqpj/upload', {
+      method: 'POST',
+      body: formData
+    });
+    
+    const data = await response.json();
+    if (data.secure_url) {
+      imagenUrl.value = data.secure_url;
+      saveError.value = ''; // Limpiar errores previos si funciona
+    } else {
+      console.error('Cloudinary upload error:', data);
+      const detail = data.error?.message || 'Preset inválido o configuración de Cloudinary incorrecta.';
+      saveError.value = `Error al subir: ${detail}`;
+    }
+  } catch (err: any) {
+    console.error('Error uploading to Cloudinary:', err);
+    saveError.value = `Error de conexión: ${err.message || 'Sin respuesta del servidor'}`;
+  } finally {
+    isUploading.value = false;
+  }
+};
 
 // Ejercicios disponibles: se cargan del backend
 const availableExercises = ref<any[]>([]);
 const searchQuery = ref('');
 
 const filteredExercises = computed(() => {
-  if (!searchQuery.value) return availableExercises.value;
+  if (!availableExercises.value) return [];
   const q = searchQuery.value.toLowerCase().trim();
   return availableExercises.value.filter(ex => {
     const nameStr = ex.name ? String(ex.name).toLowerCase() : '';
@@ -171,17 +270,26 @@ onMounted(async () => {
       4: 'Brazos',
       5: 'Abdomen',
       6: 'Biceps',
-      7: 'Triceps'
+      7: 'Triceps',
+      8: 'Cardio',
+      9: 'FullBody',
+      10: 'Otro'
     };
     
-    availableExercises.value = (res.data as any[]).map((e: any) => ({
-      id: e.id,
-      name: e.nombre,
-      // Intentamos usar el mapa si es número, si no, usamos el valor que venga, o un string vacío. 
-      muscle: typeof e.grupoMuscular === 'number' 
-          ? (muscleGroupMap[e.grupoMuscular] || 'Desconocido') 
-          : (e.grupoMuscular ?? e.grupo ?? '')
-    }));
+    availableExercises.value = (res.data as any[]).map((e: any) => {
+      let muscleName = 'Otro';
+      if (typeof e.grupoMuscular === 'number') {
+        muscleName = muscleGroupMap[e.grupoMuscular] || 'Otro';
+      } else if (typeof e.grupoMuscular === 'string') {
+        muscleName = e.grupoMuscular;
+      }
+
+      return {
+        id: e.id,
+        name: e.nombre,
+        muscle: muscleName
+      };
+    });
   } catch {
     // Fallback con ejercicios de ejemplo
     availableExercises.value = [
@@ -217,11 +325,12 @@ const saveWorkout = async () => {
   try {
     const dto = {
       nombre: name.value,
-      nivel: 1,
+      imagenUrl: imagenUrl.value,
+      nivel: difficulty.value,
       ejercicios: selectedExercises.value.map((e: any) => ({
         ejercicioId: e.id,
         series: parseInt(e.sets) || 3,
-        repeticiones: e.reps || '10-12',
+        repeticiones: String(e.reps) || '10-12',
         descansoSegundos: parseInt(e.rest) || 90,
         tipo: 0 // TipoSerie.Normal
       }))
@@ -244,6 +353,13 @@ const saveWorkout = async () => {
 @keyframes scaleIn {
   from { opacity: 0; transform: scale(0.95); }
   to { opacity: 1; transform: scale(1); }
+}
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-fade-in {
+  animation: fadeIn 0.4s ease-out forwards;
 }
 .custom-scrollbar::-webkit-scrollbar {
   width: 6px;

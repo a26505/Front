@@ -25,6 +25,8 @@ namespace REPS_backend.DTOs.Rutinas
         
         [JsonPropertyName("repeticiones")]
         public string Repeticiones { get; set; } = string.Empty;
-        // Smart Weight se calcula en backend, no es necesario pedirlo aquí
+
+        [JsonPropertyName("ultimoPeso")]
+        public decimal UltimoPeso { get; set; } = 0;
     }
 }

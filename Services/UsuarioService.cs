@@ -61,8 +61,8 @@ namespace REPS_backend.Services
             var user = await _repository.GetByIdAsync(id);
             if (user == null) return false;
 
-            if (!string.IsNullOrEmpty(dto.Nombre)) user.Nombre = dto.Nombre;
-            if (!string.IsNullOrEmpty(dto.AvatarId)) user.AvatarId = dto.AvatarId;
+            if (dto.Nombre != null) user.Nombre = dto.Nombre;
+            if (dto.AvatarId != null) user.AvatarId = dto.AvatarId;
             if (dto.Biografia != null) user.Biografia = dto.Biografia;
             
             if (dto.EsPerfilPublico.HasValue) user.EsPerfilPublico = dto.EsPerfilPublico.Value;

@@ -27,7 +27,6 @@
         <!-- Metadata -->
         <div class="flex flex-wrap gap-8 items-center py-4 border-b border-[#1F2937] mb-6">
           <div class="flex items-center gap-2 text-[#9CA3AF]">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.4 14.4 9.6 9.6"/><path d="M18.657 21.485a2 2 0 1 1-2.829-2.828l-1.768 1.768a2 2 0 1 1-2.829-2.829l6.364-6.364a2 2 0 1 1 2.829 2.828l-1.768 1.768a2 2 0 1 1 2.828 2.829z"/></svg>
             <span class="text-white font-semibold">{{ workout.exercises }} ejercicios</span>
           </div>
           <div class="flex items-center gap-2 text-[#9CA3AF]">
@@ -87,8 +86,10 @@
                   <span class="text-white font-medium">{{ ex.rest || `${ex.descansoSegundos}s` }}</span>
                 </div>
                 <div class="flex flex-col">
-                  <span class="text-[10px] uppercase font-bold text-[#6B7280]">Peso Sugerido</span>
-                  <span class="text-white font-medium">{{ ex.weight || 'Smart Weight' }}</span>
+                  <span class="text-[10px] uppercase font-bold text-[#6B7280]">
+                    Último Peso
+                  </span>
+                  <span class="text-white font-medium">{{ ex.weight && String(ex.weight).toLowerCase() !== 'smart weight' && String(ex.weight) !== '0' && String(ex.weight) !== '0 kg' ? ex.weight : '0' }}</span>
                 </div>
               </div>
               <p v-if="ex.notes" class="mt-3 text-xs italic text-[#6B7280]">"{{ ex.notes }}"</p>

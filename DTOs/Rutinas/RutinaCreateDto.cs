@@ -10,6 +10,9 @@ namespace REPS_backend.DTOs.Rutinas
         
         [JsonPropertyName("nivel")]
         public NivelDificultad Nivel { get; set; }
+
+        [JsonPropertyName("imagenUrl")]
+        public string ImagenUrl { get; set; } = string.Empty;
         // La duración se calcula en el backend, no se recibe.
         // El estado por defecto se maneja en el servicio.
         

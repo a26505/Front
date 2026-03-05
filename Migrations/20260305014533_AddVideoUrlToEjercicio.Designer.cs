@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using REPS_backend.Data;
 
@@ -10,9 +11,11 @@ using REPS_backend.Data;
 namespace REPS_backend.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260305014533_AddVideoUrlToEjercicio")]
+    partial class AddVideoUrlToEjercicio
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -306,7 +309,7 @@ namespace REPS_backend.Migrations
                     b.Property<int>("RepsRealizadas")
                         .HasColumnType("int");
 
-                    b.Property<int?>("SesionId")
+                    b.Property<int>("SesionId")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
@@ -556,7 +559,9 @@ namespace REPS_backend.Migrations
 
                     b.HasOne("REPS_backend.Models.Sesion", null)
                         .WithMany("SeriesRealizadas")
-                        .HasForeignKey("SesionId");
+                        .HasForeignKey("SesionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("Ejercicio");
                 });

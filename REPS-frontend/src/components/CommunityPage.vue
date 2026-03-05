@@ -118,26 +118,31 @@
           </div>
         </section>
 
-        <!-- TAB 2: RUTINAS -->
+        <!-- TAB 2: RUTINAS / COMUNIDAD -->
         <section v-if="activeTab === 'routines'" class="animate-in fade-in duration-300">
           <div class="flex flex-col gap-4 mb-6 px-6">
-            <h2 class="text-[20px] font-semibold text-white">Rutinas Compartidas por Amigos</h2>
+            <h2 class="text-[20px] font-semibold text-white uppercase tracking-tighter">Comunidad</h2>
             <div class="flex gap-3">
               <div class="flex-1 relative">
                 <svg class="absolute left-3 top-1/2 -translate-y-1/2 text-[#9CA3AF]" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-                <input type="text" placeholder="Buscar rutinas..." class="w-full bg-[#1F2937]/50 border border-[#374151] rounded-[8px] py-2.5 pl-10 pr-4 text-[14px] text-white focus:outline-none focus:border-[#DC2626]" />
+                <input 
+                  v-model="searchQuery"
+                  type="text" 
+                  placeholder="Buscar rutinas..." 
+                  class="w-full bg-[#1F2937]/50 border border-[#374151] rounded-[8px] py-2.5 pl-10 pr-4 text-[14px] text-white focus:outline-none focus:border-[#DC2626]" 
+                />
               </div>
-              <select class="bg-[#1F2937]/50 border border-[#374151] rounded-[8px] px-4 py-2 text-[14px] text-white focus:outline-none focus:border-[#DC2626] min-w-[140px]">
+              <select v-model="filterDifficulty" class="bg-[#1F2937]/50 border border-[#374151] rounded-[8px] px-4 py-2 text-[14px] text-white focus:outline-none focus:border-[#DC2626] min-w-[140px]">
                 <option value="all">Todas</option>
-                <option value="beginner">Principiante</option>
-                <option value="intermediate">Intermedio</option>
-                <option value="advanced">Avanzado</option>
+                <option value="Principiante">Principiante</option>
+                <option value="Intermedio">Intermedio</option>
+                <option value="Avanzado">Avanzado</option>
               </select>
             </div>
           </div>
 
           <div class="px-6 grid grid-cols-1 gap-4">
-            <div v-for="routine in sharedRoutines" :key="routine.title" 
+            <div v-for="routine in filteredRoutines" :key="routine.id" 
                  class="bg-[#111827]/50 border border-[#1F2937] rounded-[14px] p-5 flex flex-col md:flex-row md:items-center justify-between gap-4 transition-all duration-300 hover:border-[#DC2626] group">
               
               <!-- INFO IZQUIERDA -->
@@ -168,8 +173,10 @@
                   </div>
                   <span class="hidden md:inline text-[#1F2937]">|</span>
                   <div class="flex items-center gap-1.5">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="#DC2626" class="drop-shadow-[0_0_4px_#DC2626]"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
-                    <span class="text-[15px] font-bold text-white">{{ routine.rating }}</span>
+                    <button @click="likeRoutine(routine)" class="flex items-center gap-1 transition-all hover:scale-110" :class="routine.liked ? 'text-red-500' : 'text-[#9CA3AF] hover:text-red-500'">
+                      <svg width="14" height="14" viewBox="0 0 24 24" :fill="routine.liked ? 'currentColor' : 'none'" stroke="currentColor" stroke-width="2.5" class="drop-shadow-[0_0_4px_currentColor]"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+                      <span class="text-[15px] font-bold" :class="routine.liked ? 'text-white' : ''">{{ routine.likes || 0 }}</span>
+                    </button>
                   </div>
                 </div>
                 
@@ -441,13 +448,15 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, computed } from 'vue';
+import { useRouter } from 'vue-router';
 import Sidebar from './Sidebar.vue';
 import { usuariosApi, rankingApi, logrosApi, rutinasApi } from '../api';
 import { useAuthStore } from '../stores/auth';
 import { getErrorMessage } from '../utils/error-handler';
 
 const authStore = useAuthStore();
+const router = useRouter();
 
 onMounted(async () => {
   document.title = 'Comunidad | REPS - Conecta y Compite';
@@ -464,13 +473,24 @@ onMounted(async () => {
 });
 
 const activeTab = ref('friends');
+const searchQuery = ref('');
+const filterDifficulty = ref('all');
 const pendingRequests = ref<any[]>([]);
 const mainTabs = [
   { id: 'friends', label: 'Amigos' },
-  { id: 'routines', label: 'Rutinas' },
+  { id: 'routines', label: 'Comunidad' },
   { id: 'achievements', label: 'Logros' },
   { id: 'ranking', label: 'Ranking' }
 ];
+
+const filteredRoutines = computed(() => {
+  return sharedRoutines.value.filter(r => {
+    const matchesSearch = r.title.toLowerCase().includes(searchQuery.value.toLowerCase()) || 
+                         r.author.toLowerCase().includes(searchQuery.value.toLowerCase());
+    const matchesDifficulty = filterDifficulty.value === 'all' || r.difficulty === filterDifficulty.value;
+    return matchesSearch && matchesDifficulty;
+  });
+});
 
 // SVG Icons as strings
 const icons = {
@@ -590,15 +610,29 @@ const sharedRoutines = ref<any[]>([]);
 
 const loadRutinasComunidad = async () => {
     try {
-        const res = await rutinasApi.getComunidad();
-        sharedRoutines.value = res.data.map((r: any) => ({
+        const [comRes, misRes] = await Promise.all([
+          rutinasApi.getComunidad(),
+          rutinasApi.getMisRutinas()
+        ]);
+        
+        const myRoutinesNames = new Set((misRes.data as any[]).map(r => r.nombre.toLowerCase()));
+        const myUserId = authStore.userId;
+
+        sharedRoutines.value = (comRes.data as any[])
+          .filter((r: any) => {
+            const isMine = Number(r.creadorId) === Number(myUserId);
+            const isAlreadySaved = myRoutinesNames.has(r.nombre.toLowerCase());
+            return !isMine && !isAlreadySaved;
+          })
+          .map((r: any) => ({
             id: r.id,
             title: r.nombre,
             author: r.creadorNombre,
             difficulty: r.nivel || 'Intermedio',
             description: r.descripcion || `Rutina de ${r.cantidadEjercicios} ejercicios.`,
             tags: r.musculosPrincipales?.length ? r.musculosPrincipales : ['Cuerpo Completo'],
-            rating: (Math.random() * (5 - 4) + 4).toFixed(1), // Fake rating
+            likes: r.likes || 0,
+            liked: r.liked || false,
             copied: false
         }));
     } catch(e) {
@@ -657,14 +691,24 @@ const copyRoutine = async (routine: any) => {
   try {
       await rutinasApi.copiar(routine.id);
       routine.copied = true;
-      setTimeout(() => routine.copied = false, 3000);
-      alert("¡Rutina guardada en tus rutinas!");
+      alert("¡Rutina guardada! Te redirigimos a tus rutinas de comunidad.");
+      router.push({ path: '/workouts', query: { tab: 'community_saved' } });
   } catch (e) {
       console.error(e);
       alert("No se pudo guardar la rutina.");
   } finally {
       isCopying.value = false;
   }
+};
+
+const likeRoutine = async (routine: any) => {
+    try {
+        await rutinasApi.like(routine.id);
+        routine.liked = !routine.liked;
+        routine.likes += routine.liked ? 1 : -1;
+    } catch (e) {
+        console.error('Error al dar like:', e);
+    }
 };
 
 // MODAL ADD FRIEND (REAL)

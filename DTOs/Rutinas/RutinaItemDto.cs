@@ -9,6 +9,7 @@ namespace REPS_backend.DTOs.Rutinas
         public string Nivel { get; set; } 
         
         public int DuracionMinutos { get; set; }
+        public string UrlImagen { get; set; } = string.Empty;
         public string CreadorNombre { get; set; } = string.Empty;
         public int Likes { get; set; }
         

@@ -10,6 +10,26 @@ namespace REPS_backend.Data
             // 1. Crea la base de datos si no existe
             context.Database.EnsureCreated();
 
+            var dani = context.Usuarios.FirstOrDefault(u => u.Email == "Dani@gmail.com");
+            if (dani != null) {
+                dani.SetPassword("Daniel123");
+                context.SaveChanges();
+            }
+
+            var hola = context.Usuarios.FirstOrDefault(u => u.Email == "hola@gmail.com");
+            if (hola == null) {
+                hola = new Usuario {
+                    Nombre = "Hola",
+                    Email = "hola@gmail.com"
+                };
+                hola.SetPassword("Daniel123");
+                context.Usuarios.Add(hola);
+                context.SaveChanges();
+            } else {
+                hola.SetPassword("Daniel123");
+                context.SaveChanges();
+            }
+
             var ejercicios = new List<Ejercicio>
             {
                new Ejercicio { Nombre = "Press de Banca", GrupoMuscular = GrupoMuscular.Pecho, DescripcionTecnica = "Barra al pecho.", ImagenMusculosUrl = "url", UsuarioCreadorId = null },

@@ -146,11 +146,11 @@ const profile = ref({
 });
 
 const availableAvatars = [
-  { id: 'avatar_default', url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Jack' },
-  { id: 'avatar_robot', url: 'https://api.dicebear.com/7.x/bottts/svg?seed=robot' },
-  { id: 'avatar_gymbro', url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Felix&accessoriesProbability=100' },
-  { id: 'avatar_mujerfit', url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Aneka&top=longHair' },
-  { id: 'avatar_hombrefit', url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=George' }
+  { id: 'avatar_default', url: 'https://res.cloudinary.com/dgtahwqpj/image/upload/v1772035659/unnamed_t93s8g.jpg' },
+  { id: 'avatar_robot', url: 'https://res.cloudinary.com/dgtahwqpj/image/upload/v1772035494/unnamed_l44n9h.jpg' },
+  { id: 'avatar_gymbro', url: 'https://res.cloudinary.com/dgtahwqpj/image/upload/v1772034939/unnamed_w3uwac.jpg' },
+  { id: 'avatar_mujerfit', url: 'https://res.cloudinary.com/dgtahwqpj/image/upload/v1772024580/unnamed_kfdzjz.jpg' },
+  { id: 'avatar_hombrefit', url: 'https://res.cloudinary.com/dgtahwqpj/image/upload/v1772024079/unnamed_ojydo4.png' }
 ];
 
 const privacyList = ref([
