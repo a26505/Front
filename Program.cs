@@ -5,6 +5,7 @@ using Microsoft.OpenApi.Models;
 using REPS_backend.Data;
 using REPS_backend.Repositories;
 using REPS_backend.Services;
+using REPS_backend.Services.AI;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -35,6 +36,7 @@ builder.Services.AddScoped<IProgresoService, ProgresoService>();
 builder.Services.AddScoped<IRankingService, RankingService>();
 builder.Services.AddScoped<IRecordPersonalService, RecordPersonalService>();
 builder.Services.AddScoped<IDashboardService, DashboardService>();
+builder.Services.AddScoped<IAIService, GeminiService>();
 
 // 4. CORS: Permitir frontend (Vite por defecto es 5173 o similar)
 builder.Services.AddCors(options =>

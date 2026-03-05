@@ -10,28 +10,49 @@ namespace REPS_backend.Data
             // 1. Crea la base de datos si no existe
             context.Database.EnsureCreated();
 
-            // 2. Si ya hay ejercicios, no hacemos nada
-
-
-            // 2. Si hay ejercicios, metemos los básicos (pero solo si está vacía)
-            if (!context.Ejercicios.Any())
+            var ejercicios = new List<Ejercicio>
             {
-                var ejercicios = new Ejercicio[]
+               new Ejercicio { Nombre = "Press de Banca", GrupoMuscular = GrupoMuscular.Pecho, DescripcionTecnica = "Barra al pecho.", ImagenMusculosUrl = "url", UsuarioCreadorId = null },
+               new Ejercicio { Nombre = "Sentadilla", GrupoMuscular = GrupoMuscular.Pierna, DescripcionTecnica = "Rompe el paralelo.", ImagenMusculosUrl = "url", UsuarioCreadorId = null },
+               new Ejercicio { Nombre = "Peso Muerto", GrupoMuscular = GrupoMuscular.Pierna, DescripcionTecnica = "Espalda neutra.", ImagenMusculosUrl = "url", UsuarioCreadorId = null },
+               new Ejercicio { Nombre = "Dominadas", GrupoMuscular = GrupoMuscular.Espalda, DescripcionTecnica = "Barbilla arriba.", ImagenMusculosUrl = "url", UsuarioCreadorId = null },
+               new Ejercicio { Nombre = "Remo Barra", GrupoMuscular = GrupoMuscular.Espalda, DescripcionTecnica = "Tirón a cadera.", ImagenMusculosUrl = "url", UsuarioCreadorId = null },
+               new Ejercicio { Nombre = "Press Militar", GrupoMuscular = GrupoMuscular.Hombro, DescripcionTecnica = "Barra sobre cabeza.", ImagenMusculosUrl = "url", UsuarioCreadorId = null },
+               new Ejercicio { Nombre = "Curl Bíceps", GrupoMuscular = GrupoMuscular.Biceps, DescripcionTecnica = "Codos pegados.", ImagenMusculosUrl = "url", UsuarioCreadorId = null },
+               new Ejercicio { Nombre = "Fondos Tríceps", GrupoMuscular = GrupoMuscular.Triceps, DescripcionTecnica = "Baja controlado.", ImagenMusculosUrl = "url", UsuarioCreadorId = null },
+               new Ejercicio { Nombre = "Zancadas", GrupoMuscular = GrupoMuscular.Pierna, DescripcionTecnica = "Rodilla al suelo.", ImagenMusculosUrl = "url", UsuarioCreadorId = null },
+               new Ejercicio { Nombre = "Plancha", GrupoMuscular = GrupoMuscular.Abdomen, DescripcionTecnica = "Isometría.", ImagenMusculosUrl = "url", UsuarioCreadorId = null },
+               // 20 nuevos ejercicios añadidos
+               new Ejercicio { Nombre = "Press Inclinado", GrupoMuscular = GrupoMuscular.Pecho, DescripcionTecnica = "Enfoque en pecho superior.", ImagenMusculosUrl = "url", UsuarioCreadorId = null },
+               new Ejercicio { Nombre = "Aperturas con Mancuernas", GrupoMuscular = GrupoMuscular.Pecho, DescripcionTecnica = "Estira el pecho.", ImagenMusculosUrl = "url", UsuarioCreadorId = null },
+               new Ejercicio { Nombre = "Cruce de Poleas", GrupoMuscular = GrupoMuscular.Pecho, DescripcionTecnica = "Tensión constante.", ImagenMusculosUrl = "url", UsuarioCreadorId = null },
+               new Ejercicio { Nombre = "Prensa de Piernas", GrupoMuscular = GrupoMuscular.Pierna, DescripcionTecnica = "Empuja con las rodillas alineadas.", ImagenMusculosUrl = "url", UsuarioCreadorId = null },
+               new Ejercicio { Nombre = "Curl Femoral", GrupoMuscular = GrupoMuscular.Pierna, DescripcionTecnica = "Flexión de rodilla.", ImagenMusculosUrl = "url", UsuarioCreadorId = null },
+               new Ejercicio { Nombre = "Extensiones de Cuádriceps", GrupoMuscular = GrupoMuscular.Pierna, DescripcionTecnica = "Extensión completa de rodilla.", ImagenMusculosUrl = "url", UsuarioCreadorId = null },
+               new Ejercicio { Nombre = "Elevaciones de Gemelos", GrupoMuscular = GrupoMuscular.Pierna, DescripcionTecnica = "Pausa arriba.", ImagenMusculosUrl = "url", UsuarioCreadorId = null },
+               new Ejercicio { Nombre = "Jalón al Pecho", GrupoMuscular = GrupoMuscular.Espalda, DescripcionTecnica = "Tira con los dorsales.", ImagenMusculosUrl = "url", UsuarioCreadorId = null },
+               new Ejercicio { Nombre = "Remo Gironda", GrupoMuscular = GrupoMuscular.Espalda, DescripcionTecnica = "Mantén la espalda recta.", ImagenMusculosUrl = "url", UsuarioCreadorId = null },
+               new Ejercicio { Nombre = "Pull-over", GrupoMuscular = GrupoMuscular.Espalda, DescripcionTecnica = "Estiramiento dorsal.", ImagenMusculosUrl = "url", UsuarioCreadorId = null },
+               new Ejercicio { Nombre = "Elevaciones Laterales", GrupoMuscular = GrupoMuscular.Hombro, DescripcionTecnica = "Levanta los codos.", ImagenMusculosUrl = "url", UsuarioCreadorId = null },
+               new Ejercicio { Nombre = "Pájaros (Deltoides Posterior)", GrupoMuscular = GrupoMuscular.Hombro, DescripcionTecnica = "Enfoque en la parte posterior.", ImagenMusculosUrl = "url", UsuarioCreadorId = null },
+               new Ejercicio { Nombre = "Encogimientos de Hombros", GrupoMuscular = GrupoMuscular.Hombro, DescripcionTecnica = "Sube los trapecios.", ImagenMusculosUrl = "url", UsuarioCreadorId = null },
+               new Ejercicio { Nombre = "Curl Martillo", GrupoMuscular = GrupoMuscular.Biceps, DescripcionTecnica = "Agarre neutro.", ImagenMusculosUrl = "url", UsuarioCreadorId = null },
+               new Ejercicio { Nombre = "Curl Predicador", GrupoMuscular = GrupoMuscular.Biceps, DescripcionTecnica = "Aisla el bíceps.", ImagenMusculosUrl = "url", UsuarioCreadorId = null },
+               new Ejercicio { Nombre = "Extensión de Tríceps Polea", GrupoMuscular = GrupoMuscular.Triceps, DescripcionTecnica = "Tira hacia abajo.", ImagenMusculosUrl = "url", UsuarioCreadorId = null },
+               new Ejercicio { Nombre = "Press Francés", GrupoMuscular = GrupoMuscular.Triceps, DescripcionTecnica = "Codos fijos hacia el techo.", ImagenMusculosUrl = "url", UsuarioCreadorId = null },
+               new Ejercicio { Nombre = "Crunch Abdominal", GrupoMuscular = GrupoMuscular.Abdomen, DescripcionTecnica = "No tires del cuello.", ImagenMusculosUrl = "url", UsuarioCreadorId = null },
+               new Ejercicio { Nombre = "Elevación de Piernas Colgado", GrupoMuscular = GrupoMuscular.Abdomen, DescripcionTecnica = "Controla el balanceo.", ImagenMusculosUrl = "url", UsuarioCreadorId = null },
+               new Ejercicio { Nombre = "Russian Twists", GrupoMuscular = GrupoMuscular.Abdomen, DescripcionTecnica = "Gira el torso.", ImagenMusculosUrl = "url", UsuarioCreadorId = null }
+            };
+
+            foreach (var ejercicio in ejercicios)
+            {
+                if (!context.Ejercicios.Any(e => e.Nombre == ejercicio.Nombre))
                 {
-                   new Ejercicio { Nombre = "Press de Banca", GrupoMuscular = GrupoMuscular.Pecho, DescripcionTecnica = "Barra al pecho.", ImagenMusculosUrl = "url", UsuarioCreadorId = null },
-                   new Ejercicio { Nombre = "Sentadilla", GrupoMuscular = GrupoMuscular.Pierna, DescripcionTecnica = "Rompe el paralelo.", ImagenMusculosUrl = "url", UsuarioCreadorId = null },
-                   new Ejercicio { Nombre = "Peso Muerto", GrupoMuscular = GrupoMuscular.Pierna, DescripcionTecnica = "Espalda neutra.", ImagenMusculosUrl = "url", UsuarioCreadorId = null },
-                   new Ejercicio { Nombre = "Dominadas", GrupoMuscular = GrupoMuscular.Espalda, DescripcionTecnica = "Barbilla arriba.", ImagenMusculosUrl = "url", UsuarioCreadorId = null },
-                   new Ejercicio { Nombre = "Remo Barra", GrupoMuscular = GrupoMuscular.Espalda, DescripcionTecnica = "Tirón a cadera.", ImagenMusculosUrl = "url", UsuarioCreadorId = null },
-                   new Ejercicio { Nombre = "Press Militar", GrupoMuscular = GrupoMuscular.Hombro, DescripcionTecnica = "Barra sobre cabeza.", ImagenMusculosUrl = "url", UsuarioCreadorId = null },
-                   new Ejercicio { Nombre = "Curl Bíceps", GrupoMuscular = GrupoMuscular.Biceps, DescripcionTecnica = "Codos pegados.", ImagenMusculosUrl = "url", UsuarioCreadorId = null },
-                   new Ejercicio { Nombre = "Fondos Tríceps", GrupoMuscular = GrupoMuscular.Triceps, DescripcionTecnica = "Baja controlado.", ImagenMusculosUrl = "url", UsuarioCreadorId = null },
-                   new Ejercicio { Nombre = "Zancadas", GrupoMuscular = GrupoMuscular.Pierna, DescripcionTecnica = "Rodilla al suelo.", ImagenMusculosUrl = "url", UsuarioCreadorId = null },
-                   new Ejercicio { Nombre = "Plancha", GrupoMuscular = GrupoMuscular.Abdomen, DescripcionTecnica = "Isometría.", ImagenMusculosUrl = "url", UsuarioCreadorId = null },
-                };
-                context.Ejercicios.AddRange(ejercicios);
-                context.SaveChanges();
+                    context.Ejercicios.Add(ejercicio);
+                }
             }
+            context.SaveChanges();
 
 
 

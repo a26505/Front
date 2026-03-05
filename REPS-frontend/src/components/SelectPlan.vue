@@ -247,6 +247,7 @@ const confirmPlan = async () => {
 
 .text-red-gradient {
     background: linear-gradient(135deg, #FF4D4D 0%, #B91C1C 100%);
+    background-clip: text;
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
 }

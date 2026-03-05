@@ -28,8 +28,10 @@ namespace REPS_backend.Controllers
         public async Task<ActionResult<RutinaDetalleDto>> CrearRutina([FromBody] RutinaCreateDto dto)
         {
             _logger.LogInformation($"Creando rutina: {dto.Nombre}. Cantidad ejercicios DTO: {dto.Ejercicios?.Count ?? 0}");
-            if (dto.Ejercicios != null) {
-                foreach(var e in dto.Ejercicios) {
+            if (dto.Ejercicios != null)
+            {
+                foreach (var e in dto.Ejercicios)
+                {
                     _logger.LogInformation($"Ejercicio ID: {e.EjercicioId}, Tipo: {e.Tipo}, Repeticiones: {e.Repeticiones}");
                 }
             }
@@ -71,9 +73,17 @@ namespace REPS_backend.Controllers
         [HttpPost("generar-ia")]
         public async Task<ActionResult<RutinaDetalleDto>> GenerarConIA([FromBody] RutinaIARequestDto dto)
         {
-            int usuarioId = GetUserId();
-            var rutina = await _rutinaService.GenerarRutinaIAAsync(dto, usuarioId);
-            return Ok(rutina);
+            try
+            {
+                int usuarioId = GetUserId();
+                var rutina = await _rutinaService.GenerarRutinaIAAsync(dto, usuarioId);
+                return Ok(rutina);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"\n[ERROR CRITICO EN IA]: {ex.ToString()}\n");
+                return StatusCode(500, new { error = "AI generation failed", exception = ex.Message });
+            }
         }
 
         [HttpPut("{id}/publicar")]

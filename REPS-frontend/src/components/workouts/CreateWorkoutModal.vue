@@ -33,6 +33,7 @@
             </svg>
             <input 
               type="text" 
+              v-model="searchQuery"
               placeholder="Buscar ejercicios..." 
               class="w-full bg-[#0A0A0A] border border-[#374151] rounded-lg py-3 pl-10 pr-4 text-sm text-white focus:border-[#DC2626] outline-none transition-all"
             >
@@ -41,7 +42,7 @@
           <!-- Lista ejercicios disponibles -->
           <div class="bg-[#0A0A0A] border border-[#374151] rounded-lg p-2 max-h-48 overflow-y-auto custom-scrollbar mb-6">
             <div 
-              v-for="ex in availableExercises" 
+              v-for="ex in filteredExercises" 
               :key="ex.name"
               class="p-2.5 flex justify-between items-center rounded-md hover:bg-[#1F2937] cursor-pointer group transition-colors"
               @click="addExercise(ex)"
@@ -134,7 +135,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 import { rutinasApi, ejerciciosApi } from '../../api';
 
 const emit = defineEmits(['close', 'save']);
@@ -146,24 +147,50 @@ const saveError = ref('');
 
 // Ejercicios disponibles: se cargan del backend
 const availableExercises = ref<any[]>([]);
+const searchQuery = ref('');
+
+const filteredExercises = computed(() => {
+  if (!searchQuery.value) return availableExercises.value;
+  const q = searchQuery.value.toLowerCase().trim();
+  return availableExercises.value.filter(ex => {
+    const nameStr = ex.name ? String(ex.name).toLowerCase() : '';
+    const muscleStr = ex.muscle !== undefined && ex.muscle !== null ? String(ex.muscle).toLowerCase() : '';
+    return nameStr.includes(q) || muscleStr.includes(q);
+  });
+});
 
 onMounted(async () => {
   try {
     const res = await ejerciciosApi.getAll();
+    // Mapeo del Enum de C# a strings de frontend
+    const muscleGroupMap: Record<number, string> = {
+      0: 'Pecho',
+      1: 'Espalda',
+      2: 'Pierna',
+      3: 'Hombro',
+      4: 'Brazos',
+      5: 'Abdomen',
+      6: 'Biceps',
+      7: 'Triceps'
+    };
+    
     availableExercises.value = (res.data as any[]).map((e: any) => ({
       id: e.id,
       name: e.nombre,
-      muscle: e.grupoMuscular ?? e.grupo ?? ''
+      // Intentamos usar el mapa si es número, si no, usamos el valor que venga, o un string vacío. 
+      muscle: typeof e.grupoMuscular === 'number' 
+          ? (muscleGroupMap[e.grupoMuscular] || 'Desconocido') 
+          : (e.grupoMuscular ?? e.grupo ?? '')
     }));
   } catch {
     // Fallback con ejercicios de ejemplo
     availableExercises.value = [
       { id: 1, name: 'Press de Banca con Barra', muscle: 'Pecho' },
-      { id: 2, name: 'Sentadilla Libre', muscle: 'Piernas' },
-      { id: 3, name: 'Peso Muerto Rumano', muscle: 'Isquios' },
-      { id: 4, name: 'Press Militar', muscle: 'Hombros' },
+      { id: 2, name: 'Sentadilla Libre', muscle: 'Pierna' },
+      { id: 3, name: 'Peso Muerto Rumano', muscle: 'Pierna' },
+      { id: 4, name: 'Press Militar', muscle: 'Hombro' },
       { id: 5, name: 'Dominadas Pronas', muscle: 'Espalda' },
-      { id: 6, name: 'Curl de Bíceps con Barra', muscle: 'Brazos' },
+      { id: 6, name: 'Curl de Bíceps con Barra', muscle: 'Biceps' },
     ];
   }
 });
@@ -176,6 +203,7 @@ const addExercise = (ex: any) => {
     rest: '90s',
     weight: '0 kg'
   });
+  searchQuery.value = ''; // Reset search bar after adding
 };
 
 const removeExercise = (index: number) => {

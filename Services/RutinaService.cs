@@ -1,6 +1,7 @@
 using REPS_backend.DTOs.Rutinas;
 using REPS_backend.Models;
 using REPS_backend.Repositories; // <-- Importamos Repositories
+using REPS_backend.Services.AI;
 
 namespace REPS_backend.Services
 {
@@ -8,11 +9,13 @@ namespace REPS_backend.Services
     {
         private readonly IRutinaRepository _repository;
         private readonly IEjercicioRepository _ejercicioRepository;
+        private readonly IAIService _aiService;
 
-        public RutinaService(IRutinaRepository repository, IEjercicioRepository ejercicioRepository)
+        public RutinaService(IRutinaRepository repository, IEjercicioRepository ejercicioRepository, IAIService aiService)
         {
             _repository = repository;
             _ejercicioRepository = ejercicioRepository;
+            _aiService = aiService;
         }
 
         public async Task<RutinaDetalleDto> CrearRutinaAsync(RutinaCreateDto dto, int usuarioId)
@@ -49,8 +52,8 @@ namespace REPS_backend.Services
             nuevaRutina.DuracionMinutos = CalcularDuracionInterna(nuevaRutina.Ejercicios);
 
             // 4. USAR EL REPOSITORIO
-            await _repository.AddAsync(nuevaRutina); 
-            
+            await _repository.AddAsync(nuevaRutina);
+
             // 5. Cargar ejercicios para el mapeo final
             var rutinaCargada = await _repository.GetByIdWithEjerciciosAsync(nuevaRutina.Id);
             return MapToDetalleDto(rutinaCargada ?? nuevaRutina);
@@ -104,13 +107,13 @@ namespace REPS_backend.Services
         // --- MÉTODOS PRIVADOS (Los mismos de antes) ---
         private decimal CalcularPorcentajeSmart(TipoSerie tipo)
         {
-             return tipo switch
+            return tipo switch
             {
                 TipoSerie.Calentamiento => 0.50m,
-                TipoSerie.Aproximacion => 0.75m, 
-                TipoSerie.DropSet => 0.60m,      
-                TipoSerie.AlFallo => 0.85m,      
-                _ => 1.0m                        
+                TipoSerie.Aproximacion => 0.75m,
+                TipoSerie.DropSet => 0.60m,
+                TipoSerie.AlFallo => 0.85m,
+                _ => 1.0m
             };
         }
 
@@ -129,60 +132,55 @@ namespace REPS_backend.Services
 
         public async Task<RutinaDetalleDto> GenerarRutinaIAAsync(RutinaIARequestDto dto, int usuarioId)
         {
-            // 1. Obtener algunos ejercicios reales para no romper FK
-            var todosEjercicios = await _ejercicioRepository.GetAllAsync();
-            var random = new Random();
-            var ejerciciosSeleccionados = todosEjercicios.OrderBy(x => random.Next()).Take(5).ToList();
+            // 1. Llamar a la IA real (Gemini)
+            var rutinaIA_Dto = await _aiService.GenerateRoutineAsync(dto);
 
-            if (!ejerciciosSeleccionados.Any())
+            // 2. Mapear la respuesta de la IA (DTO) a una Entidad para la Base de Datos
+            var rutinaEntidad = new Rutina
             {
-                // Si no hay ejercicios, devolvemos error o creamos uno temporal (mejor fallar controlado)
-                throw new Exception("No hay ejercicios disponibles para generar la rutina.");
-            }
-
-            // 1. Crear la Rutina Base
-            var rutinaIA = new Rutina
-            {
-                Nombre = $"IA - {dto.Goal.ToUpper()} {dto.Level.ToUpper()}",
-                Nivel = dto.Level.ToLower() == "avanzado" ? NivelDificultad.Avanzado : (dto.Level.ToLower() == "intermedio" ? NivelDificultad.Intermedio : NivelDificultad.Principiante),
+                Nombre = rutinaIA_Dto.Nombre,
+                Nivel = Enum.TryParse<NivelDificultad>(rutinaIA_Dto.Nivel, true, out var nivel) ? nivel : NivelDificultad.Intermedio,
                 Estado = EstadoRutina.Privada,
                 UsuarioId = usuarioId,
                 EsGeneradaPorIA = true,
                 Ejercicios = new List<RutinaEjercicio>()
             };
 
-            // 2. Generar ejercicios
             int orden = 1;
-            foreach (var ej in ejerciciosSeleccionados)
+            if (rutinaIA_Dto.Ejercicios != null)
             {
-                 var re = new RutinaEjercicio
-                 {
-                     EjercicioId = ej.Id,
-                     Orden = orden++,
-                     Series = dto.Goal.ToLower().Contains("fuerza") ? 5 : 3,
-                     DescansoSegundos = dto.Goal.ToLower().Contains("fuerza") ? 180 : 90,
-                     Tipo = TipoSerie.Normal,
-                     PorcentajeDelPeso = 1.0m,
-                     PesoSugerido = 0
-                 };
-                 rutinaIA.Ejercicios.Add(re);
+                foreach (var ejDto in rutinaIA_Dto.Ejercicios)
+                {
+                    var re = new RutinaEjercicio
+                    {
+                        EjercicioId = ejDto.EjercicioId,
+                        Orden = orden++,
+                        Series = ejDto.Series,
+                        DescansoSegundos = 90, // Valor por defecto
+                        Repeticiones = ejDto.Repeticiones.ToString(),
+                        Tipo = TipoSerie.Normal,
+                        PorcentajeDelPeso = 1.0m,
+                        PesoSugerido = 0
+                    };
+                    rutinaEntidad.Ejercicios.Add(re);
+                }
             }
 
-            rutinaIA.DuracionMinutos = CalcularDuracionInterna(rutinaIA.Ejercicios);
+            rutinaEntidad.DuracionMinutos = CalcularDuracionInterna(rutinaEntidad.Ejercicios.ToList());
 
             // 3. Guardar en BD
-            await _repository.AddAsync(rutinaIA);
+            await _repository.AddAsync(rutinaEntidad);
 
-            // Recargar para tener los nombres de los ejercicios
-            var completa = await _repository.GetByIdWithEjerciciosAsync(rutinaIA.Id);
-            return MapToDetalleDto(completa ?? rutinaIA);
+            // 4. Recargar para tener los nombres reales de los ejercicios y devolver el DTO final
+            var completa = await _repository.GetByIdWithEjerciciosAsync(rutinaEntidad.Id);
+            return MapToDetalleDto(completa ?? rutinaEntidad);
         }
 
         public async Task<int> LikeRutinaAsync(int rutinaId)
         {
             var rutina = await _repository.GetByIdAsync(rutinaId);
             if (rutina == null) return 0;
-            
+
             rutina.Likes++;
             await _repository.UpdateAsync(rutina);
             return rutina.Likes;
@@ -228,7 +226,7 @@ namespace REPS_backend.Services
                 Estado = r.Estado.ToString(),
                 Ejercicios = r.Ejercicios?.Select(e => new RutinaEjercicioDto
                 {
-                    EjercicioId = e.EjercicioId, 
+                    EjercicioId = e.EjercicioId,
                     NombreEjercicio = e.Ejercicio?.Nombre ?? "Ejercicio",
                     GrupoMuscular = e.Ejercicio?.GrupoMuscular.ToString().ToUpper() ?? "OTRO",
                     Series = e.Series,
@@ -243,9 +241,9 @@ namespace REPS_backend.Services
         {
             var rutina = await _repository.GetByIdAsync(id);
             if (rutina == null) return false;
-            
+
             // Si la aplicación requiere que sólo el creador borre, lo validamos
-            if (rutina.UsuarioId != usuarioId) 
+            if (rutina.UsuarioId != usuarioId)
                 throw new UnauthorizedAccessException("No tienes permisos para eliminar esta rutina.");
 
             await _repository.DeleteAsync(id);
@@ -256,8 +254,8 @@ namespace REPS_backend.Services
         {
             var rutina = await _repository.GetByIdAsync(id);
             if (rutina == null) return false;
-            
-            if (rutina.UsuarioId != usuarioId) 
+
+            if (rutina.UsuarioId != usuarioId)
                 throw new UnauthorizedAccessException("No tienes permisos para publicar esta rutina.");
 
             rutina.Estado = EstadoRutina.Publicada;
@@ -269,17 +267,17 @@ namespace REPS_backend.Services
         {
             var rutina = await _repository.GetByIdWithEjerciciosAsync(id);
             if (rutina == null) throw new Exception("Rutina no encontrada.");
-            
-            if (rutina.UsuarioId != usuarioId) 
+
+            if (rutina.UsuarioId != usuarioId)
                 throw new UnauthorizedAccessException("No tienes permisos para editar esta rutina.");
 
             // 1. Actualizar datos básicos
             rutina.Nombre = dto.Nombre;
             rutina.Nivel = dto.Nivel;
-            
+
             // 2. Limpiar ejercicios anteriores e insertar los nuevos
             rutina.Ejercicios.Clear();
-            
+
             int orden = 1;
             if (dto.Ejercicios != null)
             {
@@ -305,7 +303,7 @@ namespace REPS_backend.Services
 
             // 4. Guardar cambios
             await _repository.UpdateAsync(rutina);
-            
+
             // 5. Cargar completa para DTO final
             var completa = await _repository.GetByIdWithEjerciciosAsync(id);
             return MapToDetalleDto(completa ?? rutina);
