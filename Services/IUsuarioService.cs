@@ -14,7 +14,7 @@ namespace REPS_backend.Services
         Task<bool> AgregarAmigoAsync(int miId, string codigoAmigo);
         Task<List<UsuarioPublicoDto>> ObtenerMisAmigosAsync(int userId);
         Task<List<UsuarioPublicoDto>> ObtenerSolicitudesPendientesAsync(int userId);
-        Task<bool> ResponderSolicitudAsync(int miId, string? codigoAmigoSolicitante, int? solicitanteId, bool aceptar);
+        Task<bool> ResponderSolicitudAsync(int miId, string codigoAmigoSolicitante, bool aceptar);
         Task<bool> ActualizarPlanAsync(int userId, PlanSuscripcion nuevoPlan);
     }
 }

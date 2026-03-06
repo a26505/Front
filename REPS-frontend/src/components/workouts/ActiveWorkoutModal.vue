@@ -53,9 +53,9 @@
                 </button>
                 <div>
                   <h4 class="font-bold text-white text-lg">{{ ex.name || ex.ejercicio?.nombre || ex.nombreEjercicio }}</h4>
-                  <template v-if="ex.muscle || ex.ejercicio?.grupoMuscular || ex.grupoMuscular">
-                    <span class="text-[10px] uppercase font-black tracking-widest text-[#9CA3AF]">{{ ex.muscle || ex.ejercicio?.grupoMuscular || ex.grupoMuscular }}</span>
-                  </template>
+                <template v-if="ex.muscle || ex.ejercicio?.grupoMuscular || ex.grupoMuscular">
+                  <span class="text-[10px] uppercase font-black tracking-widest text-[#9CA3AF]">{{ normalizeMuscle(ex.muscle || ex.ejercicio?.grupoMuscular || ex.grupoMuscular) }}</span>
+                </template>
                 </div>
               </div>
               
@@ -510,23 +510,35 @@ const finishSeries = (index: number, sIdx: number) => {
     }
 };
 
+// Mapa de enum C# → nombre legible
+const muscleEnumMap: Record<number, string> = {
+  0: 'Pecho', 1: 'Espalda', 2: 'Pierna', 3: 'Hombro', 4: 'Bíceps',
+  5: 'Tríceps', 6: 'Abdomen', 7: 'Cardio', 8: 'Full Body', 9: 'Otro'
+};
+
 // Normalizar nombre de músculo a nombre canónico
-const normalizeMuscle = (raw: string): string => {
+const normalizeMuscle = (raw: any): string => {
+  // Si es un número, convertir primero desde el enum
+  if (typeof raw === 'number') {
+    raw = muscleEnumMap[raw] || 'Otro';
+  }
+  if (!raw || raw === 'Otro' || raw === '10') return 'Otro';
   const muscleMap: Record<string, string> = {
     'pierna': 'Pierna', 'piernas': 'Pierna', 'cuadriceps': 'Pierna',
     'cuádriceps': 'Pierna', 'femoral': 'Pierna', 'gluteo': 'Pierna',
     'glúteo': 'Pierna', 'gluteos': 'Pierna', 'glúteos': 'Pierna',
     'pecho': 'Pecho', 'pectoral': 'Pecho', 'pectorales': 'Pecho',
     'espalda': 'Espalda', 'dorsales': 'Espalda', 'lumbar': 'Espalda',
-    'hombro': 'Hombros', 'hombros': 'Hombros', 'deltoides': 'Hombros',
+    'hombro': 'Hombro', 'hombros': 'Hombro', 'deltoides': 'Hombro',
     'bicep': 'Bíceps', 'biceps': 'Bíceps', 'bíceps': 'Bíceps', 'bícep': 'Bíceps',
     'tricep': 'Tríceps', 'triceps': 'Tríceps', 'tríceps': 'Tríceps', 'trícep': 'Tríceps',
-    'brazos': 'Bíceps',
+    'brazos': 'Brazos',
     'core': 'Abdomen', 'abdomen': 'Abdomen', 'abdominales': 'Abdomen', 'abs': 'Abdomen',
-    'pantorrilla': 'Pierna', 'gemelos': 'Pierna'
+    'pantorrilla': 'Pierna', 'gemelos': 'Pierna',
+    'cardio': 'Cardio', 'full body': 'Full Body', 'fullbody': 'Full Body'
   };
-  const key = (raw || 'otro').trim().toLowerCase();
-  return muscleMap[key] || (raw.charAt(0).toUpperCase() + raw.slice(1));
+  const key = String(raw).trim().toLowerCase();
+  return muscleMap[key] || (String(raw).charAt(0).toUpperCase() + String(raw).slice(1));
 };
 
 const onFinalizar = async () => {
@@ -572,28 +584,18 @@ const onFinalizar = async () => {
     const entrenamientoId = res.data?.id;
 
     const recordsPersonal = res.data?.recordsPersonal || [];
-    const musculosConRecord = new Set();
     recordsPersonal.forEach((rec: any) => {
       const rawMuscle = rec.grupoMuscular || 'Otro';
       const normalizedMuscle = normalizeMuscle(rawMuscle);
-      
-      if (!musculosConRecord.has(normalizedMuscle)) {
-        musculosConRecord.add(normalizedMuscle);
-        localMuscleBreakdown['Bonus Récords'] = (localMuscleBreakdown['Bonus Récords'] || 0) + 100;
-      }
+      // Añadir bonus de 30 pts al músculo del récord
+      localMuscleBreakdown[normalizedMuscle] = (localMuscleBreakdown[normalizedMuscle] || 0) + 30;
     });
 
     // Usar puntos del servidor si están disponibles, si no calcular local
-    // Incluir también los puntos de los logros desbloqueados
-    const serverPoints = res.data?.puntosGanados ?? 0;
-    const logrosBonus = (res.data?.logrosDesbloqueados || []).reduce((acc: number, l: any) => acc + (l.puntos || 0), 0);
-    const localTotal = Object.values(localMuscleBreakdown).reduce((acc: number, pts: any) => acc + Number(pts), 0);
-    
-    // Si el servidor devuelve puntos, usamos esos + bonus de logros
-    // Si no, usamos el cálculo local
-    const totalPoints = (serverPoints > 0)
-      ? serverPoints + logrosBonus
-      : localTotal + logrosBonus;
+    const serverPoints = res.data?.puntosGanados;
+    const totalPoints = (serverPoints != null && serverPoints > 0)
+      ? serverPoints
+      : Object.values(localMuscleBreakdown).reduce((acc: number, pts: any) => acc + Number(pts), 0);
 
     summaryData.value = {
       puntos: totalPoints,

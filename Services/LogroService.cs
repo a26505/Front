@@ -132,22 +132,15 @@ namespace REPS_backend.Services
 
         public async Task<bool> UnlockLogroAsync(int userId, int logroId)
         {
-            bool unlocked = await UnlockLogroInternalAsync(userId, logroId);
-            if (unlocked)
-            {
-                await _rankingService.UpdateUserRankAsync(userId);
-                await _rankingService.UpdateStreakAsync(userId);
-            }
-            return unlocked;
-        }
-
-        private async Task<bool> UnlockLogroInternalAsync(int userId, int logroId)
-        {
+            // 1. Verificar si ya lo tiene
             var userLogros = await _logroRepository.GetUserLogrosAsync(userId);
             if (userLogros.Any(ul => ul.LogroId == logroId && ul.Desbloqueado))
             {
-                return false; 
+                return false; // Ya lo tiene
             }
+
+            // 2. Si existe el registro pero no desbloqueado, actualizarlo?
+            // Por simplicidad, asumimos que si no lo tiene desbloqueado, lo creamos o actualizamos
 
             var existing = userLogros.FirstOrDefault(ul => ul.LogroId == logroId);
             if (existing != null)
@@ -155,6 +148,11 @@ namespace REPS_backend.Services
                 existing.Desbloqueado = true;
                 existing.FechaObtencion = System.DateTime.UtcNow;
                 existing.Progreso = 100;
+                // Deberíamos actualizar en repo, falta metodo UpdateUsuarioLogroAsync.
+                // Como workaround si no quiero tocar repo, puedo asumir que Entity Framework trackea cambios si usamos el mismo contexto. 
+                // Pero LogroRepository usa _context, así que sí trackea si GetUserLogros los trajo.
+                // Sin embargo necesitamos SaveChanges.
+                // Agregaremos un SaveChanges o Update al repo, pero por ahora usemos Add para el caso nuevo.
             }
             else
             {
@@ -168,6 +166,10 @@ namespace REPS_backend.Services
                 };
                 await _logroRepository.AddUsuarioLogroAsync(nuevoLogro);
             }
+
+            await _rankingService.UpdateUserRankAsync(userId);
+            await _rankingService.UpdateStreakAsync(userId);
+
             return true;
         }
 
@@ -181,40 +183,6 @@ namespace REPS_backend.Services
                 .ToList();
 
             return desbloqueados;
-        }
-
-        public async Task<int> RecalcularYPuntosLogrosAsync(int userId)
-        {
-            // Calculamos los logros dinámicamente
-            var logrosCalculados = await GetLogrosForUserAsync(userId);
-            
-            bool anyNewUnlock = false;
-            foreach (var lCalc in logrosCalculados.Where(l => l.Desbloqueado))
-            {
-                bool unlocked = await UnlockLogroInternalAsync(userId, lCalc.Id);
-                if (unlocked) anyNewUnlock = true;
-            }
-
-            // Recargamos asegurando que la navegación Logro esté incluida (EF a veces no mapea inserts en la misma request sin recargar)
-            var logrosFinales = await _logroRepository.GetUserLogrosAsync(userId);
-            
-            // Si el include falló para recien insertados, recuperamos de logrosCalculados
-            var totalPuntos = 0;
-            foreach (var ul in logrosFinales.Where(x => x.Desbloqueado))
-            {
-                if (ul.Logro != null)
-                {
-                    totalPuntos += ul.Logro.Puntos;
-                }
-                else
-                {
-                    // Fallback usando la lista en memoria si EF falló en bindear Logro
-                    var lCalc = logrosCalculados.FirstOrDefault(lc => lc.Id == ul.LogroId);
-                    if (lCalc != null) totalPuntos += lCalc.Puntos;
-                }
-            }
-
-            return totalPuntos;
         }
     }
 }

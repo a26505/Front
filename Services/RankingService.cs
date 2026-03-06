@@ -4,7 +4,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace REPS_backend.Services
 {
@@ -23,20 +22,17 @@ namespace REPS_backend.Services
         private readonly ILogroRepository _logroRepository;
         private readonly IRecordPersonalRepository _recordRepository;
         private readonly IEntrenamientoRepository _entrenamientoRepository;
-        private readonly IServiceProvider _serviceProvider;
 
         public RankingService(
             IUsuarioRepository usuarioRepository, 
             ILogroRepository logroRepository,
             IRecordPersonalRepository recordRepository,
-            IEntrenamientoRepository entrenamientoRepository,
-            IServiceProvider serviceProvider)
+            IEntrenamientoRepository entrenamientoRepository)
         {
             _usuarioRepository = usuarioRepository;
             _logroRepository = logroRepository;
             _recordRepository = recordRepository;
             _entrenamientoRepository = entrenamientoRepository;
-            _serviceProvider = serviceProvider;
         }
 
         public async Task AddRecordPointsAsync(int userId, int points)
@@ -56,9 +52,9 @@ namespace REPS_backend.Services
             var usuario = await _usuarioRepository.GetByIdAsync(userId);
             if (usuario == null) return;
 
-            // 1. Puntos de Logros (Sincroniza dinámicos a DB y devuelve total)
-            var logroService = _serviceProvider.GetRequiredService<ILogroService>();
-            int puntosLogros = await logroService.RecalcularYPuntosLogrosAsync(userId);
+            // 1. Puntos de Logros
+            var logros = await _logroRepository.GetUserLogrosAsync(userId);
+            int puntosLogros = logros.Where(ul => ul.Desbloqueado).Sum(ul => ul.Logro.Puntos);
             usuario.PuntosLogros = puntosLogros;
 
             // 2. Calcular Puntos por Músculo
@@ -86,10 +82,18 @@ namespace REPS_backend.Services
                 puntosPorMusculo[grupo] += 100;
             }
 
-            // 3. Suma de puntos de los musculos entrenados
-            var gruposEntrenados = puntosPorMusculo.Where(kvp => kvp.Value > 0).ToList();
-            int puntosRangoGeneral = gruposEntrenados.Any() ? gruposEntrenados.Sum(kvp => kvp.Value) : 0;
+            var gruposValidos = Enum.GetValues(typeof(GrupoMuscular)).Cast<GrupoMuscular>()
+                   .Where(g => g != GrupoMuscular.Otro && g != GrupoMuscular.FullBody && g != GrupoMuscular.Cardio).ToList();
             
+            double sumPuntosMusculos = 0;
+            foreach(var grupo in gruposValidos)
+            {
+               if(puntosPorMusculo.ContainsKey(grupo))
+                  sumPuntosMusculos += puntosPorMusculo[grupo];
+            }
+
+            // 3. Actualizar Total: Puntos del Rango General (Suma Muscular) + Puntos de Logros
+            int puntosRangoGeneral = (int)Math.Round(sumPuntosMusculos);
             usuario.PuntosTotales = puntosRangoGeneral + usuario.PuntosLogros;
 
             // Determinar enum RangoGeneral
@@ -100,11 +104,11 @@ namespace REPS_backend.Services
 
         private Rango ConvertPuntosARango(int puntos)
         {
-            if (puntos < 500) return Rango.Bronce;
-            if (puntos < 1500) return Rango.Plata;
-            if (puntos < 3000) return Rango.Oro;
-            if (puntos < 5000) return Rango.Platino;
-            if (puntos < 8000) return Rango.Diamante;
+            if (puntos < 4000) return Rango.Bronce;
+            if (puntos < 12000) return Rango.Plata;
+            if (puntos < 25000) return Rango.Oro;
+            if (puntos < 50000) return Rango.Platino;
+            if (puntos < 80000) return Rango.Diamante;
             return Rango.Leyenda;
         }
 

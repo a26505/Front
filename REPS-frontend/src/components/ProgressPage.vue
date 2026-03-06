@@ -6,8 +6,8 @@
     <!-- MAIN CONTENT -->
     <div class="flex-1 md:ml-[256px] min-h-screen flex flex-col">
       <!-- HEADER -->
-      <header class="sticky top-0 z-40 bg-black/95 backdrop-blur-md py-4 px-6 flex items-center border-b border-[#1F2937]/50">
-        <h1 class="text-3xl font-bold text-white tracking-tight">Mi Progreso</h1>
+      <header class="sticky top-0 z-40 w-full h-[80px] bg-black/95 backdrop-blur-md px-6 flex items-center border-b border-[#1F2937]/50">
+        <h1 class="text-2xl md:text-3xl font-bold text-white tracking-tight">Mi Progreso</h1>
       </header>
 
       <main class="flex-1 p-6 max-w-[1600px] mx-auto w-full relative z-10">
@@ -114,9 +114,9 @@
               
               <div class="flex justify-center mb-8 relative z-10">
                 <div class="flex flex-col items-center transform hover:scale-105 transition-all duration-500">
-                  <RankIcon :rank="calculatedRangoGeneral" :size="120" />
-                  <span :class="['mt-4 text-2xl font-black uppercase tracking-widest', getRankTextColor(calculatedRangoGeneral)]">
-                    {{ calculatedRangoGeneral }}
+                  <RankIcon :rank="rangoGeneral" :size="120" />
+                  <span :class="['mt-4 text-2xl font-black uppercase tracking-widest', getRankTextColor(rangoGeneral)]">
+                    {{ rangoGeneral }}
                   </span>
                 </div>
               </div>
@@ -131,7 +131,7 @@
               </div>
               
               <div class="mt-6 text-center relative z-10">
-                <p class="text-sm text-gray-400 font-medium">Puntos Musculares: <span class="text-white">{{ formatNumber(averagePoints) }} pts</span></p>
+                <p class="text-sm text-gray-400 font-medium">Puntos Totales: <span class="text-white">{{ formatNumber(puntosTotales) }} pts</span></p>
               </div>
             </section>
 
@@ -236,41 +236,9 @@ const unlockedCount = ref(0);
 const hasError = ref(false);
 const errorText = ref('');
 
-// Ranking de rango por nombre
-const rankOrder = ['Bronce', 'Plata', 'Oro', 'Platino', 'Diamante', 'Leyenda'];
-
-// Suma de puntos: total de los músculos entrenados (puntos > 0)
-const averagePoints = computed(() => {
-  const withPoints = muscleRanks.value.filter((m: any) => (m.points || 0) > 0);
-  if (withPoints.length === 0) return 0;
-  return withPoints.reduce((acc, m) => acc + (m.points || 0), 0);
-});
-
-// Calcular promedio de los rangos para determinar el rango general
-const calculatedRangoGeneral = computed(() => {
-  const withRanks = muscleRanks.value.filter((m: any) => (m.points || 0) > 0);
-  if (withRanks.length === 0) return 'Bronce';
-  
-  // Convertir rangos a indices numericos
-  const rankIndices = withRanks.map((m: any) => {
-    const idx = rankOrder.indexOf(m.rank);
-    return idx >= 0 ? idx : 0;
-  });
-  
-  // Calcular promedio de indices
-  const sum = rankIndices.reduce((acc, idx) => acc + idx, 0);
-  const averageIndex = Math.round(sum / rankIndices.length);
-  
-  return rankOrder[averageIndex] || 'Bronce';
-});
-
-// El cálculo anterior ya define averagePoints directamente.
-
-// Puntos de logros desbloqueados (suma real de puntos de logros)
-const logrosPoints = ref(0);
 
 const currentCalculatedRankIndex = computed(() => {
-  const idx = allRanks.findIndex(r => r.name === calculatedRangoGeneral.value);
+  const idx = allRanks.findIndex(r => r.name === rangoGeneral.value);
   return idx >= 0 ? idx : 0;
 });
 
@@ -287,8 +255,8 @@ const generalStats = computed(() => [
     glowColor: '#F54900'
   },
   {
-    label: 'Ranking Pts',
-    value: String(Math.round(averagePoints.value + logrosPoints.value)),
+    label: 'Puntos Musculares',
+    value: String(puntosTotales.value),
     icon: DumbbellIcon,
     iconColor: 'text-white',
     accentColor: 'text-red-500',
@@ -298,10 +266,10 @@ const generalStats = computed(() => [
   },
   {
     label: 'Rango',
-    value: calculatedRangoGeneral.value,
+    value: rangoGeneral.value,
     icon: ConsistenciaIcon,
-    iconColor: computed(() => getRankTextColor(calculatedRangoGeneral.value).replace('text-', '')),
-    accentColor: computed(() => getRankTextColor(calculatedRangoGeneral.value)),
+    iconColor: computed(() => getRankTextColor(rangoGeneral.value).replace('text-', '')),
+    accentColor: computed(() => getRankTextColor(rangoGeneral.value)),
     gradient: 'linear-gradient(152.983deg, rgba(59, 130, 246, 0.2) 0%, rgba(29, 78, 216, 0.15) 100%)',
     borderColor: 'rgba(59, 130, 246, 0.4)',
     glowColor: '#3B82F6'
@@ -340,10 +308,7 @@ onMounted(async () => {
     if (authStore.profile?.id) {
       try {
         const logsRes = await logrosApi.getMisLogros(authStore.profile.id);
-        const unlockedLogros = (logsRes.data || []).filter((l: any) => l.desbloqueado);
-        unlockedCount.value = unlockedLogros.length;
-        // Sumar los puntos reales de los logros desbloqueados
-        logrosPoints.value = unlockedLogros.reduce((acc: number, l: any) => acc + (l.puntos || 0), 0);
+        unlockedCount.value = (logsRes.data || []).filter((l: any) => l.desbloqueado).length;
       } catch (e) {
         console.warn("No se pudieron cargar logros en progreso", e);
       }

@@ -98,7 +98,11 @@
           </div>
 
           <!-- Lista ejercicios disponibles -->
-          <div class="bg-[#0A0A0A] border border-[#374151] rounded-lg p-2 max-h-48 overflow-y-auto custom-scrollbar mb-4">
+          <div class="flex justify-between items-center mb-2">
+            <span class="text-xs font-bold text-[#9CA3AF] uppercase">Resultados</span>
+            <button @click="showCreateExModal = true" class="text-[10px] font-black text-[#DC2626] uppercase tracking-widest border border-[#DC2626]/30 px-2 py-1 rounded hover:bg-[#DC2626] hover:text-white transition-all">+ Crear Ejercicio</button>
+          </div>
+          <div class="bg-[#0A0A0A] border border-[#374151] rounded-lg p-2 max-h-48 overflow-y-auto custom-scrollbar mb-6">
             <div 
               v-for="ex in filteredExercises" 
               :key="ex.id"
@@ -106,63 +110,14 @@
               @click="addExercise(ex)"
             >
               <span class="text-sm text-white">{{ ex.name }}</span>
-              <div class="flex items-center gap-3">
+              <div class="flex items-center gap-2">
                 <span class="bg-[rgba(220,38,38,0.15)] px-2 py-0.5 rounded text-[10px] text-[#FCA5A5] uppercase font-bold">{{ ex.muscle }}</span>
+                <button v-if="ex.esMio" @click.stop="deleteCustomExercise(ex)" class="w-6 h-6 bg-transparent border border-[#DC2626]/30 hover:bg-[#DC2626] hover:border-[#DC2626] rounded flex items-center justify-center text-[#DC2626] hover:text-white transition-all" title="Eliminar ejercicio">
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M18 6L6 18M6 6l12 12"/></svg>
+                </button>
                 <div @click.stop="addExercise(ex)" class="w-7 h-7 bg-[#DC2626] rounded flex items-center justify-center text-white font-bold transition-transform group-hover:scale-125 hover:bg-red-500 shadow-lg shadow-red-900/20 active:scale-90">+</div>
               </div>
             </div>
-            <div v-if="filteredExercises.length === 0" class="p-4 text-center text-[#9CA3AF] text-sm italic">
-               No se encontraron ejercicios. ¿Quieres crear uno?
-            </div>
-          </div>
-
-          <!-- Botón Crear Ejercicio Propio -->
-          <div v-if="!showCustomExerciseForm" class="mb-6">
-            <button 
-              @click="showCustomExerciseForm = true"
-              type="button"
-              class="w-full py-2 bg-[#1F2937] border border-dashed border-[#374151] hover:border-[#DC2626] rounded-lg text-xs font-bold text-[#9CA3AF] hover:text-white transition-all uppercase tracking-widest"
-            >
-              + Crear Ejercicio Propio
-            </button>
-          </div>
-
-          <!-- Formulario Ejercicio Personalizado -->
-          <div v-else class="bg-[#0A0A0A] border border-[#DC2626]/30 rounded-xl p-4 mb-6 animate-in slide-in-from-top-2">
-            <div class="flex justify-between items-center mb-4">
-              <h4 class="text-sm font-bold text-white uppercase tracking-wider">Nuevo Ejercicio Personalizado</h4>
-              <button @click="showCustomExerciseForm = false" class="text-[#9CA3AF] hover:text-white">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
-              </button>
-            </div>
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
-              <div>
-                <label class="block text-[10px] font-bold text-[#9CA3AF] uppercase mb-1">Nombre</label>
-                <input 
-                  type="text" 
-                  v-model="customExercise.nombre" 
-                  placeholder="Ej: Press Hammer"
-                  class="w-full bg-[#111827] border border-[#374151] rounded-lg p-2.5 text-sm text-white focus:border-[#DC2626] outline-none"
-                >
-              </div>
-              <div>
-                <label class="block text-[10px] font-bold text-[#9CA3AF] uppercase mb-1">Grupo Muscular</label>
-                <select 
-                  v-model="customExercise.grupoMuscular"
-                  class="w-full bg-[#111827] border border-[#374151] rounded-lg p-2.5 text-sm text-white focus:border-[#DC2626] outline-none"
-                >
-                  <option v-for="(label, val) in muscleGroupMap" :key="val" :value="parseInt(val)">{{ label }}</option>
-                </select>
-              </div>
-            </div>
-            <button 
-              @click="createCustomExercise"
-              :disabled="!customExercise.nombre || isCreatingExercise"
-              class="w-full py-2.5 bg-[#DC2626] hover:bg-red-700 disabled:opacity-50 rounded-lg text-xs font-black text-white transition-all uppercase tracking-widest flex items-center justify-center gap-2"
-            >
-              <span v-if="isCreatingExercise" class="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
-              {{ isCreatingExercise ? 'Guardando...' : 'Guardar y Añadir Ejercicio' }}
-            </button>
           </div>
         </div>
 
@@ -238,45 +193,34 @@
         </div>
       </div>
     </div>
+    <CreateEjercicioModal 
+      v-if="showCreateExModal" 
+      @close="showCreateExModal = false" 
+      @created="handleExerciseCreated"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue';
 import { rutinasApi, ejerciciosApi } from '../../api';
+import { useUIStore } from '../../stores/ui';
+
+import CreateEjercicioModal from './CreateEjercicioModal.vue';
+
+const uiStore = useUIStore();
 
 const emit = defineEmits(['close', 'save']);
 
+const showCreateExModal = ref(false);
 const name = ref('');
 const difficulty = ref(1); // 0: Principiante, 1: Intermedio, 2: Avanzado
-const imagenUrl = ref('https://res.cloudinary.com/dgtahwqpj/image/upload/v1772034939/unnamed_w3uwac.jpg'); // Default a gym image
+const imagenUrl = ref('');
 const selectedExercises = ref<any[]>([]);
 const isSaving = ref(false);
 const isUploading = ref(false);
 const saveError = ref('');
 const fileInput = ref<HTMLInputElement | null>(null);
-
-// Custom Exercise Creator
-const showCustomExerciseForm = ref(false);
-const isCreatingExercise = ref(false);
-const customExercise = ref({
-  nombre: '',
-  grupoMuscular: 10 // Otro
-});
-
-const muscleGroupMap: Record<number, string> = {
-  0: 'Pecho',
-  1: 'Espalda',
-  2: 'Pierna',
-  3: 'Hombro',
-  4: 'Brazos',
-  5: 'Abdomen',
-  6: 'Biceps',
-  7: 'Triceps',
-  8: 'Cardio',
-  9: 'FullBody',
-  10: 'Otro'
-};
 
 const triggerFileInput = () => {
   fileInput.value?.click();
@@ -290,9 +234,9 @@ const onFileSelected = async (event: any) => {
   try {
     const formData = new FormData();
     formData.append('file', file);
-    formData.append('upload_preset', 'ml_default'); 
+    formData.append('upload_preset', 'ml_default'); // Intentamos con el preset por defecto de Cloudinary
     
-    // Cloudinary upload API - Cloud Name: dgtahwqpj
+    // Cloudinary upload API
     const response = await fetch('https://api.cloudinary.com/v1_1/dgtahwqpj/upload', {
       method: 'POST',
       body: formData
@@ -329,10 +273,16 @@ const filteredExercises = computed(() => {
   });
 });
 
-const fetchExercises = async () => {
+const loadExercises = async () => {
   try {
     const res = await ejerciciosApi.getAll();
-    availableExercises.value = (res.data as any[]).map((e: any) => {
+    // Mapeo del Enum de C# a strings de frontend
+    const muscleGroupMap: Record<number, string> = {
+      0: 'Pecho', 1: 'Espalda', 2: 'Pierna', 3: 'Hombro', 4: 'Bíceps',
+      5: 'Tríceps', 6: 'Abdomen', 7: 'Cardio', 8: 'Full Body', 9: 'Otro'
+    };
+    
+        availableExercises.value = (res.data as any[]).map((e: any) => {
       let muscleName = 'Otro';
       if (typeof e.grupoMuscular === 'number') {
         muscleName = muscleGroupMap[e.grupoMuscular] || 'Otro';
@@ -343,7 +293,8 @@ const fetchExercises = async () => {
       return {
         id: e.id,
         name: e.nombre,
-        muscle: muscleName
+        muscle: muscleName,
+        esMio: e.esMio || false
       };
     });
   } catch {
@@ -360,37 +311,35 @@ const fetchExercises = async () => {
 };
 
 onMounted(async () => {
-  await fetchExercises();
+    await loadExercises();
 });
 
-const createCustomExercise = async () => {
-  if (!customExercise.value.nombre) return;
-  isCreatingExercise.value = true;
-  try {
-    await ejerciciosApi.crear({
-      nombre: customExercise.value.nombre,
-      grupoMuscular: customExercise.value.grupoMuscular,
-      descripcionTecnica: 'Ejercicio personalizado creado por el usuario'
-    });
+const handleExerciseCreated = async (newEx: any) => {
+    // Mapear el nuevo ejercicio y añadirlo a la lista local
+    const muscleGroupMap: Record<number, string> = {
+      0: 'Pecho', 1: 'Espalda', 2: 'Pierna', 3: 'Hombro', 4: 'Bíceps',
+      5: 'Tríceps', 6: 'Abdomen', 7: 'Cardio', 8: 'Full Body', 9: 'Otro'
+    };
     
-    // Recargar ejercicios
-    await fetchExercises();
+    const mappedEx = {
+        id: newEx.id,
+        name: newEx.nombre,
+        muscle: typeof newEx.grupoMuscular === 'number' ? muscleGroupMap[newEx.grupoMuscular] : newEx.grupoMuscular,
+        esMio: true
+    };
     
-    // Buscar el nuevo ejercicio y añadirlo
-    const newEx = availableExercises.value.find(e => e.name === customExercise.value.nombre);
-    if (newEx) {
-      addExercise(newEx);
+    availableExercises.value.unshift(mappedEx);
+    addExercise(mappedEx);
+};
+
+const deleteCustomExercise = async (ex: any) => {
+    try {
+        await ejerciciosApi.eliminar(ex.id);
+        availableExercises.value = availableExercises.value.filter(e => e.id !== ex.id);
+        uiStore.showToast('Ejercicio eliminado', 'success');
+    } catch {
+        uiStore.showToast('Error al eliminar ejercicio', 'error');
     }
-    
-    // Reset form
-    customExercise.value.nombre = '';
-    showCustomExerciseForm.value = false;
-  } catch (e: any) {
-    console.error("Error creating custom exercise", e);
-    alert(e.response?.data?.message || "No se pudo crear el ejercicio.");
-  } finally {
-    isCreatingExercise.value = false;
-  }
 };
 
 const addExercise = (ex: any) => {

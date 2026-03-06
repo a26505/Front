@@ -73,7 +73,7 @@ namespace REPS_backend.Repositories
             // 3. Resultado: Una lista con tus amigos, sin importan quién agregó a quién.
             
             return await _context.Amistades
-                .Where(a => (a.SolicitanteId == usuarioId || a.ReceptorId == usuarioId) && a.Aceptada)
+                .Where(a => a.SolicitanteId == usuarioId || a.ReceptorId == usuarioId)
                 .Select(a => a.SolicitanteId == usuarioId ? a.Receptor : a.Solicitante)
                 .ToListAsync();
         }

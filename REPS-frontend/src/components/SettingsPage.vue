@@ -6,8 +6,8 @@
     <!-- CONTENIDO PRINCIPAL -->
     <div class="flex-1 md:ml-[256px] min-h-screen flex flex-col">
       <!-- 2️⃣ HEADER SUPERIOR -->
-      <header class="sticky top-0 z-40 bg-[rgba(0,0,0,0.95)] backdrop-blur-[12px] py-[16px] px-[24px] flex items-center border-b border-[#1F2937]">
-        <h1 class="text-[24px] md:text-[32px] font-bold text-white tracking-tight">Configuración</h1>
+      <header class="sticky top-0 z-40 w-full h-[80px] bg-black/95 backdrop-blur-md px-6 flex items-center border-b border-[#1F2937]/50">
+        <h1 class="text-2xl md:text-3xl font-bold text-white tracking-tight">Configuración</h1>
       </header>
 
       <!-- 3️⃣ CONTENEDOR PRINCIPAL -->
@@ -23,7 +23,23 @@
             <h2 class="text-[20px] font-semibold text-white">Perfil</h2>
           </div>
           <div class="flex flex-col gap-[16px]">
-
+            <!-- Avatar Selection -->
+            <div>
+              <label class="text-[14px] font-semibold text-white mb-[12px] block">Selecciona tu Avatar</label>
+              <div class="flex flex-wrap gap-[12px]">
+                <button 
+                  v-for="avatar in availableAvatars" 
+                  :key="avatar.id"
+                  @click="profile.avatar_id = avatar.id"
+                  role="button"
+                  tabindex="0"
+                  class="w-[60px] h-[60px] rounded-full border-2 transition-all overflow-hidden bg-[#1F2937] p-0"
+                  :class="profile.avatar_id === avatar.id ? 'border-[#DC2626] scale-110 shadow-[0_0_10px_rgba(220,38,38,0.5)]' : 'border-transparent opacity-60 hover:opacity-100'"
+                >
+                  <img :src="avatar.url" class="w-full h-full object-cover pointer-events-none" />
+                </button>
+              </div>
+            </div>
 
             <div>
               <label class="text-[14px] font-semibold text-white mb-[8px] block">Nombre</label>
@@ -33,7 +49,10 @@
               <label class="text-[14px] font-semibold text-white mb-[8px] block">Correo Electrónico</label>
               <input type="email" v-model="profile.email" class="w-full bg-[#1F2937] border border-[#374151] rounded-[8px] py-[10px] px-[12px] text-[14px] text-white transition-colors duration-200 focus:border-[#DC2626] focus:outline-none" />
             </div>
-
+            <div>
+              <label class="text-[14px] font-semibold text-white mb-[8px] block">Biografía</label>
+              <input type="text" v-model="profile.bio" class="w-full bg-[#1F2937] border border-[#374151] rounded-[8px] py-[10px] px-[12px] text-[14px] text-white transition-colors duration-200 focus:border-[#DC2626] focus:outline-none" />
+            </div>
             <button @click="saveProfile" class="bg-[#DC2626] hover:bg-[#B91C1C] border-none rounded-[8px] py-[10px] px-[20px] text-[14px] font-semibold text-white cursor-pointer mt-[8px] self-start transition-colors duration-200 active:scale-95">Guardar Cambios</button>
           </div>
         </div>
@@ -87,7 +106,7 @@
             <button class="w-full bg-transparent border border-[#374151] rounded-[8px] py-[10px] px-[20px] text-[14px] font-semibold text-white cursor-pointer transition-colors duration-200 hover:border-[#DC2626] hover:text-[#DC2626] active:scale-95 text-center">
               Cambiar Contraseña
             </button>
-
+            <!-- 2FA Button removed as requested -->
           </div>
         </div>
 
@@ -99,7 +118,10 @@
           <p class="text-[14px] text-[#9CA3AF] leading-[1.5] mb-[16px]">
             Una vez que elimines tu cuenta, no hay vuelta atrás. Por favor, ten cuidado.
           </p>
-          <button class="w-full bg-[#DC2626] hover:bg-[#B91C1C] border-none rounded-[8px] py-[10px] px-[20px] text-[14px] font-semibold text-white cursor-pointer transition-colors duration-200 active:scale-95">
+          <button 
+            @click="deleteAccount"
+            class="w-full bg-[#DC2626] hover:bg-[#B91C1C] border-none rounded-[8px] py-[10px] px-[20px] text-[14px] font-semibold text-white cursor-pointer transition-colors duration-200 active:scale-95"
+          >
             Eliminar Cuenta
           </button>
         </div>
@@ -112,10 +134,12 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
 import Sidebar from './Sidebar.vue';
+import { useUIStore } from '../stores/ui';
 import { useAuthStore } from '../stores/auth';
 import { usuariosApi } from '../api';
 
 const authStore = useAuthStore();
+const uiStore = useUIStore();
 
 const profile = ref({
   name: '',
@@ -124,8 +148,13 @@ const profile = ref({
   avatar_id: ''
 });
 
-/* Removed availableAvatars as it's no longer used in template */
-
+const availableAvatars = [
+  { id: 'https://res.cloudinary.com/dgtahwqpj/image/upload/v1772035659/unnamed_t93s8g.jpg', url: 'https://res.cloudinary.com/dgtahwqpj/image/upload/v1772035659/unnamed_t93s8g.jpg' },
+  { id: 'https://res.cloudinary.com/dgtahwqpj/image/upload/v1772035494/unnamed_l44n9h.jpg', url: 'https://res.cloudinary.com/dgtahwqpj/image/upload/v1772035494/unnamed_l44n9h.jpg' },
+  { id: 'https://res.cloudinary.com/dgtahwqpj/image/upload/v1772034939/unnamed_w3uwac.jpg', url: 'https://res.cloudinary.com/dgtahwqpj/image/upload/v1772034939/unnamed_w3uwac.jpg' },
+  { id: 'https://res.cloudinary.com/dgtahwqpj/image/upload/v1772024580/unnamed_kfdzjz.jpg', url: 'https://res.cloudinary.com/dgtahwqpj/image/upload/v1772024580/unnamed_kfdzjz.jpg' },
+  { id: 'https://res.cloudinary.com/dgtahwqpj/image/upload/v1772024079/unnamed_ojydo4.png', url: 'https://res.cloudinary.com/dgtahwqpj/image/upload/v1772024079/unnamed_ojydo4.png' }
+];
 
 const privacyList = ref([
   { id: 'EsPerfilPublico', title: 'Perfil Público', desc: 'Permite que otros usuarios vean tu perfil', value: true },
@@ -138,11 +167,24 @@ onMounted(async () => {
     await authStore.fetchProfile();
   }
   if (authStore.profile) {
+    const oldAvatarMap: Record<string, string> = {
+      'avatar_default': 'https://res.cloudinary.com/dgtahwqpj/image/upload/v1772035659/unnamed_t93s8g.jpg',
+      'avatar_robot': 'https://res.cloudinary.com/dgtahwqpj/image/upload/v1772034939/unnamed_w3uwac.jpg',
+      'avatar_gymbro': 'https://res.cloudinary.com/dgtahwqpj/image/upload/v1772035659/unnamed_t93s8g.jpg',
+      'avatar_mujerfit': 'https://res.cloudinary.com/dgtahwqpj/image/upload/v1772035494/unnamed_l44n9h.jpg',
+      'avatar_hombrefit': 'https://res.cloudinary.com/dgtahwqpj/image/upload/v1772024580/unnamed_kfdzjz.jpg'
+    };
+
+    let avatarId = authStore.profile.avatarId || 'avatar_default';
+    if (!avatarId.startsWith('http')) {
+      avatarId = oldAvatarMap[avatarId] || availableAvatars[0].id;
+    }
+
     profile.value = {
       name: authStore.profile.nombre || '',
       email: authStore.profile.email || '',
       bio: authStore.profile.biografia || 'Apasionado del fitness y la vida saludable',
-      avatar_id: authStore.profile.avatarId || 'avatar_default'
+      avatar_id: avatarId
     };
     
     // Sincronizar privacidad
@@ -164,10 +206,10 @@ const saveProfile = async () => {
             authStore.profile.biografia = profile.value.bio;
             authStore.profile.avatarId = profile.value.avatar_id;
         }
-        alert('Perfil guardado exitosamente');
+        uiStore.showToast('Perfil guardado exitosamente', 'success');
     } catch (e) {
         console.error(e);
-        alert('Error al guardar el perfil');
+        uiStore.showToast('Error al guardar el perfil', 'error');
     }
 };
 
@@ -194,5 +236,25 @@ const togglePrivacy = async (item: any) => {
         item.value = !item.value;
     }
 }
+
+const deleteAccount = async () => {
+    const confirm = await uiStore.showConfirm(
+        "¿ESTÁS SEGURO?", 
+        "Esta acción es irreversible y perderás todo tu progreso.",
+        { confirmText: "Eliminar Todo", type: "danger" }
+    );
+    
+    if (!confirm) return;
+    
+    try {
+        await usuariosApi.eliminarMiCuenta();
+        uiStore.showToast("Tu cuenta ha sido eliminada. Lamentamos verte partir.", "info");
+        authStore.logout();
+        window.location.href = '/';
+    } catch (e) {
+        console.error("Error eliminando cuenta", e);
+        uiStore.showToast("Hubo un error al intentar eliminar la cuenta.", "error");
+    }
+};
 
 </script>

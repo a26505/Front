@@ -4,10 +4,10 @@
 
     <div class="flex-1 md:ml-[256px] flex flex-col min-h-screen">
       <!-- HEADER STICKY -->
-      <header class="sticky top-0 z-40 bg-black/95 backdrop-blur-md py-4 px-6 flex items-center justify-between border-b border-[#1F2937]/50">
+      <header class="sticky top-0 z-40 w-full h-[80px] bg-black/95 backdrop-blur-md px-6 flex items-center justify-between border-b border-[#1F2937]/50">
         <div>
           <h1 class="text-2xl font-bold tracking-tight">Panel de Administración</h1>
-          <p class="text-sm text-[#9CA3AF]">Gestiona usuarios y contenido de la comunidad</p>
+          <p class="text-xs text-[#9CA3AF]">Gestiona usuarios y contenido de la comunidad</p>
         </div>
       </header>
 
@@ -74,7 +74,7 @@
                       </button>
                       <button 
                         v-if="!user.estaBorrado"
-                        @click="deleteUser(user.id)" 
+                        @click="eliminarUsuario(user.id)" 
                         class="px-3 py-1 bg-red-900/50 text-[#DC2626] rounded text-xs font-semibold hover:bg-red-900/80 transition-colors"
                       >
                         Eliminar
@@ -131,10 +131,9 @@
                     </td>
                     <td class="p-4 text-sm text-right flex justify-end gap-2">
                       <button 
-                        @click="verRutina(rutina)" 
-                        class="px-3 py-1 bg-[#1F2937] text-white border border-[#374151] rounded text-xs font-semibold hover:bg-[#374151] transition-colors flex items-center gap-1"
+                        @click="verDetalle(rutina)" 
+                        class="px-3 py-1 bg-blue-900/50 text-blue-400 rounded text-xs font-semibold hover:bg-blue-900/80 transition-colors"
                       >
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
                         Ver
                       </button>
                       <button 
@@ -168,64 +167,119 @@
           </div>
         </div>
 
-      </main>
-    </div>
 
-    <!-- MODAL: VER DETALLE RUTINA (PARA ADMIN) -->
-    <div v-if="selectedRoutineForView" class="fixed inset-0 z-50 flex items-center justify-center p-4">
-        <div @click="selectedRoutineForView = null" class="absolute inset-0 bg-black/80 backdrop-blur-sm"></div>
-        <div class="relative bg-[#111827] border border-[#1F2937] rounded-[16px] w-full max-w-[600px] max-h-[85vh] overflow-hidden shadow-2xl animate-in zoom-in-95 duration-200 flex flex-col">
-            <header class="p-6 border-b border-[#1F2937]/50 flex justify-between items-center bg-black/20">
-                <div>
-                    <h2 class="text-[20px] font-bold text-white">{{ selectedRoutineForView.nombre }}</h2>
-                    <p class="text-xs text-[#9CA3AF]">ID: {{ selectedRoutineForView.id }} • Creador: {{ selectedRoutineForView.creadorNombre || 'Anónimo' }}</p>
-                </div>
-                <button @click="selectedRoutineForView = null" class="text-[#9CA3AF] hover:text-white transition-colors bg-[#1F2937] p-2 rounded-full">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-                </button>
-            </header>
+        <!-- MODAL: DETALLE RUTINA PARA ADMIN -->
+        <div v-if="selectedRoutine" class="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div @click="selectedRoutine = null" class="absolute inset-0 bg-black/80 backdrop-blur-sm"></div>
+          <div class="relative bg-[#0A0A0A] border border-[#1F2937] rounded-[24px] w-full max-w-[650px] max-h-[90vh] overflow-hidden flex flex-col shadow-[0_0_50px_rgba(0,0,0,0.5)] text-white animate-in zoom-in-95 duration-200">
             
-            <div class="p-6 overflow-y-auto flex-1 custom-scrollbar">
-                <div v-if="isLoadingDetail" class="flex flex-col items-center py-16">
-                    <div class="w-10 h-10 border-4 border-[#DC2626]/20 border-t-[#DC2626] rounded-full animate-spin mb-4"></div>
-                    <p class="text-[#9CA3AF] text-sm font-medium tracking-wide">Cargando ejercicios...</p>
-                </div>
-                <div v-else class="space-y-4">
-                    <!-- Image and Description -->
-                    <div v-if="selectedRoutineForView.imagenUrl" class="w-full h-40 rounded-xl overflow-hidden mb-4 border border-[#374151]">
-                        <img :src="selectedRoutineForView.imagenUrl" class="w-full h-full object-cover" />
-                    </div>
-                    
-                    <div v-if="selectedRoutineForView.descripcion" class="bg-[#1F2937]/30 border border-[#374151]/50 rounded-xl p-4 mb-4">
-                        <p class="text-[#9CA3AF] italic text-sm">"{{ selectedRoutineForView.descripcion }}"</p>
-                    </div>
+            <!-- Banner Header -->
+            <div class="relative h-[220px] w-full shrink-0 group">
+              <img 
+                :src="selectedRoutine.urlImagen || 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?q=80&w=1000'" 
+                class="w-full h-full object-cover"
+              />
+              <div class="absolute inset-0 bg-gradient-to-t from-[#0A0A0A] via-[#0A0A0A]/40 to-transparent"></div>
+              
+              <!-- Badge Dificultad -->
+              <div class="absolute top-6 left-6">
+                <span class="bg-[#DC2626] text-white text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-md shadow-lg">
+                  {{ selectedRoutine.nivel }}
+                </span>
+              </div>
 
-                    <div v-for="(ej, idx) in routineDetailExercises" :key="idx" class="bg-[#1F2937]/50 border border-[#374151] rounded-xl p-4 flex items-center gap-4">
-                        <div class="w-10 h-10 bg-[#DC2626]/20 border border-[#DC2626]/30 rounded-lg flex items-center justify-center text-[#DC2626] font-black text-lg">
-                          {{ idx + 1 }}
-                        </div>
-                        <div class="flex-1">
-                            <h4 class="text-white font-bold text-sm mb-0.5">{{ ej.nombreEjercicio }}</h4>
-                            <div class="flex gap-3 text-[11px] font-medium uppercase tracking-wider">
-                                <span class="text-[#9CA3AF]">{{ ej.series }} series</span>
-                                <span class="text-[#9CA3AF]">{{ ej.repeticiones }} reps</span>
-                                <span class="text-[#DC2626]">{{ ej.descansoSegundos }}s descanso</span>
-                            </div>
-                        </div>
-                    </div>
-                    <div v-if="routineDetailExercises.length === 0" class="py-10 text-center text-[#9CA3AF]">
-                      Esta rutina no tiene ejercicios asignados.
-                    </div>
-                </div>
+              <!-- Titulo -->
+              <div class="absolute bottom-6 left-8">
+                <h2 class="text-4xl font-black italic uppercase tracking-tighter drop-shadow-2xl">{{ selectedRoutine.nombre }}</h2>
+              </div>
+
+              <!-- Close button overlay -->
+              <button @click="selectedRoutine = null" class="absolute top-6 right-6 w-10 h-10 bg-black/40 hover:bg-black/60 rounded-full flex items-center justify-center text-white backdrop-blur-md transition-all">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+              </button>
             </div>
-            <footer class="p-6 border-t border-[#1F2937] flex justify-end gap-3 bg-black/20">
-                <button @click="selectedRoutineForView = null" class="px-6 py-2 border border-[#374151] text-white rounded-lg font-bold hover:bg-white/5 transition-all text-sm">Cerrar</button>
-                <div v-if="selectedRoutineForView.estado === 'EnRevision'" class="flex gap-3">
-                  <button @click="rechazarRutina(selectedRoutineForView.id); selectedRoutineForView = null" class="bg-orange-900/40 text-orange-400 border border-orange-800/30 px-6 py-2 rounded-lg font-bold hover:bg-orange-900/60 transition-all text-sm">Rechazar</button>
-                  <button @click="validarRutina(selectedRoutineForView.id); selectedRoutineForView = null" class="bg-green-900/40 text-green-400 border border-green-800/30 px-6 py-2 rounded-lg font-bold hover:bg-green-900/60 transition-all text-sm">Aprobar Rutina</button>
+            
+            <div class="px-8 py-6 flex-1 overflow-y-auto custom-scrollbar">
+              <!-- Metadata Row -->
+              <div class="flex flex-wrap items-center gap-6 mb-6 text-sm font-bold text-gray-300">
+                <div class="flex items-center gap-2">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#DC2626" stroke-width="2.5"><path d="M16 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="8.5" cy="7" r="4"/></svg>
+                  <span>{{ routineDetailExercises.length }} ejercicios</span>
                 </div>
+                <div class="flex items-center gap-2">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#DC2626" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                  <span>{{ selectedRoutine.duracionMinutos }} min</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#DC2626" stroke-width="2.5"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                  <span>Por {{ selectedRoutine.creadorNombre }}</span>
+                </div>
+              </div>
+
+              <!-- Muscle Tags -->
+              <div class="flex flex-wrap gap-2 mb-8" v-if="routineDetailExercises.length > 0">
+                <div 
+                  v-for="muscle in [...new Set(routineDetailExercises.map(e => e.grupoMuscular || 'Otro'))]" 
+                  :key="muscle"
+                  class="bg-red-900/20 border border-red-500/30 text-red-400 text-[10px] font-black uppercase tracking-widest px-4 py-2 rounded-lg"
+                >
+                  {{ muscle }}
+                </div>
+              </div>
+
+              <!-- Descripcion -->
+              <p v-if="selectedRoutine.descripcion" class="text-gray-400 text-sm italic mb-8 border-l-2 border-red-500/30 pl-4 py-1">
+                "{{ selectedRoutine.descripcion }}"
+              </p>
+
+              <h3 class="text-xs font-black uppercase tracking-[0.2em] text-gray-500 mb-6 flex items-center gap-4">
+                Ejercicios
+                <div class="h-px flex-1 bg-gradient-to-r from-[#1F2937] to-transparent"></div>
+              </h3>
+
+              <div v-if="loadingDetail" class="flex flex-col items-center py-20">
+                <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-[#DC2626] mb-4"></div>
+                <p class="text-[#9CA3AF] font-bold tracking-widest text-xs">Sincronizando rutinas...</p>
+              </div>
+              <div v-else class="space-y-4">
+                <div v-for="(ej, idx) in routineDetailExercises" :key="idx" class="bg-[#111827] border border-[#1F2937] rounded-2xl p-5 flex items-center gap-5 transition-all hover:border-[#DC2626]/40 hover:bg-[#161B22] group">
+                  <div class="w-12 h-12 bg-gradient-to-br from-[#DC2626] to-[#991B1B] rounded-full flex items-center justify-center font-black text-xl shadow-lg shadow-red-900/20 shrink-0 group-hover:scale-110 transition-transform">
+                    {{ idx + 1 }}
+                  </div>
+                  <div class="flex-1 min-w-0">
+                    <h4 class="font-black text-lg text-white mb-1 truncate">{{ ej.nombreEjercicio }}</h4>
+                    <div class="flex flex-wrap gap-x-4 gap-y-2">
+                       <div v-if="ej.grupoMuscular" class="bg-red-500/10 text-red-400 text-[9px] font-black px-2 py-0.5 rounded uppercase tracking-wider border border-red-500/20">{{ ej.grupoMuscular }}</div>
+                       <div class="text-[11px] font-bold text-gray-400 flex items-center gap-4">
+                          <span>Series: <span class="text-white">{{ ej.series }}</span></span>
+                          <span>Reps: <span class="text-white">{{ ej.repeticiones }}</span></span>
+                          <span>Descanso: <span class="text-white">{{ ej.descansoSegundos }}s</span></span>
+                       </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <footer class="p-8 border-t border-[#1F2937]/50 flex flex-col gap-4 bg-[#0A0A0A]">
+              <div class="flex justify-end gap-3">
+                <button @click="selectedRoutine = null" class="px-6 py-3 border border-[#374151] rounded-xl text-sm font-bold hover:bg-white/5 transition-all shrink-0">Cerrar</button>
+                <template v-if="selectedRoutine.estado === 'EnRevision'">
+                  <button @click="rechazarRutina(selectedRoutine.id)" class="px-6 py-3 border border-orange-500/30 bg-orange-950/20 text-orange-400 hover:bg-orange-600 hover:text-white rounded-xl text-sm font-bold transition-all">Rechazar</button>
+                  <button @click="validarRutina(selectedRoutine.id)" class="flex-1 px-6 py-3 bg-[#DC2626] hover:bg-red-700 text-white rounded-xl text-[16px] font-black uppercase tracking-widest transition-all shadow-lg shadow-red-900/20 flex items-center justify-center gap-2">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4"><polyline points="20 6 9 17 4 12"/></svg>
+                    Aprobar Rutina
+                  </button>
+                </template>
+                <button v-else-if="selectedRoutine.estado === 'Publicada'" @click="eliminarRutina(selectedRoutine.id)" class="flex-1 px-6 py-3 bg-red-950/20 border border-red-500/30 text-red-500 hover:bg-red-600 hover:text-white rounded-xl text-[16px] font-black uppercase tracking-widest transition-all">
+                  Eliminar de la Comunidad
+                </button>
+              </div>
             </footer>
+          </div>
         </div>
+
+      </main>
     </div>
   </div>
 </template>
@@ -233,12 +287,14 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
 import Sidebar from './Sidebar.vue';
-import { adminApi, rutinasApi } from '../api';
+import { adminApi } from '../api';
 import { useAuthStore } from '../stores/auth';
 import { useRouter } from 'vue-router';
+import { useUIStore } from '../stores/ui';
 
 const authStore = useAuthStore();
 const router = useRouter();
+const uiStore = useUIStore();
 
 const activeTab = ref<'usuarios' | 'rutinas'>('usuarios');
 
@@ -251,24 +307,24 @@ const rutinas = ref<any[]>([]);
 const loadingRutinas = ref(false);
 const rutinasFilter = ref<'ALL' | 'EnRevision'>('EnRevision');
 
-// Detail view for admin
-const selectedRoutineForView = ref<any>(null);
+// Detalle Rutina Admin
+const selectedRoutine = ref<any>(null);
 const routineDetailExercises = ref<any[]>([]);
-const isLoadingDetail = ref(false);
+const loadingDetail = ref(false);
 
-const verRutina = async (routine: any) => {
-    selectedRoutineForView.value = routine;
-    isLoadingDetail.value = true;
-    try {
-        const res = await rutinasApi.getById(routine.id);
-        routineDetailExercises.value = res.data?.ejercicios || [];
-    } catch (e) {
-        console.error("No se pudo cargar el detalle", e);
-        alert("No se pudo cargar la información de los ejercicios.");
-        selectedRoutineForView.value = null;
-    } finally {
-        isLoadingDetail.value = false;
-    }
+const verDetalle = async (rutina: any) => {
+  selectedRoutine.value = rutina;
+  loadingDetail.value = true;
+  try {
+    // Reutilizamos el endpoint público ya que el admin tiene permisos
+    const { rutinasApi } = await import('../api');
+    const res = await rutinasApi.getById(rutina.id);
+    routineDetailExercises.value = res.data?.ejercicios || [];
+  } catch (e) {
+    console.error("Error cargando detalle", e);
+  } finally {
+    loadingDetail.value = false;
+  }
 };
 
 onMounted(async () => {
@@ -311,15 +367,17 @@ const toggleUserStatus = async (user: any) => {
     }
 };
 
-const deleteUser = async (id: number) => {
-    if (!confirm("¿Estás seguro de que deseas eliminar (baja lógica) a este usuario?")) return;
+const eliminarUsuario = async (id: number) => {
+    const confirm = await uiStore.showConfirm("Baja de Usuario", "¿Estás seguro de que deseas eliminar (baja lógica) a este usuario?", { type: 'danger' });
+    if (!confirm) return;
     try {
         await adminApi.eliminarUsuario(id);
         const u = usuarios.value.find(x => x.id === id);
         if (u) u.estaBorrado = true;
+        uiStore.showToast("Usuario eliminado correctamente");
     } catch (e) {
         console.error("Error al eliminar usuario", e);
-        alert("Hubo un error al eliminar el usuario.");
+        uiStore.showToast("Hubo un error al eliminar el usuario.", "error");
     }
 };
 
@@ -364,6 +422,7 @@ const validarRutina = async (id: number) => {
         await adminApi.validarRutina(id);
         const r = rutinas.value.find(x => x.id === id);
         if (r) r.estado = 'Publicada';
+        if (selectedRoutine.value?.id === id) selectedRoutine.value = null;
     } catch (e) {
         console.error("Error validando", e);
     }
@@ -374,18 +433,22 @@ const rechazarRutina = async (id: number) => {
         await adminApi.rechazarRutina(id);
         const r = rutinas.value.find(x => x.id === id);
         if (r) r.estado = 'Rechazada';
+        if (selectedRoutine.value?.id === id) selectedRoutine.value = null;
     } catch (e) {
         console.error("Error rechazando", e);
     }
 };
 
 const eliminarRutina = async (id: number) => {
-    if (!confirm("¿Estás seguro de que deseas eliminar esta rutina?")) return;
+    const confirm = await uiStore.showConfirm("Borrar Rutina", "¿Estás seguro de que deseas eliminar esta rutina?", { type: 'danger' });
+    if (!confirm) return;
     try {
         await adminApi.eliminarRutina(id);
         rutinas.value = rutinas.value.filter(x => x.id !== id);
+        uiStore.showToast("Rutina eliminada");
     } catch (e) {
         console.error("Error eliminando", e);
+        uiStore.showToast("Error al eliminar rutina", "error");
     }
 };
 

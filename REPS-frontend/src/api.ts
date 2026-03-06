@@ -57,9 +57,10 @@ export const usuariosApi = {
     agregarAmigo: (codigo: string) => api.post(`/Usuarios/amigos/agregar/${codigo}`),
     getMisAmigos: () => api.get('/Usuarios/amigos'),
     getSolicitudes: () => api.get('/Usuarios/amigos/solicitudes'),
-    responderSolicitud: (codigoAmigo: string | null, solicitanteId: number | undefined, aceptar: boolean) =>
-        api.post('/Usuarios/amigos/responder', { codigoAmigo, solicitanteId, aceptar }),
+    responderSolicitud: (codigoAmigo: string, aceptar: boolean) =>
+        api.post('/Usuarios/amigos/responder', { codigoAmigo, aceptar }),
     updatePlan: (planId: number) => api.put('/Usuarios/plan', { planId }),
+    eliminarMiCuenta: () => api.delete('/Usuarios/mi-perfil'),
 };
 
 // ─── DASHBOARD ────────────────────────────────────────────────────────

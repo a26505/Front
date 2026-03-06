@@ -25,7 +25,5 @@ namespace REPS_backend.Repositories
         Task UpdateAsync(Rutina rutina);
         // Eliminar
         Task DeleteAsync(int id);
-        Task<int> ToggleLikeAsync(int rutinaId, int usuarioId);
-        Task<List<int>> GetLikedRoutineIdsAsync(int usuarioId);
     }
 }

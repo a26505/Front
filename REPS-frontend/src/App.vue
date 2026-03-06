@@ -1,10 +1,14 @@
 <script setup lang="ts">
 import { RouterView } from 'vue-router'
+import GlobalUI from './components/common/GlobalUI.vue'
+import CookieConsent from './components/common/CookieConsent.vue'
 </script>
 
 <template>
   <v-app class="bg-[#000000] min-h-screen text-white selection:bg-[#DC2626] selection:text-white">
     <RouterView />
+    <GlobalUI />
+    <CookieConsent />
   </v-app>
 </template>
 

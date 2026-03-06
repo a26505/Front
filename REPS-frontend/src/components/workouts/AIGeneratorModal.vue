@@ -122,14 +122,22 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive } from 'vue';
+import { reactive } from 'vue';
 
 const emit = defineEmits(['close', 'generate']);
 
 const muscles = ['Pecho', 'Espalda', 'Piernas', 'Hombros', 'Brazos', 'Core'];
 const equipment = ['Barra y discos', 'Mancuernas', 'Máquinas', 'Peso corporal', 'Bandas', 'Kettlebells'];
 
-const form = reactive({
+const form = reactive<{
+  goal: string;
+  level: string;
+  days: string;
+  duration: string;
+  muscles: string[];
+  equipment: string[];
+  notes: string;
+}>({
   goal: 'hipertrofia',
   level: 'principiante',
   days: '3',
@@ -139,7 +147,7 @@ const form = reactive({
   notes: ''
 });
 
-const toggleMuscle = (m) => {
+const toggleMuscle = (m: string) => {
   const index = form.muscles.indexOf(m);
   if (index > -1) form.muscles.splice(index, 1);
   else form.muscles.push(m);

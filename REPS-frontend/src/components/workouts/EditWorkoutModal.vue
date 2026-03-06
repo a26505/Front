@@ -98,6 +98,10 @@
           </div>
 
           <!-- Lista ejercicios disponibles -->
+          <div class="flex justify-between items-center mb-2">
+            <span class="text-xs font-bold text-[#9CA3AF] uppercase">Resultados</span>
+            <button @click="showCreateExModal = true" class="text-[10px] font-black text-[#DC2626] uppercase tracking-widest border border-[#DC2626]/30 px-2 py-1 rounded hover:bg-[#DC2626] hover:text-white transition-all">+ Crear Ejercicio</button>
+          </div>
           <div class="bg-[#0A0A0A] border border-[#374151] rounded-lg p-2 max-h-48 overflow-y-auto custom-scrollbar mb-6">
             <div 
               v-for="ex in filteredExercises" 
@@ -106,8 +110,11 @@
               @click="addExercise(ex)"
             >
               <span class="text-sm text-white">{{ ex.name }}</span>
-              <div class="flex items-center gap-3">
+              <div class="flex items-center gap-2">
                 <span class="bg-[rgba(220,38,38,0.15)] px-2 py-0.5 rounded text-[10px] text-[#FCA5A5] uppercase font-bold">{{ ex.muscle }}</span>
+                <button v-if="ex.esMio" @click.stop="deleteCustomExercise(ex)" class="w-6 h-6 bg-transparent border border-[#DC2626]/30 hover:bg-[#DC2626] hover:border-[#DC2626] rounded flex items-center justify-center text-[#DC2626] hover:text-white transition-all" title="Eliminar ejercicio">
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M18 6L6 18M6 6l12 12"/></svg>
+                </button>
                 <div @click.stop="addExercise(ex)" class="w-7 h-7 bg-[#DC2626] rounded flex items-center justify-center text-white font-bold transition-transform group-hover:scale-125 hover:bg-red-500 shadow-lg shadow-red-900/20 active:scale-90">+</div>
               </div>
             </div>
@@ -137,11 +144,6 @@
                   <span class="font-bold text-white">{{ item.name }}</span>
                 </div>
                 <div class="flex gap-2">
-                  <div class="px-1 border border-[#374151] rounded-md flex items-center bg-[#0A0A0A]">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-gray-600">
-                      <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.77 3.77z"/>
-                    </svg>
-                  </div>
                   <button @click="removeExercise(index)" class="p-2 border border-[#374151] rounded-md text-[#9CA3AF] hover:border-[#DC2626] hover:text-[#DC2626] transition-colors">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
                   </button>
@@ -191,15 +193,42 @@
         </div>
       </div>
     </div>
+    <CreateEjercicioModal 
+      v-if="showCreateExModal" 
+      @close="showCreateExModal = false" 
+      @created="handleExerciseCreated"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue';
 import { rutinasApi, ejerciciosApi } from '../../api';
+import { useUIStore } from '../../stores/ui';
+import CreateEjercicioModal from './CreateEjercicioModal.vue';
 
+const uiStore = useUIStore();
+
+const props = defineProps<{
+  workoutToEdit: any;
+}>();
+
+const emit = defineEmits(['close', 'save']);
+
+// --- STATE ---
 const searchQuery = ref('');
+const showCreateExModal = ref(false);
+const name = ref('');
+const difficulty = ref(1);
+const imagenUrl = ref('');
+const selectedExercises = ref<any[]>([]);
+const availableExercises = ref<any[]>([]);
+const isSaving = ref(false);
+const isUploading = ref(false);
+const saveError = ref('');
+const fileInput = ref<HTMLInputElement | null>(null);
 
+// --- DRILL DOWN ---
 const filteredExercises = computed(() => {
   if (!availableExercises.value) return [];
   const q = searchQuery.value.toLowerCase().trim();
@@ -210,21 +239,7 @@ const filteredExercises = computed(() => {
   });
 });
 
-const props = defineProps<{
-  workoutToEdit: any;
-}>();
-
-const emit = defineEmits(['close', 'save']);
-
-const name = ref('');
-const difficulty = ref(1);
-const imagenUrl = ref('');
-const selectedExercises = ref<any[]>([]);
-const isSaving = ref(false);
-const isUploading = ref(false);
-const saveError = ref('');
-const fileInput = ref<HTMLInputElement | null>(null);
-
+// --- METHODS ---
 const triggerFileInput = () => {
   fileInput.value?.click();
 };
@@ -239,7 +254,6 @@ const onFileSelected = async (event: any) => {
     formData.append('file', file);
     formData.append('upload_preset', 'ml_default');
     
-    // Cloudinary upload API
     const response = await fetch('https://api.cloudinary.com/v1_1/dgtahwqpj/upload', {
       method: 'POST',
       body: formData
@@ -251,108 +265,38 @@ const onFileSelected = async (event: any) => {
       saveError.value = '';
     } else {
       console.error('Cloudinary upload error:', data);
-      const detail = data.error?.message || 'Preset inválido o configuración de Cloudinary incorrecta.';
-      saveError.value = `Error al subir: ${detail}`;
+      saveError.value = `Error al subir: ${data.error?.message || 'Preset inválido'}`;
     }
   } catch (err: any) {
     console.error('Error uploading to Cloudinary:', err);
-    saveError.value = `Error de conexión: ${err.message || 'Sin respuesta del servidor'}`;
+    saveError.value = `Error de conexión: ${err.message}`;
   } finally {
     isUploading.value = false;
   }
 };
 
-// Ejercicios disponibles: se cargan del backend
-const availableExercises = ref<any[]>([]);
+const loadExercises = async () => {
+    try {
+        const res = await ejerciciosApi.getAll();
+        const muscleGroupMap: Record<number, string> = {
+            0: 'Pecho', 1: 'Espalda', 2: 'Pierna', 3: 'Hombro', 4: 'Bíceps',
+            5: 'Tríceps', 6: 'Abdomen', 7: 'Cardio', 8: 'Full Body', 9: 'Otro'
+        };
 
-onMounted(async () => {
-  // Pre-cargar datos de la rutina a editar
-  if (props.workoutToEdit) {
-      name.value = props.workoutToEdit.title || props.workoutToEdit.nombre || '';
-      imagenUrl.value = props.workoutToEdit.image || props.workoutToEdit.urlImagen || '';
-      
-      // Cargar nivel si existe
-      if (typeof props.workoutToEdit.difficultyNum === 'number') {
-        difficulty.value = props.workoutToEdit.difficultyNum;
-      } else if (typeof props.workoutToEdit.nivel === 'number') {
-        difficulty.value = props.workoutToEdit.nivel;
-      }
-      
-      // Si tenemos la lista de ejercicios ya cargada
-      if (props.workoutToEdit.exerciseList) {
-          selectedExercises.value = props.workoutToEdit.exerciseList.map((e: any) => ({
-              id: e.ejercicioId || e.id,
-              name: e.name || e.nombreEjercicio,
-              muscle: e.muscle || e.grupoMuscular || '',
-              sets: e.sets || e.series || 3,
-              reps: e.reps || e.repeticiones || '10-12',
-              rest: e.rest || e.descansoSegundos || 90,
-              weight: e.weight || e.pesoSugerido || '0 kg'
-          }));
-      } else if (props.workoutToEdit.id) {
-          // Si por alguna razón no los tenemos, podemos forzar una carga completa por si acaso, 
-          // aunque al darle a Editar normalmente ya tendremos la rutina completa o la pediremos antes de abrir el modal.
-          try {
-              const res = await rutinasApi.getById(props.workoutToEdit.id);
-              if (res.data && res.data.ejercicios) {
-                   selectedExercises.value = res.data.ejercicios.map((e: any) => ({
-                      id: e.ejercicioId,
-                      name: e.nombreEjercicio,
-                      muscle: e.grupoMuscular,
-                      sets: e.series,
-                      reps: e.repeticiones,
-                      rest: e.descansoSegundos,
-                      weight: '0 kg' // Placeholder
-                  }));
-              }
-          } catch(err) {
-              console.error("Error cargando detalles previos", err);
-          }
-      }
-  }
+        availableExercises.value = (res.data as any[]).map((e: any) => {
+            let muscleName = 'Otro';
+            if (typeof e.grupoMuscular === 'number') {
+                muscleName = muscleGroupMap[e.grupoMuscular] || 'Otro';
+            } else if (typeof e.grupoMuscular === 'string') {
+                muscleName = e.grupoMuscular;
+            }
 
-  try {
-    const res = await ejerciciosApi.getAll();
-    const muscleGroupMap: Record<number, string> = {
-      0: 'Pecho',
-      1: 'Espalda',
-      2: 'Pierna',
-      3: 'Hombro',
-      4: 'Brazos',
-      5: 'Abdomen',
-      6: 'Biceps',
-      7: 'Triceps',
-      8: 'Cardio',
-      9: 'FullBody',
-      10: 'Otro'
-    };
-    
-    availableExercises.value = (res.data as any[]).map((e: any) => {
-      let muscleName = 'Otro';
-      if (typeof e.grupoMuscular === 'number') {
-        muscleName = muscleGroupMap[e.grupoMuscular] || 'Otro';
-      } else if (typeof e.grupoMuscular === 'string') {
-        muscleName = e.grupoMuscular;
-      }
-
-      return {
-        id: e.id,
-        name: e.nombre,
-        muscle: muscleName
-      };
-    });
-  } catch {
-    // Fallback con ejercicios de ejemplo
-    availableExercises.value = [
-      { id: 1, name: 'Press de Banca con Barra', muscle: 'Pecho' },
-      { id: 2, name: 'Sentadilla Libre', muscle: 'Pierna' },
-      { id: 3, name: 'Peso Muerto Rumano', muscle: 'Pierna' },
-      { id: 4, name: 'Press Militar', muscle: 'Hombro' },
-      { id: 5, name: 'Dominadas Pronas', muscle: 'Espalda' },
-      { id: 6, name: 'Curl de Bíceps con Barra', muscle: 'Biceps' },
-    ];
-  }
-});
+            return { id: e.id, name: e.nombre, muscle: muscleName, esMio: e.esMio || false };
+        });
+    } catch (e) {
+        console.error("Error loading exercises", e);
+    }
+}
 
 const addExercise = (ex: any) => {
   selectedExercises.value.push({
@@ -362,11 +306,38 @@ const addExercise = (ex: any) => {
     rest: '90s',
     weight: '0 kg'
   });
-  searchQuery.value = ''; // Reset search bar after adding
+  searchQuery.value = '';
 };
 
 const removeExercise = (index: number) => {
   selectedExercises.value.splice(index, 1);
+};
+
+const handleExerciseCreated = async (newEx: any) => {
+    const muscleGroupMap: Record<number, string> = {
+      0: 'Pecho', 1: 'Espalda', 2: 'Pierna', 3: 'Hombro', 4: 'Bíceps',
+      5: 'Tríceps', 6: 'Abdomen', 7: 'Cardio', 8: 'Full Body', 9: 'Otro'
+    };
+    
+    const mappedEx = {
+        id: newEx.id,
+        name: newEx.nombre,
+        muscle: typeof newEx.grupoMuscular === 'number' ? muscleGroupMap[newEx.grupoMuscular] : newEx.grupoMuscular,
+        esMio: true
+    };
+    
+    availableExercises.value.unshift(mappedEx);
+    addExercise(mappedEx);
+};
+
+const deleteCustomExercise = async (ex: any) => {
+    try {
+        await ejerciciosApi.eliminar(ex.id);
+        availableExercises.value = availableExercises.value.filter(e => e.id !== ex.id);
+        uiStore.showToast('Ejercicio eliminado', 'success');
+    } catch {
+        uiStore.showToast('Error al eliminar ejercicio', 'error');
+    }
 };
 
 const saveWorkout = async () => {
@@ -374,17 +345,6 @@ const saveWorkout = async () => {
   isSaving.value = true;
   saveError.value = '';
   try {
-    // Convertir nivel (string → número del enum NivelDificultad)
-    const nivelMap: Record<string, number> = {
-      'Principiante': 0,
-      'Intermedio': 1,
-      'Avanzado': 2,
-    };
-    let nivelNum = props.workoutToEdit?.nivel ?? 1;
-    if (typeof nivelNum === 'string') {
-      nivelNum = nivelMap[nivelNum] ?? 1;
-    }
-    
     const dto = {
       nombre: name.value,
       imagenUrl: imagenUrl.value,
@@ -394,18 +354,56 @@ const saveWorkout = async () => {
         series: parseInt(e.sets) || 3,
         repeticiones: String(e.reps) || '10-12',
         descansoSegundos: parseInt(e.rest) || 90,
-        tipo: 0 // TipoSerie.Normal
+        tipo: 0
       }))
     };
     await rutinasApi.actualizar(props.workoutToEdit.id, dto);
     emit('save', { name: name.value, exercises: selectedExercises.value });
     emit('close');
   } catch (err: any) {
-    saveError.value = err.response?.data?.message ?? err.response?.data ?? 'Error al actualizar la rutina';
+    saveError.value = err.response?.data?.message ?? 'Error al actualizar';
   } finally {
     isSaving.value = false;
   }
 };
+
+onMounted(async () => {
+    if (props.workoutToEdit) {
+      name.value = props.workoutToEdit.title || props.workoutToEdit.nombre || '';
+      imagenUrl.value = props.workoutToEdit.image || props.workoutToEdit.urlImagen || '';
+      difficulty.value = props.workoutToEdit.difficultyNum ?? props.workoutToEdit.nivel ?? 1;
+      
+      if (props.workoutToEdit.exerciseList) {
+          selectedExercises.value = props.workoutToEdit.exerciseList.map((e: any) => ({
+              id: e.ejercicioId || e.id,
+              name: e.name || e.nombreEjercicio,
+              muscle: e.muscle || e.grupoMuscular || '',
+              sets: e.sets || e.series || 3,
+              reps: e.reps || e.repeticiones || '10-12',
+              rest: e.rest || e.descansoSegundos || 90,
+              weight: e.weight || '0 kg'
+          }));
+      } else if (props.workoutToEdit.id) {
+          try {
+              const res = await rutinasApi.getById(props.workoutToEdit.id);
+              if (res.data?.ejercicios) {
+                   selectedExercises.value = res.data.ejercicios.map((e: any) => ({
+                      id: e.ejercicioId,
+                      name: e.nombreEjercicio,
+                      muscle: e.grupoMuscular,
+                      sets: e.series,
+                      reps: e.repeticiones,
+                      rest: e.descansoSegundos,
+                      weight: '0 kg'
+                  }));
+              }
+          } catch(err) {
+              console.error("Error loading workout detail", err);
+          }
+      }
+    }
+    await loadExercises();
+});
 </script>
 
 <style scoped>

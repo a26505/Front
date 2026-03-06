@@ -52,6 +52,11 @@ namespace REPS_backend.Services
                 return null;
             }
 
+            if (!usuario.EstaActivo || usuario.EstaBorrado)
+            {
+                throw new Exception("Tu cuenta ha sido desactivada o eliminada. Contacta con soporte.");
+            }
+
             return GenerateToken(usuario);
         }
 
