@@ -11,6 +11,8 @@ export interface UserProfile {
     fechaRegistro: string;
     rol: string;
     puntosTotales: number;
+    puntosRangoGeneral: number;
+    puntosLogros: number;
     nivel: number;
     rachaDias: number;
     rangoGeneral: string;

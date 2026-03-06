@@ -6,29 +6,25 @@
     <!-- 2️⃣ CONTENIDO PRINCIPAL Y HEADER -->
     <div class="flex-1 md:ml-[256px] min-h-screen">
       <!-- HEADER -->
-      <header class="sticky top-0 z-40 w-full h-[89px] bg-[rgba(0,0,0,0.95)] border-b border-[#1E2939] backdrop-blur-[10px] py-[16px] px-[24px] flex items-center justify-between">
-        <div class="flex flex-col gap-0">
-          <div class="flex items-center gap-2">
-            <h1 class="text-[30px] leading-[36px] font-normal text-white">¡Hola, {{ userName }}!</h1>
-          </div>
-          <p class="text-[14px] leading-[20px] text-[#9CA3AF]">Listo para superar tus límites hoy</p>
+      <header class="sticky top-0 z-40 w-full h-[80px] bg-black/95 backdrop-blur-md px-6 flex items-center justify-between border-b border-[#1F2937]/50">
+        <div class="flex flex-col">
+          <h1 class="text-xl md:text-2xl font-bold text-white tracking-tight">¡Hola, {{ userName }}!</h1>
+          <p class="text-xs text-[#9CA3AF]">Listo para superar tus límites hoy</p>
         </div>
 
-        <div class="flex items-center gap-[20px]">
-          <div v-if="!isPro" class="hidden md:block">
-            <router-link to="/select-plan" class="relative bg-gradient-to-r from-[#EAB308] to-[#A16207] rounded-[8px] h-[36px] px-[16px] flex items-center justify-center gap-[8px] cursor-pointer transition-all duration-300 hover:scale-105 active:scale-95 border border-[#FEF08A] overflow-hidden group">
-              <div class="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out"></div>
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" class="relative z-10">
+        <div class="flex items-center gap-4">
+          <div v-if="!isPro">
+            <router-link to="/select-plan" class="bg-gradient-to-r from-[#EAB308] to-[#A16207] rounded-lg h-[40px] px-4 flex items-center justify-center gap-2 transition-all duration-300 hover:scale-105 active:scale-95 border border-[#FEF08A] shadow-lg shadow-yellow-900/20 group overflow-hidden relative">
+              <div class="absolute inset-0 bg-white/10 -translate-x-full group-hover:translate-x-0 transition-transform duration-300"></div>
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" class="relative z-10 shrink-0">
                 <path d="M2 11.3333L3.33333 3.33333L6.66667 6.66667L8 1.33333L9.33333 6.66667L12.6667 3.33333L14 11.3333H2Z" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
                 <path d="M2 11.3333H14V13.3333C14 13.7 13.7 14 13.3333 14H2.66667C2.3 14 2 13.7 2 13.3333V11.3333Z" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
               </svg>
-              <span class="text-white text-[14px] font-bold tracking-wide relative z-10 whitespace-nowrap">Mejorar a Pro</span>
+              <span class="text-white text-xs font-black uppercase tracking-wider relative z-10 hidden sm:inline">Mejorar a Pro</span>
+              <span class="text-white text-xs font-black uppercase tracking-wider relative z-10 sm:hidden">Pro</span>
             </router-link>
           </div>
-
-          <!-- El usuario solicitó quitar el perfil del header -->
         </div>
-
       </header>
 
       <!-- 3️⃣ MAIN CONTENT -->
@@ -70,7 +66,7 @@
 
 
             <div class="text-[36px] leading-[40px] text-[#FACC15] font-black mb-[10px]">{{ calculatedRangoGeneral.toUpperCase() }}</div>
-            <div class="text-[14px] leading-[20px] text-[#9CA3AF]">Promedio: {{ averagePoints }} pts</div>
+            <div class="text-[14px] leading-[20px] text-[#9CA3AF]">Puntos Musculares: {{ totalPoints }} pts</div>
           </div>
 
           <!-- CARD 3: LOGROS (Usado para Ranking Puntos según pedido) -->
@@ -84,7 +80,7 @@
               </div>
             </div>
             <div class="text-[30px] leading-[36px] text-[#D8B4FE] font-bold mb-[28px]">{{ calculatedRankingPts }}</div>
-            <div class="text-[14px] leading-[20px] text-[#9CA3AF]">Ranking Pts</div>
+            <div class="text-[14px] leading-[20px] text-[#9CA3AF]">Ranking Gral</div>
           </div>
         </div>
 
@@ -278,27 +274,24 @@ const muscleRanks = ref<any[]>([]);
 const records = ref<any[]>([]);
 const unlockedCount = ref(0);
 
-// Promedio de puntos: solo músculos que tienen puntos > 0 (no diluye con ceros)
-const averagePoints = computed(() => {
-  const withPoints = muscleRanks.value.filter((m: any) => (m.puntosActuales || 0) > 0);
-  if (withPoints.length === 0) return 0;
-  const total = withPoints.reduce((acc: number, m: any) => acc + (m.puntosActuales || 0), 0);
-  return Math.round(total / withPoints.length);
+// Puntos Totales: suma de puntos de todos los músculos
+const totalPoints = computed(() => {
+  return muscleRanks.value.reduce((acc: number, m: any) => acc + (m.puntosActuales || 0), 0);
 });
 
 const calculatedRangoGeneral = computed(() => {
-  const pts = averagePoints.value;
-  if (pts >= 1000) return 'Leyenda';
-  if (pts >= 700) return 'Diamante';
-  if (pts >= 400) return 'Platino';
-  if (pts >= 250) return 'Oro';
-  if (pts >= 100) return 'Plata';
+  const pts = totalPoints.value;
+  if (pts >= 80000) return 'Leyenda';
+  if (pts >= 50000) return 'Diamante';
+  if (pts >= 25000) return 'Platino';
+  if (pts >= 12000) return 'Oro';
+  if (pts >= 4000) return 'Plata';
   return 'Bronce';
 });
 
-// Ranking = promedio del rango general + puntos de logros desbloqueados
+// Ranking = suma del rango general + puntos de logros desbloqueados
 const calculatedRankingPts = computed(() => {
-    return Math.round(averagePoints.value + unlockedCount.value);
+    return Math.round(totalPoints.value + unlockedCount.value);
 });
 
 // --- Estado de datos ---

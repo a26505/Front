@@ -6,15 +6,16 @@
     <!-- CONTENIDO PRINCIPAL -->
     <div class="flex-1 md:ml-[256px] min-h-screen flex flex-col">
       <!-- 2️⃣ HEADER SUPERIOR STICKY -->
-      <header class="sticky top-0 z-40 bg-black/95 backdrop-blur-md py-4 px-6 flex items-center justify-between border-b border-[#1F2937]/50">
-        <h1 class="text-3xl font-bold text-white tracking-tight">Comunidad</h1>
+      <header class="sticky top-0 z-40 w-full h-[80px] bg-black/95 backdrop-blur-md px-6 flex items-center justify-between border-b border-[#1F2937]/50">
+        <h1 class="text-2xl md:text-3xl font-bold text-white tracking-tight">Comunidad</h1>
         
-        <div class="flex gap-3">
-          <button @click="showAddFriendModal = true" class="bg-[#DC2626] hover:bg-[#B91C1C] rounded-lg px-4 py-2 flex items-center gap-2 text-sm font-bold transition-all hover:scale-105 active:scale-95">
+        <div class="flex gap-2 md:gap-3">
+          <button @click="showAddFriendModal = true" class="bg-[#DC2626] hover:bg-[#B91C1C] rounded-lg px-3 md:px-4 py-2 flex items-center gap-2 text-xs md:text-sm font-bold transition-all hover:scale-105 active:scale-95 shadow-lg shadow-red-500/10">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
               <path d="M16 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/>
             </svg>
-            Añadir Amigo
+            <span class="hidden sm:inline">Añadir Amigo</span>
+            <span class="sm:hidden">Añadir</span>
           </button>
         </div>
       </header>
@@ -49,8 +50,8 @@
             </h3>
             <div v-for="req in pendingRequests" :key="req.codigoAmigo ?? req.nombre" class="flex items-center justify-between bg-[#111827]/50 border border-[#374151] rounded-[10px] p-3 mb-2">
               <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-full bg-gradient-to-br from-[#DC2626]/30 to-[#991B1B]/30 flex items-center justify-center text-white">
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                <div class="w-10 h-10 rounded-full bg-[#1F2937] border-2 border-[#DC2626]/20 flex items-center justify-center overflow-hidden">
+                  <img :src="getAvatarUrl(req.avatarId)" class="w-full h-full object-cover" />
                 </div>
                 <div>
                   <div class="text-[14px] font-semibold text-white">{{ req.nombre ?? req.name }}</div>
@@ -185,7 +186,7 @@
 
               <!-- BOTONES DERECHA -->
               <div class="flex items-center gap-3">
-                <button class="flex items-center justify-center gap-2 bg-[#1F2937]/50 hover:bg-[#374151] border border-[#374151] text-white px-5 py-2.5 rounded-[10px] font-bold text-[14px] transition-all">
+                <button @click="verRutina(routine)" class="flex items-center justify-center gap-2 bg-[#1F2937]/50 hover:bg-[#374151] border border-[#374151] text-white px-5 py-2.5 rounded-[10px] font-bold text-[14px] transition-all">
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
                   Ver
                 </button>
@@ -270,15 +271,15 @@
         </section>
 
         <!-- TAB 4: RANKING -->
-        <section v-if="activeTab === 'ranking'" class="animate-in fade-in duration-300 pt-4">
+        <section v-if="activeTab === 'ranking'" class="animate-in fade-in duration-300 pt-20">
 
            <!-- TOP 3 PODIO -->
-           <div class="flex justify-center items-end gap-3 sm:gap-4 mb-10 px-6">
+           <div class="flex justify-center items-end gap-3 sm:gap-4 mb-20 px-6 mt-16">
              <!-- 2ndo Puesto -->
              <div class="flex flex-col items-center w-1/3 max-w-[150px]">
                <div class="relative">
                  <div class="w-16 h-16 rounded-full border-3 border-[#D1D5DB] bg-[#1F2937] flex items-center justify-center overflow-hidden">
-                    <img v-if="rankingTop3[1]?.avatarId" :src="getAvatarUrl(rankingTop3[1].avatarId)" :style="{ transform: rankingTop3[1].avatarId === 'avatar_gymbro' ? 'scale(2.5)' : (rankingTop3[1].avatarId === 'avatar_robot' ? 'scale(1.3)' : 'scale(1.4)') }" class="w-full h-full object-cover" />
+                    <img v-if="rankingTop3[1]?.avatarId" :src="getAvatarUrl(rankingTop3[1].avatarId)" class="w-full h-full object-cover" />
                  </div>
                  <div class="absolute -bottom-2 translate-x-1/2 right-1/2 bg-[#D1D5DB] text-black text-[14px] font-bold w-6 h-6 rounded-full flex items-center justify-center border-2 border-black">2</div>
                </div>
@@ -290,7 +291,7 @@
              <div class="flex flex-col items-center w-1/3 max-w-[150px] -translate-y-4">
                <div class="relative">
                  <div class="w-20 h-20 rounded-full border-3 border-[#FBBF24] bg-[#1F2937] flex items-center justify-center overflow-hidden shadow-[0_0_20px_rgba(251,191,36,0.4)]">
-                    <img v-if="rankingTop3[0]?.avatarId" :src="getAvatarUrl(rankingTop3[0].avatarId)" :style="{ transform: rankingTop3[0].avatarId === 'avatar_gymbro' ? 'scale(2.5)' : (rankingTop3[0].avatarId === 'avatar_robot' ? 'scale(1.3)' : 'scale(1.4)') }" class="w-full h-full object-cover" />
+                    <img v-if="rankingTop3[0]?.avatarId" :src="getAvatarUrl(rankingTop3[0].avatarId)" class="w-full h-full object-cover" />
                  </div>
                  <div class="absolute -bottom-2 translate-x-1/2 right-1/2 bg-[#FBBF24] text-black text-[18px] font-bold w-8 h-8 rounded-full flex items-center justify-center border-2 border-black">1</div>
                </div>
@@ -302,7 +303,7 @@
              <div class="flex flex-col items-center w-1/3 max-w-[150px]">
                <div class="relative">
                  <div class="w-16 h-16 rounded-full border-3 border-[#F97316] bg-[#1F2937] flex items-center justify-center overflow-hidden">
-                    <img v-if="rankingTop3[2]?.avatarId" :src="getAvatarUrl(rankingTop3[2].avatarId)" :style="{ transform: rankingTop3[2].avatarId === 'avatar_gymbro' ? 'scale(2.5)' : (rankingTop3[2].avatarId === 'avatar_robot' ? 'scale(1.3)' : 'scale(1.4)') }" class="w-full h-full object-cover" />
+                    <img v-if="rankingTop3[2]?.avatarId" :src="getAvatarUrl(rankingTop3[2].avatarId)" class="w-full h-full object-cover" />
                  </div>
                  <div class="absolute -bottom-2 translate-x-1/2 right-1/2 bg-[#F97316] text-black text-[14px] font-bold w-6 h-6 rounded-full flex items-center justify-center border-2 border-black">3</div>
                </div>
@@ -318,7 +319,7 @@
                <div class="flex items-center gap-4">
                  <div class="w-8 text-center text-[18px] font-bold text-[#9CA3AF]">{{ item.rank }}</div>
                  <div class="w-12 h-12 rounded-full bg-[#1F2937] flex items-center justify-center overflow-hidden border border-[#374151]">
-                    <img v-if="item.avatarId" :src="getAvatarUrl(item.avatarId)" :style="{ transform: item.avatarId === 'avatar_gymbro' ? 'scale(2.5)' : (item.avatarId === 'avatar_robot' ? 'scale(1.3)' : 'scale(1.4)') }" class="w-full h-full object-cover" />
+                    <img v-if="item.avatarId" :src="getAvatarUrl(item.avatarId)" class="w-full h-full object-cover" />
                  </div>
                  <div>
                    <div class="text-[15px] font-semibold text-white">{{ item.name }}</div>
@@ -380,7 +381,7 @@
                     </div>
                     <div>
                         <div class="text-[18px] font-bold text-white">{{ searchResult.name }}</div>
-                        <div class="text-[13px] text-[#9CA3AF] mt-1">Nv.{{ searchResult.level }} • {{ searchResult.levelName }} • {{ searchResult.memberSince }}</div>
+                        <div class="text-[13px] text-[#9CA3AF] mt-1">{{ searchResult.levelName }} • {{ searchResult.memberSince }}</div>
                     </div>
                 </div>
 
@@ -441,7 +442,127 @@
                         <span class="text-[12px] text-[#9CA3AF] uppercase font-bold tracking-wider">Entrenos</span>
                     </div>
                 </div>
+
+                <div class="mt-6 text-left">
+                    <h3 class="text-[14px] font-bold text-white uppercase tracking-widest mb-3 border-b border-[#374151] pb-1">Rutinas Públicas</h3>
+                    <div v-if="sharedRoutines.filter(r => r.author === selectedFriend.name).length > 0" class="space-y-2 max-h-[200px] overflow-y-auto px-1 -mx-1 custom-scrollbar">
+                        <div v-for="rt in sharedRoutines.filter(r => r.author === selectedFriend.name)" :key="rt.id" class="bg-[#1F2937]/50 p-3 rounded-lg border border-[#374151] flex justify-between items-center transition-colors group hover:border-[#DC2626]">
+                            <div class="flex-1 min-w-0 pr-2">
+                                <div class="text-[14px] font-bold text-white truncate group-hover:text-[#DC2626]">{{ rt.title }}</div>
+                                <div class="text-[12px] text-[#9CA3AF]">{{ rt.difficulty }} • <span class="text-[#FCA5A5]">{{ rt.likes }} likes</span></div>
+                            </div>
+                            <button @click="verRutina(rt)" class="text-[12px] bg-[#DC2626] hover:bg-[#B91C1C] text-white px-3 py-1.5 rounded-md font-bold transition-transform hover:scale-105 active:scale-95 text-center flex-shrink-0">Ver</button>
+                        </div>
+                    </div>
+                    <div v-else class="text-[12px] text-[#6B7280] italic text-center py-2">
+                        No tiene rutinas públicas aún.
+                    </div>
+                </div>
             </div>
+        </div>
+    </div>
+
+    <!-- MODAL: VER DETALLE RUTINA -->
+    <div v-if="selectedRoutineForView" class="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div @click="selectedRoutineForView = null" class="absolute inset-0 bg-black/80 backdrop-blur-sm"></div>
+        <div class="relative bg-[#0A0A0A] border border-[#1F2937] rounded-[24px] w-full max-w-[650px] max-h-[90vh] overflow-hidden shadow-[0_0_50px_rgba(0,0,0,0.5)] text-white animate-in zoom-in-95 duration-200 flex flex-col">
+            
+            <!-- Banner Header -->
+            <div class="relative h-[220px] w-full shrink-0">
+              <img 
+                :src="selectedRoutineForView.urlImagen || 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?q=80&w=1000'" 
+                class="w-full h-full object-cover"
+              />
+              <div class="absolute inset-0 bg-gradient-to-t from-[#0A0A0A] via-[#0A0A0A]/40 to-transparent"></div>
+              
+              <!-- Badge Dificultad -->
+              <div class="absolute top-6 left-6">
+                <span class="bg-[#DC2626] text-white text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-md shadow-lg">
+                  {{ selectedRoutineForView.difficulty }}
+                </span>
+              </div>
+
+              <!-- Titulo -->
+              <div class="absolute bottom-6 left-8">
+                <h2 class="text-4xl font-black italic uppercase tracking-tighter drop-shadow-2xl">{{ selectedRoutineForView.title }}</h2>
+              </div>
+
+              <!-- Close button overlay -->
+              <button @click="selectedRoutineForView = null" class="absolute top-6 right-6 w-10 h-10 bg-black/40 hover:bg-black/60 rounded-full flex items-center justify-center text-white backdrop-blur-md transition-all">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+              </button>
+            </div>
+            
+            <div class="px-8 py-6 flex-1 overflow-y-auto custom-scrollbar">
+                <div v-if="isLoadingDetail" class="flex flex-col items-center py-20">
+                    <div class="w-12 h-12 border-4 border-[#DC2626]/20 border-t-[#DC2626] rounded-full animate-spin mb-4"></div>
+                    <p class="text-[#9CA3AF] font-black tracking-widest text-xs">Cargando ejercicios...</p>
+                </div>
+                <div v-else>
+                    <!-- Metadata Row -->
+                    <div class="flex flex-wrap items-center gap-6 mb-6 text-sm font-bold text-gray-300">
+                        <div class="flex items-center gap-2">
+                          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#DC2626" stroke-width="2.5"><path d="M16 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="8.5" cy="7" r="4"/></svg>
+                          <span>{{ routineDetailExercises.length }} ejercicios</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#DC2626" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                          <span>{{ selectedRoutineForView.duration || 45 }} min</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#DC2626" stroke-width="2.5"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                          <span>Por {{ selectedRoutineForView.author }}</span>
+                        </div>
+                    </div>
+
+                    <!-- Muscle Tags -->
+                    <div class="flex flex-wrap gap-2 mb-8" v-if="routineDetailExercises.length > 0">
+                        <div 
+                          v-for="muscle in [...new Set(routineDetailExercises.map(e => e.grupoMuscular || 'Otro'))]" 
+                          :key="muscle"
+                          class="bg-red-900/20 border border-red-500/30 text-red-400 text-[10px] font-black uppercase tracking-widest px-4 py-2 rounded-lg"
+                        >
+                          {{ muscle }}
+                        </div>
+                    </div>
+
+                    <!-- Descripcion -->
+                    <p v-if="selectedRoutineForView.description" class="text-gray-400 text-sm italic mb-8 border-l-2 border-red-500/30 pl-4 py-1">
+                        "{{ selectedRoutineForView.description }}"
+                    </p>
+
+                    <h3 class="text-xs font-black uppercase tracking-[0.2em] text-gray-500 mb-6 flex items-center gap-4">
+                        Ejercicios
+                        <div class="h-px flex-1 bg-gradient-to-r from-[#1F2937] to-transparent"></div>
+                    </h3>
+
+                    <div class="space-y-4">
+                        <div v-for="(ej, idx) in routineDetailExercises" :key="idx" class="bg-[#111827] border border-[#1F2937] rounded-2xl p-5 flex items-center gap-5 transition-all hover:border-[#DC2626]/40 hover:bg-[#161B22] group">
+                            <div class="w-12 h-12 bg-gradient-to-br from-[#DC2626] to-[#991B1B] rounded-full flex items-center justify-center font-black text-xl shadow-lg shadow-red-900/20 shrink-0 transform transition-transform group-hover:scale-110">
+                              {{ idx + 1 }}
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <h4 class="text-white font-black text-lg mb-1 truncate">{{ ej.nombreEjercicio }}</h4>
+                                <div class="flex flex-wrap gap-x-4 gap-y-2">
+                                     <div v-if="ej.grupoMuscular" class="bg-red-500/10 text-red-400 text-[9px] font-black px-2 py-0.5 rounded uppercase tracking-wider border border-red-500/20">{{ ej.grupoMuscular }}</div>
+                                     <div class="text-[11px] font-bold text-gray-400 flex items-center gap-4">
+                                        <span>Series: <span class="text-white">{{ ej.series }}</span></span>
+                                        <span>Reps: <span class="text-white">{{ ej.repeticiones }}</span></span>
+                                        <span>Descanso: <span class="text-white">{{ ej.descansoSegundos }}s</span></span>
+                                     </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <footer class="p-8 border-t border-[#1F2937]/50 flex gap-4 bg-[#0A0A0A] shrink-0">
+                <button @click="selectedRoutineForView = null" class="px-6 py-4 border border-[#374151] text-white rounded-xl font-bold hover:bg-white/5 transition-all">Cerrar</button>
+                <button @click="copyRoutine(selectedRoutineForView)" class="flex-1 bg-[#DC2626] hover:bg-red-700 text-white py-4 rounded-xl font-black text-[16px] uppercase tracking-widest transition-all shadow-lg shadow-red-900/20 flex items-center justify-center gap-2">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+                    Guardar en mis Rutinas
+                </button>
+            </footer>
         </div>
     </div>
   </div>
@@ -476,6 +597,27 @@ const activeTab = ref('friends');
 const searchQuery = ref('');
 const filterDifficulty = ref('all');
 const pendingRequests = ref<any[]>([]);
+
+// State para ver detalle de rutina
+const selectedRoutineForView = ref<any>(null);
+const routineDetailExercises = ref<any[]>([]);
+const isLoadingDetail = ref(false);
+
+const verRutina = async (routine: any) => {
+    selectedRoutineForView.value = routine;
+    isLoadingDetail.value = true;
+    try {
+        const res = await rutinasApi.getById(routine.id);
+        routineDetailExercises.value = res.data?.ejercicios || [];
+    } catch (e) {
+        console.error("No se pudo cargar el detalle", e);
+        alert("No se pudo cargar la información de los ejercicios.");
+        selectedRoutineForView.value = null;
+    } finally {
+        isLoadingDetail.value = false;
+    }
+};
+
 const mainTabs = [
   { id: 'friends', label: 'Amigos' },
   { id: 'routines', label: 'Comunidad' },
@@ -507,16 +649,26 @@ const icons = {
 // --- COMPONENTES GLOBALES Y HELPERS ---
 
 const availableAvatars = [
-  { id: 'avatar_default', url: 'https://res.cloudinary.com/dgtahwqpj/image/upload/v1772035659/unnamed_t93s8g.jpg' },
-  { id: 'avatar_robot', url: 'https://res.cloudinary.com/dgtahwqpj/image/upload/v1772035494/unnamed_l44n9h.jpg' },
-  { id: 'avatar_gymbro', url: 'https://res.cloudinary.com/dgtahwqpj/image/upload/v1772034939/unnamed_w3uwac.jpg' },
-  { id: 'avatar_mujerfit', url: 'https://res.cloudinary.com/dgtahwqpj/image/upload/v1772024580/unnamed_kfdzjz.jpg' },
-  { id: 'avatar_hombrefit', url: 'https://res.cloudinary.com/dgtahwqpj/image/upload/v1772024079/unnamed_ojydo4.png' }
+  { id: 'avatar_default', url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Jack' },
+  { id: 'avatar_robot', url: 'https://api.dicebear.com/7.x/bottts/svg?seed=robot' },
+  { id: 'avatar_gymbro', url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Felix&accessoriesProbability=100' },
+  { id: 'avatar_mujerfit', url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Aneka&top=longHair' },
+  { id: 'avatar_hombrefit', url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=George' }
 ];
 
 const getAvatarUrl = (id?: string) => {
-  const avatar = availableAvatars.find(a => a.id === id);
-  return avatar ? avatar.url : availableAvatars[0].url;
+  if (!id) return availableAvatars[0].url;
+  if (id.startsWith('http')) return id;
+  
+  const oldAvatarMap: Record<string, string> = {
+    'avatar_default': 'https://res.cloudinary.com/dgtahwqpj/image/upload/v1772035659/unnamed_t93s8g.jpg',
+    'avatar_robot': 'https://res.cloudinary.com/dgtahwqpj/image/upload/v1772034939/unnamed_w3uwac.jpg',
+    'avatar_gymbro': 'https://res.cloudinary.com/dgtahwqpj/image/upload/v1772035659/unnamed_t93s8g.jpg',
+    'avatar_mujerfit': 'https://res.cloudinary.com/dgtahwqpj/image/upload/v1772035494/unnamed_l44n9h.jpg',
+    'avatar_hombrefit': 'https://res.cloudinary.com/dgtahwqpj/image/upload/v1772024580/unnamed_kfdzjz.jpg'
+  };
+
+  return oldAvatarMap[id] || availableAvatars[0].url;
 };
 
 // --- AMIGOS (REALES) ---
@@ -535,9 +687,10 @@ const loadAmigos = async () => {
       avatarId: f.avatarId,
       online: false,
       statusText: `${f.rangoGeneral ?? 'Bronce'}`,
-      workouts: 0,
+      workouts: f.entrenamientosTotales ?? 0,
       streak: f.rachaDias ?? 0,
-      bio: ''
+      bio: f.biografia ?? '',
+      codigoAmigo: f.codigoAmigo
     }));
   } catch (e) {
     console.warn('No se pudieron cargar amigos', e);
@@ -616,25 +769,49 @@ const loadRutinasComunidad = async () => {
         ]);
         
         const myRoutinesNames = new Set((misRes.data as any[]).map(r => r.nombre.toLowerCase()));
-        const myUserId = authStore.userId;
+
+        const muscleGroupMap: Record<number, string> = {
+          0: 'Pecho', 1: 'Espalda', 2: 'Pierna', 3: 'Hombro', 4: 'Bíceps',
+          5: 'Tríceps', 6: 'Abdomen', 7: 'Cardio', 8: 'Full Body', 9: 'Otro'
+        };
+
+        const getMusclesFromRutina = (r: any): string[] => {
+          if (r.musculos && r.musculos.length > 0) return r.musculos;
+          if (r.musculosPrincipales && r.musculosPrincipales.length > 0) return r.musculosPrincipales;
+          if (r.ejercicios && r.ejercicios.length > 0) {
+            const muscles = new Set<string>();
+            r.ejercicios.forEach((e: any) => {
+              const gm = e.grupoMuscular;
+              if (gm !== undefined && gm !== null) {
+                const name = typeof gm === 'number' ? muscleGroupMap[gm] : String(gm);
+                if (name && name !== 'Otro') muscles.add(name);
+              }
+            });
+            if (muscles.size > 0) return Array.from(muscles);
+          }
+          if (r.parteCuerpo) return [r.parteCuerpo];
+          return [];
+        };
 
         sharedRoutines.value = (comRes.data as any[])
           .filter((r: any) => {
-            const isMine = Number(r.creadorId) === Number(myUserId);
             const isAlreadySaved = myRoutinesNames.has(r.nombre.toLowerCase());
-            return !isMine && !isAlreadySaved;
+            return !isAlreadySaved;
           })
-          .map((r: any) => ({
-            id: r.id,
-            title: r.nombre,
-            author: r.creadorNombre,
-            difficulty: r.nivel || 'Intermedio',
-            description: r.descripcion || `Rutina de ${r.cantidadEjercicios} ejercicios.`,
-            tags: r.musculosPrincipales?.length ? r.musculosPrincipales : ['Cuerpo Completo'],
-            likes: r.likes || 0,
-            liked: r.liked || false,
-            copied: false
-        }));
+          .map((r: any) => {
+             const mList = getMusclesFromRutina(r);
+             return {
+                id: r.id,
+                title: r.nombre,
+                author: r.creadorNombre,
+                difficulty: r.nivel || 'Intermedio',
+                description: r.descripcion || `Rutina de ${r.cantidadEjercicios || 0} ejercicios.`,
+                tags: mList.length > 0 ? mList : ['Cuerpo Completo'],
+                likes: r.likes || 0,
+                liked: r.liked || false,
+                copied: false
+             };
+          });
     } catch(e) {
         console.warn("No se pudo cargar la comunidad", e);
     }
@@ -731,7 +908,6 @@ const searchFriend = async () => {
     searchResult.value = {
       name: data.nombre,
       avatarId: data.avatarId,
-      level: 0,
       levelName: data.rangoGeneral ?? 'Atleta',
       memberSince: data.fechaRegistro ? new Date(data.fechaRegistro).toLocaleDateString('es-ES', { month: 'long', year: 'numeric' }) : ''
     };

@@ -29,7 +29,7 @@ namespace REPS_backend.Controllers
             if (!int.TryParse(userIdStr, out int userId)) return Unauthorized();
 
             var perfil = await _usuarioService.ObtenerMiPerfilAsync(userId);
-            if (perfil == null) return NotFound("Usuario no encontrado.");
+            if (perfil == null) return Unauthorized("Cuenta desactivada o eliminada.");
 
             return Ok(perfil);
         }
@@ -164,6 +164,18 @@ namespace REPS_backend.Controllers
             if (!exito) return BadRequest("No se pudo actualizar el plan.");
 
             return Ok(new { mensaje = $"Plan actualizado a {plan}" });
+        }
+
+        [HttpDelete("mi-perfil")]
+        public async Task<IActionResult> EliminarMiCuenta()
+        {
+            var userIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (!int.TryParse(userIdStr, out int userId)) return Unauthorized();
+
+            var exito = await _usuarioService.EliminarUsuarioLogicoAsync(userId);
+            if (!exito) return NotFound("Usuario no encontrado");
+
+            return Ok(new { mensaje = "Cuenta eliminada correctamente." });
         }
     }
 }

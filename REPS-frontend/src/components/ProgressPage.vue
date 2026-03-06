@@ -6,8 +6,8 @@
     <!-- MAIN CONTENT -->
     <div class="flex-1 md:ml-[256px] min-h-screen flex flex-col">
       <!-- HEADER -->
-      <header class="sticky top-0 z-40 bg-black/95 backdrop-blur-md py-4 px-6 flex items-center border-b border-[#1F2937]/50">
-        <h1 class="text-3xl font-bold text-white tracking-tight">Mi Progreso</h1>
+      <header class="sticky top-0 z-40 w-full h-[80px] bg-black/95 backdrop-blur-md px-6 flex items-center border-b border-[#1F2937]/50">
+        <h1 class="text-2xl md:text-3xl font-bold text-white tracking-tight">Mi Progreso</h1>
       </header>
 
       <main class="flex-1 p-6 max-w-[1600px] mx-auto w-full relative z-10">
@@ -114,9 +114,9 @@
               
               <div class="flex justify-center mb-8 relative z-10">
                 <div class="flex flex-col items-center transform hover:scale-105 transition-all duration-500">
-                  <RankIcon :rank="calculatedRangoGeneral" :size="120" />
-                  <span :class="['mt-4 text-2xl font-black uppercase tracking-widest', getRankTextColor(calculatedRangoGeneral)]">
-                    {{ calculatedRangoGeneral }}
+                  <RankIcon :rank="rangoGeneral" :size="120" />
+                  <span :class="['mt-4 text-2xl font-black uppercase tracking-widest', getRankTextColor(rangoGeneral)]">
+                    {{ rangoGeneral }}
                   </span>
                 </div>
               </div>
@@ -131,7 +131,7 @@
               </div>
               
               <div class="mt-6 text-center relative z-10">
-                <p class="text-sm text-gray-400 font-medium">Promedio: <span class="text-white">{{ formatNumber(averagePoints) }} pts</span></p>
+                <p class="text-sm text-gray-400 font-medium">Puntos Totales: <span class="text-white">{{ formatNumber(puntosTotales) }} pts</span></p>
               </div>
             </section>
 
@@ -236,26 +236,9 @@ const unlockedCount = ref(0);
 const hasError = ref(false);
 const errorText = ref('');
 
-// Promedio de puntos: solo músculos que tienen puntos > 0 (no diluye con ceros)
-const averagePoints = computed(() => {
-  const withPoints = muscleRanks.value.filter((m: any) => (m.points || 0) > 0);
-  if (withPoints.length === 0) return 0;
-  const total = withPoints.reduce((acc: number, m: any) => acc + (m.points || 0), 0);
-  return Math.round(total / withPoints.length);
-});
-
-const calculatedRangoGeneral = computed(() => {
-  const pts = averagePoints.value;
-  if (pts >= 1000) return 'Leyenda';
-  if (pts >= 700) return 'Diamante';
-  if (pts >= 400) return 'Platino';
-  if (pts >= 250) return 'Oro';
-  if (pts >= 100) return 'Plata';
-  return 'Bronce';
-});
 
 const currentCalculatedRankIndex = computed(() => {
-  const idx = allRanks.findIndex(r => r.name === calculatedRangoGeneral.value);
+  const idx = allRanks.findIndex(r => r.name === rangoGeneral.value);
   return idx >= 0 ? idx : 0;
 });
 
@@ -272,8 +255,8 @@ const generalStats = computed(() => [
     glowColor: '#F54900'
   },
   {
-    label: 'Ranking Pts',
-    value: String(Math.round(averagePoints.value + unlockedCount.value)),
+    label: 'Puntos Musculares',
+    value: String(puntosTotales.value),
     icon: DumbbellIcon,
     iconColor: 'text-white',
     accentColor: 'text-red-500',
@@ -283,10 +266,10 @@ const generalStats = computed(() => [
   },
   {
     label: 'Rango',
-    value: calculatedRangoGeneral.value,
+    value: rangoGeneral.value,
     icon: ConsistenciaIcon,
-    iconColor: computed(() => getRankTextColor(calculatedRangoGeneral.value).replace('text-', '')),
-    accentColor: computed(() => getRankTextColor(calculatedRangoGeneral.value)),
+    iconColor: computed(() => getRankTextColor(rangoGeneral.value).replace('text-', '')),
+    accentColor: computed(() => getRankTextColor(rangoGeneral.value)),
     gradient: 'linear-gradient(152.983deg, rgba(59, 130, 246, 0.2) 0%, rgba(29, 78, 216, 0.15) 100%)',
     borderColor: 'rgba(59, 130, 246, 0.4)',
     glowColor: '#3B82F6'

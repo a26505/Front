@@ -4,6 +4,7 @@ namespace REPS_backend.DTOs.Rutinas
     {
         public int Id { get; set; }
         public string Nombre { get; set; }
+        public string Descripcion { get; set; } = string.Empty;
         
         // Devolvemos el nombre del Enum (ej: "Avanzado") para facilitar la vida al Frontend
         public string Nivel { get; set; } 
@@ -16,5 +17,8 @@ namespace REPS_backend.DTOs.Rutinas
         // ponemos el número total para que sepan si es larga o corta.
         public int CantidadEjercicios { get; set; } 
         public int TotalEjercicios { get; set; } 
+
+        public string Estado { get; set; } = string.Empty;
+        public List<string> Musculos { get; set; } = new List<string>();
     }
 }

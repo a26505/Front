@@ -21,10 +21,31 @@ namespace REPS_backend.Repositories
 
         public async Task<List<Rutina>> GetAllPublicasAsync()
         {
-            // Traemos solo las publicadas e incluimos los ejercicios
+            // Traemos solo las publicadas e incluimos los ejercicios con su detalle
             return await _context.Rutinas
                 .Where(r => r.Estado == EstadoRutina.Publicada)
                 .Include(r => r.Ejercicios)
+                    .ThenInclude(re => re.Ejercicio)
+                .Include(r => r.Usuario)
+                .ToListAsync();
+        }
+
+        public async Task<List<Rutina>> GetAllEnRevisionAsync()
+        {
+            return await _context.Rutinas
+                .Where(r => r.Estado == EstadoRutina.EnRevision)
+                .Include(r => r.Ejercicios)
+                    .ThenInclude(re => re.Ejercicio)
+                .Include(r => r.Usuario)
+                .ToListAsync();
+        }
+
+        public async Task<List<Rutina>> GetAllAdminAsync()
+        {
+            return await _context.Rutinas
+                .Include(r => r.Ejercicios)
+                    .ThenInclude(re => re.Ejercicio)
+                .Include(r => r.Usuario)
                 .ToListAsync();
         }
 
@@ -52,6 +73,7 @@ namespace REPS_backend.Repositories
             return await _context.Rutinas
                 .Where(r => r.UsuarioId == usuarioId)
                 .Include(r => r.Ejercicios)
+                    .ThenInclude(re => re.Ejercicio)
                 .ToListAsync();
         }
         public async Task UpdateAsync(Rutina rutina)

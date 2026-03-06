@@ -7,6 +7,7 @@ namespace REPS_backend.Services
     {
         private readonly IEntrenamientoRepository _entrenamientoRepository;
         private readonly IRecordPersonalRepository _recordRepository;
+        private readonly IUsuarioRepository _usuarioRepository;
         private readonly Microsoft.Extensions.Logging.ILogger<ProgresoService> _logger;
 
         // Constantes de Puntos
@@ -24,10 +25,12 @@ namespace REPS_backend.Services
         public ProgresoService(
             IEntrenamientoRepository entrenamientoRepository, 
             IRecordPersonalRepository recordRepository,
+            IUsuarioRepository usuarioRepository,
             Microsoft.Extensions.Logging.ILogger<ProgresoService> logger)
         {
             _entrenamientoRepository = entrenamientoRepository;
             _recordRepository = recordRepository;
+            _usuarioRepository = usuarioRepository;
             _logger = logger;
         }
 
@@ -113,25 +116,14 @@ namespace REPS_backend.Services
 
         public async Task<ProgresoGeneralDto> ObtenerProgresoGeneralAsync(int usuarioId)
         {
-            // Podríamos sumar todos los puntos de todos los grupos, o calcularlo aparte.
-            // Por simplicidad, sumaremos los puntos de series completadas.
-            var entrenamientos = await _entrenamientoRepository.GetByUsuarioIdWithSeriesAsync(usuarioId);
+            var user = await _usuarioRepository.GetByIdAsync(usuarioId);
 
-            int totalSeries = entrenamientos?
-               .SelectMany(e => e.SeriesRealizadas ?? new List<SerieLog>())
-               .Count(s => s.Completada) ?? 0;
-
-            int puntosTotales = totalSeries * PUNTOS_POR_SERIE;
-            var infoRango = CalcularRango(puntosTotales); // Usamos la misma escala? O una x10? 
-                                                          // Asumiremos misma escala para simplificar por ahora, o x5. 
-                                                          // En realidad el rango general suele ser mas alto. Multiplicaré umbrales por 5 mentalmente o uso escala dedicada.
-                                                          // Para esta iteración, uso la misma lógica de Rangos pero "General" podría requerir más puntos.
-                                                          // Dejemoslo igual por ahora.
+            int totalSinLogros = (user?.PuntosTotales ?? 0) - (user?.PuntosLogros ?? 0);
 
             return new ProgresoGeneralDto
             {
-                PuntosTotales = puntosTotales,
-                RangoGeneral = infoRango.Rango
+                PuntosTotales = totalSinLogros,
+                RangoGeneral = user?.RangoGeneral.ToString() ?? "Bronce"
             };
         }
 

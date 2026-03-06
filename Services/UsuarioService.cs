@@ -7,17 +7,22 @@ namespace REPS_backend.Services
     public class UsuarioService : IUsuarioService
     {
         private readonly IUsuarioRepository _repository;
+        private readonly IRankingService _rankingService;
 
-        public UsuarioService(IUsuarioRepository repository)
+        public UsuarioService(IUsuarioRepository repository, IRankingService rankingService)
         {
             _repository = repository;
+            _rankingService = rankingService;
         }
 
         // ... MÉTODOS EXISTENTES (MiPerfil, BuscarAmigo, Actualizar) ...
         public async Task<UsuarioPerfilDto?> ObtenerMiPerfilAsync(int id)
         {
+            // Forzamos recalcular rangos por si los umbrales han cambiado
+            await _rankingService.UpdateUserRankAsync(id);
+
             var user = await _repository.GetByIdAsync(id);
-            if (user == null) return null;
+            if (user == null || !user.EstaActivo || user.EstaBorrado) return null;
 
             return new UsuarioPerfilDto
             {
@@ -29,6 +34,8 @@ namespace REPS_backend.Services
                 FechaRegistro = user.FechaRegistro,
                 Rol = user.Rol,
                 PuntosTotales = user.PuntosTotales,
+                PuntosRangoGeneral = user.PuntosTotales - user.PuntosLogros,
+                PuntosLogros = user.PuntosLogros,
                 RachaDias = user.RachaDias,
                 RangoGeneral = user.RangoGeneral.ToString(),
                 Biografia = user.Biografia,
@@ -52,7 +59,9 @@ namespace REPS_backend.Services
                 PuntosTotales = user.PuntosTotales,
                 RachaDias = user.RachaDias,
                 RangoGeneral = user.RangoGeneral.ToString(),
-                EsPro = user.EsPro()
+                EsPro = user.EsPro(),
+                Biografia = user.Biografia,
+                CodigoAmigo = user.CodigoAmigo
             };
         }
 
@@ -143,7 +152,9 @@ namespace REPS_backend.Services
                 PuntosTotales = u.PuntosTotales,
                 RachaDias = u.RachaDias,
                 RangoGeneral = u.RangoGeneral.ToString(),
-                EsPro = u.EsPro()
+                EsPro = u.EsPro(),
+                Biografia = u.Biografia,
+                CodigoAmigo = u.CodigoAmigo
             }).ToList();
         }
 
@@ -160,7 +171,9 @@ namespace REPS_backend.Services
                 PuntosTotales = u.PuntosTotales,
                 RachaDias = u.RachaDias,
                 RangoGeneral = u.RangoGeneral.ToString(),
-                EsPro = u.EsPro()
+                EsPro = u.EsPro(),
+                Biografia = u.Biografia,
+                CodigoAmigo = u.CodigoAmigo
             }).ToList();
         }
 

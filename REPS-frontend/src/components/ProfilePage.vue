@@ -6,8 +6,8 @@
     <!-- CONTENIDO PRINCIPAL -->
     <div class="flex-1 md:ml-[256px] min-h-screen flex flex-col">
       <!-- 2️⃣ HEADER STICKY -->
-      <header class="sticky top-0 z-40 bg-black/95 backdrop-blur-md py-4 px-6 flex items-center border-b border-[#1F2937]/50">
-        <h1 class="text-3xl font-bold text-white tracking-tight">Mi Perfil</h1>
+      <header class="sticky top-0 z-40 w-full h-[80px] bg-black/95 backdrop-blur-md px-6 flex items-center border-b border-[#1F2937]/50">
+        <h1 class="text-2xl md:text-3xl font-bold text-white tracking-tight">Mi Perfil</h1>
       </header>
 
       <main class="flex-1 max-w-[1280px] w-full mx-auto px-4 pb-12 pt-6">
@@ -103,6 +103,7 @@
             </div>
             <div class="text-[32px] font-bold text-white mb-1">{{ stat.value }}</div>
             <div class="text-[14px] text-[#9CA3AF]">{{ stat.label }}</div>
+            <div v-if="stat.detail" class="text-[11px] text-[#9CA3AF]/70 mt-1">{{ stat.detail }}</div>
           </div>
         </div>
 
@@ -117,8 +118,8 @@
             
             <div class="flex flex-col gap-3 mb-4">
               <div v-for="friend in friends" :key="friend.name" class="flex items-center gap-3 bg-[rgba(31,41,55,0.5)] border border-[#374151] rounded-[12px] p-3 transition-all duration-300 hover:border-[#4B5563]">
-                <div class="w-[48px] h-[48px] rounded-full bg-gradient-to-br from-red-600/30 to-red-900/30 border border-red-600/20 flex items-center justify-center text-[24px]">
-                  {{ friend.emoji }}
+                <div class="w-[48px] h-[48px] rounded-full border border-white/10 flex items-center justify-center text-[24px] overflow-hidden">
+                  <img :src="getAvatarUrl(friend.avatarId)" class="w-full h-full object-cover bg-[#1F2937]" />
                 </div>
                 <div class="flex-1">
                   <div class="text-[14px] font-semibold text-white mb-1">{{ friend.name }}</div>
@@ -138,11 +139,11 @@
                     </div>
                   </div>
                 </div>
-                <button class="text-[12px] text-[#DC2626] hover:text-[#EF4444] cursor-pointer transition-colors">Ver perfil</button>
+                <button @click="router.push('/community')" class="text-[12px] text-[#DC2626] hover:text-[#EF4444] cursor-pointer transition-colors">Ver perfil</button>
               </div>
             </div>
 
-            <button class="w-full mt-4 border border-[#374151] text-white rounded-[8px] py-[10px] flex items-center justify-center gap-2 hover:border-[#DC2626] hover:text-[#DC2626] transition-all duration-200">
+            <button @click="router.push('/community')" class="w-full mt-4 border border-[#374151] text-white rounded-[8px] py-[10px] flex items-center justify-center gap-2 hover:border-[#DC2626] hover:text-[#DC2626] transition-all duration-200">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/>
               </svg>
@@ -345,14 +346,14 @@ const handleCopyCode = () => {
 
 // --- AVATAR SELECTION ---
 const availableAvatars = [
-  { id: 'avatar_default', url: 'https://res.cloudinary.com/dgtahwqpj/image/upload/v1772035659/unnamed_t93s8g.jpg' },
-  { id: 'avatar_robot', url: 'https://res.cloudinary.com/dgtahwqpj/image/upload/v1772035494/unnamed_l44n9h.jpg' },
-  { id: 'avatar_gymbro', url: 'https://res.cloudinary.com/dgtahwqpj/image/upload/v1772034939/unnamed_w3uwac.jpg' },
-  { id: 'avatar_mujerfit', url: 'https://res.cloudinary.com/dgtahwqpj/image/upload/v1772024580/unnamed_kfdzjz.jpg' },
-  { id: 'avatar_hombrefit', url: 'https://res.cloudinary.com/dgtahwqpj/image/upload/v1772024079/unnamed_ojydo4.png' }
+  { id: 'https://res.cloudinary.com/dgtahwqpj/image/upload/v1772035659/unnamed_t93s8g.jpg', url: 'https://res.cloudinary.com/dgtahwqpj/image/upload/v1772035659/unnamed_t93s8g.jpg' },
+  { id: 'https://res.cloudinary.com/dgtahwqpj/image/upload/v1772035494/unnamed_l44n9h.jpg', url: 'https://res.cloudinary.com/dgtahwqpj/image/upload/v1772035494/unnamed_l44n9h.jpg' },
+  { id: 'https://res.cloudinary.com/dgtahwqpj/image/upload/v1772034939/unnamed_w3uwac.jpg', url: 'https://res.cloudinary.com/dgtahwqpj/image/upload/v1772034939/unnamed_w3uwac.jpg' },
+  { id: 'https://res.cloudinary.com/dgtahwqpj/image/upload/v1772024580/unnamed_kfdzjz.jpg', url: 'https://res.cloudinary.com/dgtahwqpj/image/upload/v1772024580/unnamed_kfdzjz.jpg' },
+  { id: 'https://res.cloudinary.com/dgtahwqpj/image/upload/v1772024079/unnamed_ojydo4.png', url: 'https://res.cloudinary.com/dgtahwqpj/image/upload/v1772024079/unnamed_ojydo4.png' }
 ];
 
-const selectedAvatarId = ref('avatar_default');
+const selectedAvatarId = ref(availableAvatars[0].id);
 
 // Sincronizar con el store cuando cargue el perfil
 watch(() => authStore.profile?.avatarId, (newId) => {
@@ -365,6 +366,7 @@ const avatarUrl = computed(() => {
   if (selectedAvatarId.value?.startsWith('http')) {
     return selectedAvatarId.value;
   }
+  // Fallback for old IDs if they somehow persist in local state
   const avatar = availableAvatars.find(a => a.id === selectedAvatarId.value);
   return avatar ? avatar.url : availableAvatars[0].url;
 });
@@ -402,7 +404,14 @@ const stats = computed(() => [
     icon: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="7"/><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"/></svg>`
   },
   { 
+<<<<<<< HEAD
     label: 'Puntos totales', value: String(puntosTotales.value), color: 'text-[#3B82F6]',
+=======
+    label: 'Puntos totales', 
+    value: String(authStore.profile?.puntosTotales ?? 0), 
+    color: 'text-[#3B82F6]',
+    detail: `(${ (authStore.profile?.puntosTotales ?? 0) - (authStore.profile?.puntosLogros ?? 0) } Rango + ${authStore.profile?.puntosLogros ?? 0} Logros)`,
+>>>>>>> 71cbf12ca3ae3ea2a4e179d26b34223356dc672d
     icon: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>`
   },
   { 
@@ -413,17 +422,33 @@ const stats = computed(() => [
 
 // --- AMIGOS ---
 const friends = ref<any[]>([]);
-const emojis = ['💪', '🔥', '🚀', '🏆', '⚡', '🎯'];
+
+const getAvatarUrl = (id?: string) => {
+  if (!id) return availableAvatars[0].url;
+  if (id.startsWith('http')) return id;
+  
+  const oldAvatarMap: Record<string, string> = {
+    'avatar_default': 'https://res.cloudinary.com/dgtahwqpj/image/upload/v1772035659/unnamed_t93s8g.jpg',
+    'avatar_robot': 'https://res.cloudinary.com/dgtahwqpj/image/upload/v1772034939/unnamed_w3uwac.jpg',
+    'avatar_gymbro': 'https://res.cloudinary.com/dgtahwqpj/image/upload/v1772035659/unnamed_t93s8g.jpg',
+    'avatar_mujerfit': 'https://res.cloudinary.com/dgtahwqpj/image/upload/v1772035494/unnamed_l44n9h.jpg',
+    'avatar_hombrefit': 'https://res.cloudinary.com/dgtahwqpj/image/upload/v1772024580/unnamed_kfdzjz.jpg'
+  };
+
+  return oldAvatarMap[id] || availableAvatars[0].url;
+};
 
 const loadAmigos = async () => {
   try {
     const res = await usuariosApi.getMisAmigos();
-    friends.value = (res.data as any[]).map((f: any, i: number) => ({
+    friends.value = (res.data as any[]).map((f: any) => ({
       name: f.nombre ?? f.name ?? 'Atleta',
-      level: 0,
+      avatarId: f.avatarId,
+      level: f.puntosTotales ?? 0,
       workouts: 0,
-      streak: 0,
-      emoji: emojis[i % emojis.length]
+      streak: f.rachaDias ?? 0,
+      codigoAmigo: f.codigoAmigo,
+      bio: f.biografia
     }));
   } catch (e) {
     console.warn('No se pudieron cargar amigos', e);

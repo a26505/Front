@@ -12,6 +12,8 @@ namespace REPS_backend.DTOs.Usuarios
 
     
         public int PuntosTotales { get; set; }
+        public int PuntosRangoGeneral { get; set; }
+        public int PuntosLogros { get; set; }
         public int RachaDias { get; set; }
         public string RangoGeneral { get; set; } = string.Empty;
         public string? Biografia { get; set; } = string.Empty;

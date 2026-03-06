@@ -60,6 +60,7 @@ export const usuariosApi = {
     responderSolicitud: (codigoAmigo: string, aceptar: boolean) =>
         api.post('/Usuarios/amigos/responder', { codigoAmigo, aceptar }),
     updatePlan: (planId: number) => api.put('/Usuarios/plan', { planId }),
+    eliminarMiCuenta: () => api.delete('/Usuarios/mi-perfil'),
 };
 
 // ─── DASHBOARD ────────────────────────────────────────────────────────
@@ -114,9 +115,21 @@ export const recordsApi = {
     getMisRecords: () => api.get('/RecordPersonal'),
 };
 
-// ─── LOGROS ────────────────────────────────────────────────────────
 export const logrosApi = {
     getMisLogros: (userId: number) => api.get(`/Logro/user/${userId}`),
+};
+
+// ─── ADMIN ────────────────────────────────────────────────────────────
+export const adminApi = {
+    getUsuarios: () => api.get('/Usuarios/admin/todos'),
+    cambiarEstadoUsuario: (id: number, estado: boolean) => api.put(`/Usuarios/admin/estado/${id}`, estado, { headers: { 'Content-Type': 'application/json' } }),
+    eliminarUsuario: (id: number) => api.delete(`/Usuarios/admin/eliminar/${id}`),
+
+    getRutinasEnRevision: () => api.get('/Rutinas/admin/pendientes'),
+    getTodasRutinas: () => api.get('/Rutinas/admin/todas'),
+    validarRutina: (id: number) => api.put(`/Rutinas/admin/${id}/validar`),
+    rechazarRutina: (id: number) => api.put(`/Rutinas/admin/${id}/rechazar`),
+    eliminarRutina: (id: number) => api.delete(`/Rutinas/admin/${id}`),
 };
 
 export default api;

@@ -6,8 +6,8 @@
     <!-- CONTENIDO PRINCIPAL -->
     <div class="flex-1 md:ml-[256px] min-h-screen flex flex-col">
       <!-- 2️⃣ HEADER SUPERIOR -->
-      <header class="sticky top-0 z-40 bg-[rgba(0,0,0,0.95)] backdrop-blur-[12px] py-[16px] px-[24px] flex items-center border-b border-[#1F2937]">
-        <h1 class="text-[24px] md:text-[32px] font-bold text-white tracking-tight">Configuración</h1>
+      <header class="sticky top-0 z-40 w-full h-[80px] bg-black/95 backdrop-blur-md px-6 flex items-center border-b border-[#1F2937]/50">
+        <h1 class="text-2xl md:text-3xl font-bold text-white tracking-tight">Configuración</h1>
       </header>
 
       <!-- 3️⃣ CONTENEDOR PRINCIPAL -->
@@ -106,9 +106,7 @@
             <button class="w-full bg-transparent border border-[#374151] rounded-[8px] py-[10px] px-[20px] text-[14px] font-semibold text-white cursor-pointer transition-colors duration-200 hover:border-[#DC2626] hover:text-[#DC2626] active:scale-95 text-center">
               Cambiar Contraseña
             </button>
-            <button class="w-full bg-transparent border border-[#374151] rounded-[8px] py-[10px] px-[20px] text-[14px] font-semibold text-white cursor-pointer transition-colors duration-200 hover:border-[#DC2626] hover:text-[#DC2626] active:scale-95 text-center">
-              Autenticación de Dos Factores
-            </button>
+            <!-- 2FA Button removed as requested -->
           </div>
         </div>
 
@@ -120,7 +118,10 @@
           <p class="text-[14px] text-[#9CA3AF] leading-[1.5] mb-[16px]">
             Una vez que elimines tu cuenta, no hay vuelta atrás. Por favor, ten cuidado.
           </p>
-          <button class="w-full bg-[#DC2626] hover:bg-[#B91C1C] border-none rounded-[8px] py-[10px] px-[20px] text-[14px] font-semibold text-white cursor-pointer transition-colors duration-200 active:scale-95">
+          <button 
+            @click="deleteAccount"
+            class="w-full bg-[#DC2626] hover:bg-[#B91C1C] border-none rounded-[8px] py-[10px] px-[20px] text-[14px] font-semibold text-white cursor-pointer transition-colors duration-200 active:scale-95"
+          >
             Eliminar Cuenta
           </button>
         </div>
@@ -144,10 +145,12 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
 import Sidebar from './Sidebar.vue';
+import { useUIStore } from '../stores/ui';
 import { useAuthStore } from '../stores/auth';
 import { usuariosApi } from '../api';
 
 const authStore = useAuthStore();
+const uiStore = useUIStore();
 
 const profile = ref({
   name: '',
@@ -164,11 +167,11 @@ const showToast = (message: string, type: 'success' | 'error' = 'success') => {
 };
 
 const availableAvatars = [
-  { id: 'avatar_default', url: 'https://res.cloudinary.com/dgtahwqpj/image/upload/v1772035659/unnamed_t93s8g.jpg' },
-  { id: 'avatar_robot', url: 'https://res.cloudinary.com/dgtahwqpj/image/upload/v1772035494/unnamed_l44n9h.jpg' },
-  { id: 'avatar_gymbro', url: 'https://res.cloudinary.com/dgtahwqpj/image/upload/v1772034939/unnamed_w3uwac.jpg' },
-  { id: 'avatar_mujerfit', url: 'https://res.cloudinary.com/dgtahwqpj/image/upload/v1772024580/unnamed_kfdzjz.jpg' },
-  { id: 'avatar_hombrefit', url: 'https://res.cloudinary.com/dgtahwqpj/image/upload/v1772024079/unnamed_ojydo4.png' }
+  { id: 'https://res.cloudinary.com/dgtahwqpj/image/upload/v1772035659/unnamed_t93s8g.jpg', url: 'https://res.cloudinary.com/dgtahwqpj/image/upload/v1772035659/unnamed_t93s8g.jpg' },
+  { id: 'https://res.cloudinary.com/dgtahwqpj/image/upload/v1772035494/unnamed_l44n9h.jpg', url: 'https://res.cloudinary.com/dgtahwqpj/image/upload/v1772035494/unnamed_l44n9h.jpg' },
+  { id: 'https://res.cloudinary.com/dgtahwqpj/image/upload/v1772034939/unnamed_w3uwac.jpg', url: 'https://res.cloudinary.com/dgtahwqpj/image/upload/v1772034939/unnamed_w3uwac.jpg' },
+  { id: 'https://res.cloudinary.com/dgtahwqpj/image/upload/v1772024580/unnamed_kfdzjz.jpg', url: 'https://res.cloudinary.com/dgtahwqpj/image/upload/v1772024580/unnamed_kfdzjz.jpg' },
+  { id: 'https://res.cloudinary.com/dgtahwqpj/image/upload/v1772024079/unnamed_ojydo4.png', url: 'https://res.cloudinary.com/dgtahwqpj/image/upload/v1772024079/unnamed_ojydo4.png' }
 ];
 
 const privacyList = ref([
@@ -182,11 +185,24 @@ onMounted(async () => {
     await authStore.fetchProfile();
   }
   if (authStore.profile) {
+    const oldAvatarMap: Record<string, string> = {
+      'avatar_default': 'https://res.cloudinary.com/dgtahwqpj/image/upload/v1772035659/unnamed_t93s8g.jpg',
+      'avatar_robot': 'https://res.cloudinary.com/dgtahwqpj/image/upload/v1772034939/unnamed_w3uwac.jpg',
+      'avatar_gymbro': 'https://res.cloudinary.com/dgtahwqpj/image/upload/v1772035659/unnamed_t93s8g.jpg',
+      'avatar_mujerfit': 'https://res.cloudinary.com/dgtahwqpj/image/upload/v1772035494/unnamed_l44n9h.jpg',
+      'avatar_hombrefit': 'https://res.cloudinary.com/dgtahwqpj/image/upload/v1772024580/unnamed_kfdzjz.jpg'
+    };
+
+    let avatarId = authStore.profile.avatarId || 'avatar_default';
+    if (!avatarId.startsWith('http')) {
+      avatarId = oldAvatarMap[avatarId] || availableAvatars[0].id;
+    }
+
     profile.value = {
       name: authStore.profile.nombre || '',
       email: authStore.profile.email || '',
       bio: authStore.profile.biografia || 'Apasionado del fitness y la vida saludable',
-      avatar_id: authStore.profile.avatarId || 'avatar_default'
+      avatar_id: avatarId
     };
     
     // Sincronizar privacidad
@@ -208,10 +224,17 @@ const saveProfile = async () => {
             authStore.profile.biografia = profile.value.bio;
             authStore.profile.avatarId = profile.value.avatar_id;
         }
+<<<<<<< HEAD
         showToast('Perfil guardado exitosamente', 'success');
     } catch (e) {
         console.error(e);
         showToast('Error al guardar el perfil', 'error');
+=======
+        uiStore.showToast('Perfil guardado exitosamente', 'success');
+    } catch (e) {
+        console.error(e);
+        uiStore.showToast('Error al guardar el perfil', 'error');
+>>>>>>> 71cbf12ca3ae3ea2a4e179d26b34223356dc672d
     }
 };
 
@@ -238,5 +261,25 @@ const togglePrivacy = async (item: any) => {
         item.value = !item.value;
     }
 }
+
+const deleteAccount = async () => {
+    const confirm = await uiStore.showConfirm(
+        "¿ESTÁS SEGURO?", 
+        "Esta acción es irreversible y perderás todo tu progreso.",
+        { confirmText: "Eliminar Todo", type: "danger" }
+    );
+    
+    if (!confirm) return;
+    
+    try {
+        await usuariosApi.eliminarMiCuenta();
+        uiStore.showToast("Tu cuenta ha sido eliminada. Lamentamos verte partir.", "info");
+        authStore.logout();
+        window.location.href = '/';
+    } catch (e) {
+        console.error("Error eliminando cuenta", e);
+        uiStore.showToast("Hubo un error al intentar eliminar la cuenta.", "error");
+    }
+};
 
 </script>

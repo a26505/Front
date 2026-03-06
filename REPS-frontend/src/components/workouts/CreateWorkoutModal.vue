@@ -98,6 +98,10 @@
           </div>
 
           <!-- Lista ejercicios disponibles -->
+          <div class="flex justify-between items-center mb-2">
+            <span class="text-xs font-bold text-[#9CA3AF] uppercase">Resultados</span>
+            <button @click="showCreateExModal = true" class="text-[10px] font-black text-[#DC2626] uppercase tracking-widest border border-[#DC2626]/30 px-2 py-1 rounded hover:bg-[#DC2626] hover:text-white transition-all">+ Crear Ejercicio</button>
+          </div>
           <div class="bg-[#0A0A0A] border border-[#374151] rounded-lg p-2 max-h-48 overflow-y-auto custom-scrollbar mb-6">
             <div 
               v-for="ex in filteredExercises" 
@@ -106,8 +110,11 @@
               @click="addExercise(ex)"
             >
               <span class="text-sm text-white">{{ ex.name }}</span>
-              <div class="flex items-center gap-3">
+              <div class="flex items-center gap-2">
                 <span class="bg-[rgba(220,38,38,0.15)] px-2 py-0.5 rounded text-[10px] text-[#FCA5A5] uppercase font-bold">{{ ex.muscle }}</span>
+                <button v-if="ex.esMio" @click.stop="deleteCustomExercise(ex)" class="w-6 h-6 bg-transparent border border-[#DC2626]/30 hover:bg-[#DC2626] hover:border-[#DC2626] rounded flex items-center justify-center text-[#DC2626] hover:text-white transition-all" title="Eliminar ejercicio">
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M18 6L6 18M6 6l12 12"/></svg>
+                </button>
                 <div @click.stop="addExercise(ex)" class="w-7 h-7 bg-[#DC2626] rounded flex items-center justify-center text-white font-bold transition-transform group-hover:scale-125 hover:bg-red-500 shadow-lg shadow-red-900/20 active:scale-90">+</div>
               </div>
             </div>
@@ -137,9 +144,6 @@
                   <span class="font-bold text-white">{{ item.name }}</span>
                 </div>
                 <div class="flex gap-2">
-                  <div class="px-1 border border-[#374151] rounded-md flex items-center bg-[#0A0A0A]">
-                    <img src="https://res.cloudinary.com/dgtahwqpj/image/upload/v1772038108/descarga_w22ggj.jpg" class="w-8 h-8 rounded-sm object-cover" alt="Ejercicio" />
-                  </div>
                   <button @click="removeExercise(index)" class="p-2 border border-[#374151] rounded-md text-[#9CA3AF] hover:border-[#DC2626] hover:text-[#DC2626] transition-colors">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
                   </button>
@@ -189,15 +193,26 @@
         </div>
       </div>
     </div>
+    <CreateEjercicioModal 
+      v-if="showCreateExModal" 
+      @close="showCreateExModal = false" 
+      @created="handleExerciseCreated"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue';
 import { rutinasApi, ejerciciosApi } from '../../api';
+import { useUIStore } from '../../stores/ui';
+
+import CreateEjercicioModal from './CreateEjercicioModal.vue';
+
+const uiStore = useUIStore();
 
 const emit = defineEmits(['close', 'save']);
 
+const showCreateExModal = ref(false);
 const name = ref('');
 const difficulty = ref(1); // 0: Principiante, 1: Intermedio, 2: Avanzado
 const imagenUrl = ref('');
@@ -258,25 +273,16 @@ const filteredExercises = computed(() => {
   });
 });
 
-onMounted(async () => {
+const loadExercises = async () => {
   try {
     const res = await ejerciciosApi.getAll();
     // Mapeo del Enum de C# a strings de frontend
     const muscleGroupMap: Record<number, string> = {
-      0: 'Pecho',
-      1: 'Espalda',
-      2: 'Pierna',
-      3: 'Hombro',
-      4: 'Brazos',
-      5: 'Abdomen',
-      6: 'Biceps',
-      7: 'Triceps',
-      8: 'Cardio',
-      9: 'FullBody',
-      10: 'Otro'
+      0: 'Pecho', 1: 'Espalda', 2: 'Pierna', 3: 'Hombro', 4: 'Bíceps',
+      5: 'Tríceps', 6: 'Abdomen', 7: 'Cardio', 8: 'Full Body', 9: 'Otro'
     };
     
-    availableExercises.value = (res.data as any[]).map((e: any) => {
+        availableExercises.value = (res.data as any[]).map((e: any) => {
       let muscleName = 'Otro';
       if (typeof e.grupoMuscular === 'number') {
         muscleName = muscleGroupMap[e.grupoMuscular] || 'Otro';
@@ -287,7 +293,8 @@ onMounted(async () => {
       return {
         id: e.id,
         name: e.nombre,
-        muscle: muscleName
+        muscle: muscleName,
+        esMio: e.esMio || false
       };
     });
   } catch {
@@ -301,7 +308,39 @@ onMounted(async () => {
       { id: 6, name: 'Curl de Bíceps con Barra', muscle: 'Biceps' },
     ];
   }
+};
+
+onMounted(async () => {
+    await loadExercises();
 });
+
+const handleExerciseCreated = async (newEx: any) => {
+    // Mapear el nuevo ejercicio y añadirlo a la lista local
+    const muscleGroupMap: Record<number, string> = {
+      0: 'Pecho', 1: 'Espalda', 2: 'Pierna', 3: 'Hombro', 4: 'Bíceps',
+      5: 'Tríceps', 6: 'Abdomen', 7: 'Cardio', 8: 'Full Body', 9: 'Otro'
+    };
+    
+    const mappedEx = {
+        id: newEx.id,
+        name: newEx.nombre,
+        muscle: typeof newEx.grupoMuscular === 'number' ? muscleGroupMap[newEx.grupoMuscular] : newEx.grupoMuscular,
+        esMio: true
+    };
+    
+    availableExercises.value.unshift(mappedEx);
+    addExercise(mappedEx);
+};
+
+const deleteCustomExercise = async (ex: any) => {
+    try {
+        await ejerciciosApi.eliminar(ex.id);
+        availableExercises.value = availableExercises.value.filter(e => e.id !== ex.id);
+        uiStore.showToast('Ejercicio eliminado', 'success');
+    } catch {
+        uiStore.showToast('Error al eliminar ejercicio', 'error');
+    }
+};
 
 const addExercise = (ex: any) => {
   selectedExercises.value.push({

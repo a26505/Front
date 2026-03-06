@@ -6,57 +6,36 @@
     <!-- 2️⃣ CONTENIDO PRINCIPAL -->
     <div class="flex-1 md:ml-[256px] min-h-screen flex flex-col">
       <!-- HEADER STICKY -->
-      <header class="sticky top-0 z-40 bg-black/95 backdrop-blur-md py-4 px-6 flex items-center justify-between border-b border-[#1F2937]/50">
-        <h1 class="text-3xl font-bold text-white tracking-tight">Mis Entrenamientos</h1>
+      <header class="sticky top-0 z-40 w-full h-[80px] bg-black/95 backdrop-blur-md px-6 flex items-center justify-between border-b border-[#1F2937]/50">
+        <h1 class="text-2xl md:text-3xl font-bold text-white tracking-tight">Mis Entrenamientos</h1>
         
-        <div class="flex gap-3">
-          <button @click="showCiclosModal = true" class="bg-[#2563EB] hover:bg-[#1D4ED8] rounded-lg px-4 py-2 flex items-center gap-2 text-sm font-bold transition-all hover:scale-105 active:scale-95 shadow-lg shadow-blue-500/20">
+        <div class="flex gap-2 md:gap-3">
+          <button @click="showCiclosModal = true" class="bg-[#2563EB] hover:bg-[#1D4ED8] rounded-lg px-3 md:px-4 py-2 flex items-center gap-2 text-xs md:text-sm font-bold transition-all hover:scale-105 active:scale-95 shadow-lg shadow-blue-500/20">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
               <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line>
             </svg>
-            Mi Ciclo
+            <span class="hidden sm:inline">Mi Ciclo</span>
+            <span class="sm:hidden">Ciclo</span>
           </button>
           
-          <button @click="openIAGenerator" class="bg-[#9333EA] hover:bg-[#7C3AED] rounded-lg px-4 py-2 flex items-center gap-2 text-sm font-bold transition-all hover:scale-105 active:scale-95">
+          <button @click="openIAGenerator" class="bg-[#9333EA] hover:bg-[#7C3AED] rounded-lg px-3 md:px-4 py-2 flex items-center gap-2 text-xs md:text-sm font-bold transition-all hover:scale-105 active:scale-95">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
               <path d="m12 3 1.912 5.813a2 2 0 0 0 1.275 1.275L21 12l-5.813 1.912a2 2 0 0 0-1.275 1.275L12 21l-1.912-5.813a2 2 0 0 0-1.275-1.275L3 12l5.813-1.912a2 2 0 0 0 1.275-1.275L12 3Z"/>
             </svg>
-            Generar con IA
+            <span class="hidden sm:inline">Generar con IA</span>
+            <span class="sm:hidden">IA</span>
           </button>
           
-          <button @click="showCreateModal = true" class="bg-[#DC2626] hover:bg-[#B91C1C] rounded-lg px-4 py-2 flex items-center gap-2 text-sm font-bold transition-all hover:scale-105 active:scale-95">
+          <button @click="showCreateModal = true" class="bg-[#DC2626] hover:bg-[#B91C1C] rounded-lg px-3 md:px-4 py-2 flex items-center gap-2 text-xs md:text-sm font-bold transition-all hover:scale-105 active:scale-95">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="M12 5v14m-7-7h14"/></svg>
-            Nueva Rutina
+            <span class="hidden sm:inline">Nueva Rutina</span>
+            <span class="sm:hidden">Nueva</span>
           </button>
         </div>
       </header>
 
-      <!-- TABS NAVEGACIÓN -->
+      <!-- CONTENIDO PRINCIPAL -->
       <main class="flex-1 p-6 bg-black overflow-x-hidden">
-        <!-- IA BANNER REFINADO (Tono morado profundo) -->
-        <div 
-          @click="activeTab = 'ai'"
-          class="bg-gradient-to-r from-[#13072E] via-[#0F071C] to-[#0A0A0A] border border-[#9333EA]/30 hover:border-[#9333EA]/60 rounded-xl p-4 flex justify-between items-center cursor-pointer transition-all duration-500 mb-6 group shadow-[0_0_20px_rgba(147,51,234,0.15)] hover:shadow-[0_0_30px_rgba(147,51,234,0.25)]"
-        >
-          <div class="flex items-center gap-4">
-            <div class="w-10 h-10 bg-gradient-to-br from-[#9333EA] to-[#6B21A8] rounded-full flex items-center justify-center shadow-lg shadow-purple-900/40 group-hover:scale-110 transition-transform duration-300">
-              <!-- Icono Sparkle/Estrella de la IA -->
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                <path d="m12 3 1.912 5.813a2 2 0 0 0 1.275 1.275L21 12l-5.813 1.912a2 2 0 0 0-1.275 1.275L12 21l-1.912-5.813a2 2 0 0 0-1.275-1.275L3 12l5.813-1.912a2 2 0 0 0 1.275-1.275L12 3Z"/>
-              </svg>
-            </div>
-            <div>
-              <h3 class="text-[15px] font-black text-white tracking-wide uppercase group-hover:text-purple-300 transition-colors">Entrenamientos Generados por IA</h3>
-              <p class="text-[11px] text-[#9CA3AF] font-medium">Rutinas personalizadas basadas en tus objetivos</p>
-            </div>
-          </div>
-          <div class="bg-gradient-to-r from-[#9333EA] via-[#A855F7] to-[#7C3AED] px-3 py-1.5 rounded-lg flex items-center gap-1.5 shadow-lg shadow-purple-900/40 hover:brightness-110 transition-all">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="white">
-              <path d="M13 2L3 14h8l-1 8 10-12h-8l1-8z"/>
-            </svg>
-            <span class="text-[10px] font-black text-white uppercase tracking-widest">Pro</span>
-          </div>
-        </div>
 
         <!-- BUSCADOR Y FILTROS INTEGRADOS -->
         <div class="flex items-center gap-4 mb-4">
@@ -148,7 +127,7 @@
 
         <!-- LISTA DE ENTRENAMIENTOS -->
         <div class="flex flex-col gap-4 animate-fade-in pb-12">
-             <div v-if="activeTab === 'my'">
+              <div v-if="activeTab === 'my'">
                 <div v-if="filteredMyWorkouts.length === 0" class="flex flex-col items-center justify-center py-12 px-6 bg-[rgba(31,41,55,0.2)] border border-dashed border-[#374151] rounded-[12px] mt-6">
                   <p class="text-[#9CA3AF] text-center font-medium">No tienes ninguna rutina guardada.<br>Crea una nueva rutina o busca en la comunidad.</p>
                 </div>
@@ -164,24 +143,6 @@
                 />
              </div>
 
-
-             <div v-if="activeTab === 'community_saved'">
-                <div v-if="filteredCommunitySavedWorkouts.length === 0" class="flex flex-col items-center justify-center py-12 px-6 bg-[rgba(31,41,55,0.2)] border border-dashed border-[#374151] rounded-[12px] mt-6">
-                  <p class="text-[#9CA3AF] text-center font-medium mb-4">Aquí saldrán las rutinas que te guardes de la comunidad.</p>
-                  <button @click="router.push('/community')" class="bg-[#DC2626] text-white px-6 py-2 rounded-lg font-bold shadow-lg shadow-red-900/20 hover:scale-105 active:scale-95 transition-all">
-                    Explorar Comunidad
-                  </button>
-                </div>
-                <WorkoutCard 
-                   v-for="workout in filteredCommunitySavedWorkouts" 
-                   :key="workout.id" 
-                   :workout="workout" 
-                   type="community_saved"
-                   @click="openDetail(workout)"
-                   @delete="deleteWorkout"
-                   @edit="openEditModal"
-                />
-             </div>
 
 
              <div v-if="activeTab === 'ai'">
@@ -252,48 +213,8 @@
       @save="onCicloSave"
     />
 
-    <!-- MODAL PERSONALIZADO DE ELIMINACIÓN -->
-    <div v-if="deleteModal.show" class="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-in fade-in duration-200">
-        <div class="bg-[#111827] border border-[#1F2937] rounded-xl p-6 max-w-sm w-full shadow-[0_0_30px_rgba(220,38,38,0.1)] slide-in-from-bottom-5">
-            <h3 class="text-xl font-bold text-white mb-2">Eliminar Rutina</h3>
-            <p class="text-[#9CA3AF] mb-6 text-sm">¿Estás seguro de que quieres eliminar esta rutina? Esta acción no se puede deshacer.</p>
-            <div class="flex gap-3 justify-end">
-                <button @click="deleteModal.show = false" class="px-4 py-2 rounded-lg text-white bg-[#1F2937] border border-[#374151] hover:bg-[#374151] font-bold transition-all text-sm">Cancelar</button>
-                <button @click="confirmDelete" class="px-5 py-2 rounded-lg text-white bg-[#DC2626] hover:bg-red-700 font-bold transition-all shadow-lg shadow-red-900/20 text-sm flex items-center gap-2" :disabled="isDeleting">
-                    <span v-if="isDeleting" class="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
-                    Eliminar
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <!-- MODAL PERSONALIZADO DE PUBLICACIÓN -->
-    <div v-if="publishModal.show" class="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-in fade-in duration-200">
-        <div class="bg-[#111827] border border-[#1F2937] rounded-xl p-6 max-w-sm w-full shadow-[0_0_30px_rgba(59,130,246,0.1)] slide-in-from-bottom-5">
-            <h3 class="text-xl font-bold text-white mb-2 flex items-center gap-2">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-blue-500"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
-              Enviar a Revisión
-            </h3>
-            <p class="text-[#9CA3AF] mb-6 text-sm">Al enviar tu rutina, nuestro equipo la revisará antes de ser publicada en la comunidad para todos. ¿Quieres continuar?</p>
-            <div class="flex gap-3 justify-end">
-                <button @click="publishModal.show = false" class="px-4 py-2 rounded-lg text-white bg-[#1F2937] border border-[#374151] hover:bg-[#374151] font-bold transition-all text-sm">Cancelar</button>
-                <button @click="confirmPublish" class="px-5 py-2 rounded-lg text-white bg-blue-600 hover:bg-blue-700 font-bold transition-all shadow-lg shadow-blue-900/20 text-sm flex items-center gap-2" :disabled="isPublishing">
-                    <span v-if="isPublishing" class="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
-                    Enviar
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <!-- TOAST PERSONALIZADO -->
-    <div v-if="toast.show" class="fixed top-20 right-4 md:right-8 z-[200] px-4 py-3 rounded-xl border font-bold text-sm shadow-2xl transition-all animate-in slide-in-from-top-5 duration-300" 
-         :class="toast.type === 'error' ? 'bg-[#DC2626]/10 text-[#FCA5A5] border-[#DC2626]/30' : 'bg-[#22C55E]/10 text-green-400 border-green-500/30'">
-         <div class="flex items-center gap-2">
-             <svg v-if="toast.type === 'error'" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-             <svg v-else width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
-             {{ toast.message }}
-         </div>
-    </div>
+    <!-- Los modales de eliminación y publicación se han migrado a uiStore.showConfirm -->
+    <!-- El Toast local se ha migrado a uiStore.showToast -->
   </div>
 </template>
 
@@ -309,15 +230,22 @@ import CiclosModal from './workouts/CiclosModal.vue';
 import { rutinasApi } from '../api';
 import { useAuthStore } from '../stores/auth';
 
+import { useUIStore } from '../stores/ui';
+import { useRouter } from 'vue-router';
+
 const authStore = useAuthStore();
+const router = useRouter();
+const uiStore = useUIStore();
 const activeTab = ref('my');
 const showFilters = ref(false);
+
 const showCreateModal = ref(false);
 const showIAModal = ref(false);
-const showCiclosModal = ref(false);
 const showEditModal = ref(false);
+const showCiclosModal = ref(false);
 const workoutToEdit = ref<any>(null);
-const selectedWorkout = ref(null);
+const selectedWorkout = ref<any>(null);
+
 const isPro = computed(() => authStore.isPro);
 
 // Filtros
@@ -341,11 +269,8 @@ const clearFilters = () => {
 };
 
 const onCicloSave = () => {
-  showToast('¡Ciclo organizado correctamente!', 'success');
+  uiStore.showToast('¡Ciclo organizado correctamente!', 'success');
 };
-
-import { useRouter } from 'vue-router';
-const router = useRouter();
 
 const openIAGenerator = () => {
   if (isPro.value) {
@@ -376,20 +301,43 @@ const filterWorkouts = (list: any[]) => {
 };
 
 const filteredMyWorkouts = computed(() => filterWorkouts(myWorkouts.value));
-const filteredCommunitySavedWorkouts = computed(() => filterWorkouts(communitySavedWorkouts.value));
 const filteredAiWorkouts = computed(() => filterWorkouts(aiWorkouts.value));
 
 const tabs = [
   { id: 'my', name: 'Mis Rutinas' },
-  { id: 'community_saved', name: 'Mis Rutinas Comunidad' },
   { id: 'ai', name: 'Entrenamientos IA' }
 ];
 
 // --- DATOS REALES ---
 const myWorkouts = ref<any[]>([]);
-const communitySavedWorkouts = ref<any[]>([]);
 const aiWorkouts = ref<any[]>([]);
 const isLoading = ref(false);
+
+const muscleGroupMap: Record<number, string> = {
+  0: 'Pecho', 1: 'Espalda', 2: 'Pierna', 3: 'Hombro', 4: 'Bíceps',
+  5: 'Tríceps', 6: 'Abdomen', 7: 'Cardio', 8: 'Full Body', 9: 'Otro'
+};
+
+const getMusclesFromRutina = (r: any): string[] => {
+  // 1. Si viene explícito del backend
+  if (r.musculos && r.musculos.length > 0) return r.musculos;
+  if (r.musculosPrincipales && r.musculosPrincipales.length > 0) return r.musculosPrincipales;
+  // 2. Extraer de la lista de ejercicios si la tenemos
+  if (r.ejercicios && r.ejercicios.length > 0) {
+    const muscles = new Set<string>();
+    r.ejercicios.forEach((e: any) => {
+      const gm = e.grupoMuscular;
+      if (gm !== undefined && gm !== null) {
+        const name = typeof gm === 'number' ? muscleGroupMap[gm] : String(gm);
+        if (name && name !== 'Otro') muscles.add(name);
+      }
+    });
+    if (muscles.size > 0) return Array.from(muscles);
+  }
+  // 3. parteCuerpo como fallback
+  if (r.parteCuerpo) return [r.parteCuerpo];
+  return [];
+};
 
 const mapToCard = (r: any) => ({
   id: r.id,
@@ -397,10 +345,8 @@ const mapToCard = (r: any) => ({
   difficulty: r.nivel,
   exercises: r.cantidadEjercicios || (r.ejercicios ? r.ejercicios.length : 0),
   duration: r.duracionMinutos,
-  muscles: (r.musculosPrincipales && r.musculosPrincipales.length > 0) 
-           ? r.musculosPrincipales 
-           : (r.parteCuerpo ? [r.parteCuerpo] : ['Cuerpo completo']),
-  image: r.urlImagen || 'https://res.cloudinary.com/dgtahwqpj/image/upload/v1772038108/descarga_w22ggj.jpg',
+  muscles: getMusclesFromRutina(r),
+  image: r.urlImagen || '',
   author: r.creadorNombre,
   creatorId: r.creadorId,
   likes: r.likes,
@@ -419,9 +365,8 @@ const loadRutinas = async () => {
     ]);
     const allMy = (misRes.data as any[]).map(mapToCard);
     
-    // Separar IA de normales usando el flag isGeneradaPorIA o el prefijo
-    myWorkouts.value = allMy.filter(r => !r.isGeneradaPorIA && !r.isCopia);
-    communitySavedWorkouts.value = allMy.filter(r => r.isCopia);
+    // Las rutinas normales van a myWorkouts, y las copias también.
+    myWorkouts.value = allMy.filter(r => !r.isGeneradaPorIA);
     aiWorkouts.value = allMy.filter(r => r.isGeneradaPorIA);
   } catch (e) {
     console.error('Error cargando rutinas', e);
@@ -448,10 +393,10 @@ const handleGenerateAI = async (formData: any) => {
         aiWorkouts.value.unshift(card);
         
         activeTab.value = 'ai';
-        showToast('¡Rutina generada por IA con éxito!', 'success');
+        uiStore.showToast('¡Rutina generada por IA con éxito!', 'success');
     } catch (e) {
         console.error("Error generating AI routine", e);
-        showToast('Error al generar la rutina. Asegúrate de tener conexión.', 'error');
+        uiStore.showToast('Error al generar la rutina. Asegúrate de tener conexión.', 'error');
     } finally {
         isLoading.value = false;
     }
@@ -472,20 +417,38 @@ const openDetail = async (workout: any) => {
   try {
     const res = await rutinasApi.getById(workout.id);
     const detail = res.data;
-    // Mapear detalle a lo que espera el Modal (incluyendo imagen y autor que vienen del item original)
+
+    // Extraer músculos del detalle para actualizar la tarjeta
+    const musclesFromDetail = getMusclesFromRutina({ ejercicios: detail.ejercicios });
+
+    // Actualizar la tarjeta en la lista con los músculos correctos
+    const updateInList = (list: any[]) => {
+      const idx = list.findIndex(w => w.id === workout.id);
+      if (idx !== -1 && musclesFromDetail.length > 0) {
+        list[idx] = { ...list[idx], muscles: musclesFromDetail };
+      }
+    };
+    updateInList(myWorkouts.value);
+    updateInList(aiWorkouts.value);
+
     selectedWorkout.value = {
         ...workout,
+        muscles: musclesFromDetail.length > 0 ? musclesFromDetail : workout.muscles,
         exercises: detail.ejercicios ? detail.ejercicios.length : 0,
-        exerciseList: (detail.ejercicios || []).map((e: any) => ({
-            ejercicioId: e.ejercicioId || e.id,
-            id: e.ejercicioId || e.id,
-            name: e.nombreEjercicio,
-            sets: e.series,
-            reps: e.repeticiones || '10-12',
-            rest: e.descansoSegundos ? `${e.descansoSegundos}s` : '90s',
-            weight: e.ultimoPeso || '0',
-            muscle: e.grupoMuscular
-        }))
+        exerciseList: (detail.ejercicios || []).map((e: any) => {
+            const muscleNum = e.grupoMuscular;
+            const muscleName = typeof muscleNum === 'number' ? (muscleGroupMap[muscleNum] || 'Otro') : String(muscleNum || '');
+            return {
+                ejercicioId: e.ejercicioId || e.id,
+                id: e.ejercicioId || e.id,
+                name: e.nombreEjercicio,
+                sets: e.series,
+                reps: e.repeticiones || '10-12',
+                rest: e.descansoSegundos ? `${e.descansoSegundos}s` : '90s',
+                weight: e.ultimoPeso || '0',
+                muscle: muscleName
+            };
+        })
     };
   } catch (e) {
     console.error("Error cargando detalle", e);
@@ -533,55 +496,41 @@ const handleWorkoutEdited = async () => {
   showEditModal.value = false;
   workoutToEdit.value = null;
   await loadRutinas();
-  showToast('¡Rutina actualizada correctamente!', 'success');
+  uiStore.showToast('¡Rutina actualizada correctamente!', 'success');
 };
 // --- CUSTOM ALERTS & DELETE ---
-const deleteModal = ref({ show: false, id: -1 });
-const publishModal = ref({ show: false, id: -1 });
-const toast = ref({ show: false, message: '', type: 'success' });
 const isDeleting = ref(false);
 const isPublishing = ref(false);
 
-const showToast = (message: string, type: 'success' | 'error' = 'success') => {
-    toast.value = { show: true, message, type };
-    setTimeout(() => toast.value.show = false, 3000);
+const deleteWorkout = async (id: number) => {
+  const confirm = await uiStore.showConfirm("Eliminar Rutina", "¿Estás seguro de que quieres eliminar esta rutina? Esta acción no se puede deshacer.", { type: 'danger' });
+  if (!confirm) return;
+  
+  isDeleting.value = true;
+  try {
+      await rutinasApi.eliminar(id);
+      await loadRutinas();
+      uiStore.showToast('Rutina eliminada correctamente!', 'success');
+  } catch (e) {
+      console.error('Error deleting routine:', e);
+      uiStore.showToast('No se pudo eliminar la rutina. Comprueba tu conexión.', 'error');
+  } finally {
+      isDeleting.value = false;
+  }
 };
 
-const deleteWorkout = (id: number) => {
-  deleteModal.value = { show: true, id };
-};
+const publishWorkout = async (id: number) => {
+    const confirm = await uiStore.showConfirm("Publicar Rutina", "¿Deseas enviar esta rutina a revisión para la comunidad?");
+    if (!confirm) return;
 
-const confirmDelete = async () => {
-    const id = deleteModal.value.id;
-    isDeleting.value = true;
-    try {
-        await rutinasApi.eliminar(id);
-        await loadRutinas();
-        showToast('Rutina eliminada correctamente!', 'success');
-        deleteModal.value.show = false;
-    } catch (e) {
-        console.error('Error deleting routine:', e);
-        showToast('No se pudo eliminar la rutina. Comprueba tu conexión.', 'error');
-    } finally {
-        isDeleting.value = false;
-    }
-};
-
-const publishWorkout = (id: number) => {
-    publishModal.value = { show: true, id };
-};
-
-const confirmPublish = async () => {
-    const id = publishModal.value.id;
     isPublishing.value = true;
     try {
         await rutinasApi.publicar(id);
         await loadRutinas();
-        showToast('Rutina enviada a revisión. ¡Gracias por aportar!', 'success');
-        publishModal.value.show = false;
+        uiStore.showToast('Rutina enviada a revisión. ¡Gracias por aportar!', 'success');
     } catch (e) {
         console.error('Error publishing routine:', e);
-        showToast('No se pudo publicar la rutina.', 'error');
+        uiStore.showToast('No se pudo publicar la rutina.', 'error');
     } finally {
         isPublishing.value = false;
     }

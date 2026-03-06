@@ -92,24 +92,23 @@ namespace REPS_backend.Services
                   sumPuntosMusculos += puntosPorMusculo[grupo];
             }
 
-            double promedioPuntos = gruposValidos.Any() ? sumPuntosMusculos / gruposValidos.Count : 0;
-            
-            // 3. Actualizar Total: Rango General Promedio + Logros
-            usuario.PuntosTotales = (int)Math.Round(promedioPuntos) + usuario.PuntosLogros;
+            // 3. Actualizar Total: Puntos del Rango General (Suma Muscular) + Puntos de Logros
+            int puntosRangoGeneral = (int)Math.Round(sumPuntosMusculos);
+            usuario.PuntosTotales = puntosRangoGeneral + usuario.PuntosLogros;
 
             // Determinar enum RangoGeneral
-            usuario.RangoGeneral = ConvertPuntosARango((int)Math.Round(promedioPuntos));
+            usuario.RangoGeneral = ConvertPuntosARango(puntosRangoGeneral);
 
             await _usuarioRepository.UpdateUsuarioAsync(usuario);
         }
 
         private Rango ConvertPuntosARango(int puntos)
         {
-            if (puntos < 500) return Rango.Bronce;
-            if (puntos < 1500) return Rango.Plata;
-            if (puntos < 3000) return Rango.Oro;
-            if (puntos < 5000) return Rango.Platino;
-            if (puntos < 8000) return Rango.Diamante;
+            if (puntos < 4000) return Rango.Bronce;
+            if (puntos < 12000) return Rango.Plata;
+            if (puntos < 25000) return Rango.Oro;
+            if (puntos < 50000) return Rango.Platino;
+            if (puntos < 80000) return Rango.Diamante;
             return Rango.Leyenda;
         }
 
@@ -136,6 +135,7 @@ namespace REPS_backend.Services
                     Nombre = u.Nombre,
                     AvatarId = u.AvatarId,
                     PuntosTotales = u.PuntosTotales,
+                    PuntosRangoGeneral = u.PuntosTotales - u.PuntosLogros, // Reversing the sum or calculating it
                     EntrenamientosTotal = totalWorkouts,
                     RangoGeneral = u.RangoGeneral.ToString()
                 });
@@ -152,6 +152,7 @@ namespace REPS_backend.Services
             var response = new REPS_backend.DTOs.Ranking.UserProgressResponseDto
             {
                 PuntosTotales = user.PuntosTotales,
+                PuntosRangoGeneral = user.PuntosTotales - user.PuntosLogros,
                 RachaDias = user.RachaDias,
                 RangoGeneral = user.RangoGeneral.ToString(),
                 RangosMusculares = new List<REPS_backend.DTOs.Ranking.MuscleProgressDto>()

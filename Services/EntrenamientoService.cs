@@ -9,15 +9,18 @@ namespace REPS_backend.Services
         private readonly IEntrenamientoRepository _entrenamientoRepository;
         private readonly IRecordPersonalService _recordService;
         private readonly ILogroService _logroService;
+        private readonly IRankingService _rankingService;
 
         public EntrenamientoService(
             IEntrenamientoRepository entrenamientoRepository,
             IRecordPersonalService recordService,
-            ILogroService logroService)
+            ILogroService logroService,
+            IRankingService rankingService)
         {
             _entrenamientoRepository = entrenamientoRepository;
             _recordService = recordService;
             _logroService = logroService;
+            _rankingService = rankingService;
         }
 
         public async Task<FinalizarResultadoDto> FinalizarEntrenamientoAsync(int usuarioId, FinalizarEntrenamientoDto dto)
@@ -121,6 +124,10 @@ namespace REPS_backend.Services
                     Puntos = l.Puntos
                 })
                 .ToList();
+
+            // 6. Actualizar ranking y puntos totales del usuario
+            await _rankingService.UpdateUserRankAsync(usuarioId);
+            await _rankingService.UpdateStreakAsync(usuarioId);
 
             return new FinalizarResultadoDto
             {
