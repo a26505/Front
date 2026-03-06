@@ -21,6 +21,7 @@ namespace REPS_backend.Data
         public DbSet<Amistad> Amistades { get; set; }
         public DbSet<Entrenamiento> Entrenamientos { get; set; }
         public DbSet<SerieLog> SeriesLogs { get; set; }
+        public DbSet<Like> Likes { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

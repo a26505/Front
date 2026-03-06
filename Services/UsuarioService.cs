@@ -7,15 +7,20 @@ namespace REPS_backend.Services
     public class UsuarioService : IUsuarioService
     {
         private readonly IUsuarioRepository _repository;
+        private readonly IRankingService _rankingService;
 
-        public UsuarioService(IUsuarioRepository repository)
+        public UsuarioService(IUsuarioRepository repository, IRankingService rankingService)
         {
             _repository = repository;
+            _rankingService = rankingService;
         }
 
         // ... MÉTODOS EXISTENTES (MiPerfil, BuscarAmigo, Actualizar) ...
         public async Task<UsuarioPerfilDto?> ObtenerMiPerfilAsync(int id)
         {
+            // Sincronizamos puntos y logros antes de devolver el perfil
+            await _rankingService.UpdateUserRankAsync(id);
+            
             var user = await _repository.GetByIdAsync(id);
             if (user == null) return null;
 
@@ -33,7 +38,6 @@ namespace REPS_backend.Services
                 PuntosLogros = user.PuntosLogros,
                 RachaDias = user.RachaDias,
                 RangoGeneral = user.RangoGeneral.ToString(),
-                Biografia = user.Biografia,
                 EsPerfilPublico = user.EsPerfilPublico,
                 MostrarEstadisticas = user.MostrarEstadisticas,
                 RankingVisible = user.RankingVisible,
@@ -48,6 +52,7 @@ namespace REPS_backend.Services
 
             return new UsuarioPublicoDto
             {
+                Id = user.Id,
                 Nombre = user.Nombre,
                 AvatarId = user.AvatarId,
                 FechaRegistro = user.FechaRegistro,
@@ -65,7 +70,6 @@ namespace REPS_backend.Services
 
             if (dto.Nombre != null) user.Nombre = dto.Nombre;
             if (dto.AvatarId != null) user.AvatarId = dto.AvatarId;
-            if (dto.Biografia != null) user.Biografia = dto.Biografia;
             
             if (dto.EsPerfilPublico.HasValue) user.EsPerfilPublico = dto.EsPerfilPublico.Value;
             if (dto.MostrarEstadisticas.HasValue) user.MostrarEstadisticas = dto.MostrarEstadisticas.Value;
@@ -139,8 +143,10 @@ namespace REPS_backend.Services
             // Mapeamos la lista de Usuarios a UsuariosDto
             return amigos.Select(u => new UsuarioPublicoDto
             {
+                Id = u.Id,
                 Nombre = u.Nombre,
                 AvatarId = u.AvatarId,
+                CodigoAmigo = u.CodigoAmigo,
                 FechaRegistro = u.FechaRegistro,
                 PuntosTotales = u.PuntosTotales,
                 RachaDias = u.RachaDias,
@@ -156,8 +162,10 @@ namespace REPS_backend.Services
             // Convertimos a DTO para que se vea bonito (nombre, avatar...)
             return solicitantes.Select(u => new UsuarioPublicoDto
             {
+                Id = u.Id,
                 Nombre = u.Nombre,
                 AvatarId = u.AvatarId,
+                CodigoAmigo = u.CodigoAmigo,
                 FechaRegistro = u.FechaRegistro,
                 PuntosTotales = u.PuntosTotales,
                 RachaDias = u.RachaDias,
@@ -166,9 +174,19 @@ namespace REPS_backend.Services
             }).ToList();
         }
 
-        public async Task<bool> ResponderSolicitudAsync(int miId, string codigoAmigoSolicitante, bool aceptar)
+        public async Task<bool> ResponderSolicitudAsync(int miId, string? codigoAmigoSolicitante, int? solicitanteId, bool aceptar)
         {
-            var solicitante = await _repository.GetByCodigoAmigoAsync(codigoAmigoSolicitante);
+            Usuario? solicitante = null;
+
+            if (solicitanteId.HasValue && solicitanteId.Value > 0)
+            {
+                solicitante = await _repository.GetByIdAsync(solicitanteId.Value);
+            }
+            else if (!string.IsNullOrWhiteSpace(codigoAmigoSolicitante))
+            {
+                solicitante = await _repository.GetByCodigoAmigoAsync(codigoAmigoSolicitante.ToUpper());
+            }
+
             if (solicitante == null) return false;
 
             // Buscamos la "hoja de papel" que une a los dos

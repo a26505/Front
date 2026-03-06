@@ -66,10 +66,11 @@ namespace REPS_backend.Services
             return MapToDetalleDto(rutinaCargada ?? nuevaRutina);
         }
 
-        public async Task<List<RutinaItemDto>> ObtenerRutinasPublicasAsync()
+        public async Task<List<RutinaItemDto>> ObtenerRutinasPublicasAsync(int usuarioId)
         {
             // Pedimos los datos al repositorio real
             var rutinas = await _repository.GetAllPublicasAsync();
+            var likedIds = await _repository.GetLikedRoutineIdsAsync(usuarioId);
 
             // Convertimos a DTO
             return rutinas.Select(r => new RutinaItemDto
@@ -81,9 +82,12 @@ namespace REPS_backend.Services
                 UrlImagen = r.ImagenUrl,
                 CantidadEjercicios = r.Ejercicios?.Count ?? 0,
                 TotalEjercicios = r.Ejercicios?.Count ?? 0,
+                CreadorId = r.UsuarioId,
                 CreadorNombre = r.Usuario != null ? r.Usuario.Nombre : "Sistema",
                 Likes = r.Likes,
-                Estado = r.Estado.ToString()
+                Estado = r.Estado.ToString(),
+                IsLikedPorUsuario = likedIds.Contains(r.Id),
+                EsCopia = r.Nombre.EndsWith("(Copia)") || r.Nombre.Contains("(Copia)")
             }).ToList();
         }
 
@@ -99,9 +103,11 @@ namespace REPS_backend.Services
                 UrlImagen = r.ImagenUrl,
                 CantidadEjercicios = r.Ejercicios?.Count ?? 0,
                 TotalEjercicios = r.Ejercicios?.Count ?? 0,
+                CreadorId = r.UsuarioId,
                 CreadorNombre = r.Usuario != null ? r.Usuario.Nombre : "Sistema",
                 Likes = r.Likes,
-                Estado = r.Estado.ToString()
+                Estado = r.Estado.ToString(),
+                EsCopia = r.Nombre.EndsWith("(Copia)") || r.Nombre.Contains("(Copia)")
             }).ToList();
         }
 
@@ -117,15 +123,18 @@ namespace REPS_backend.Services
                 UrlImagen = r.ImagenUrl,
                 CantidadEjercicios = r.Ejercicios?.Count ?? 0,
                 TotalEjercicios = r.Ejercicios?.Count ?? 0,
+                CreadorId = r.UsuarioId,
                 CreadorNombre = r.Usuario != null ? r.Usuario.Nombre : "Sistema",
                 Likes = r.Likes,
-                Estado = r.Estado.ToString()
+                Estado = r.Estado.ToString(),
+                EsCopia = r.Nombre.EndsWith("(Copia)") || r.Nombre.Contains("(Copia)")
             }).ToList();
         }
 
         public async Task<List<RutinaItemDto>> ObtenerRutinasUsuarioAsync(int usuarioId)
         {
             var rutinas = await _repository.GetByUsuarioIdAsync(usuarioId);
+            var likedIds = await _repository.GetLikedRoutineIdsAsync(usuarioId);
 
             return rutinas.Select(r => new RutinaItemDto
             {
@@ -136,9 +145,12 @@ namespace REPS_backend.Services
                 UrlImagen = r.ImagenUrl,
                 CantidadEjercicios = r.Ejercicios?.Count ?? 0,
                 TotalEjercicios = r.Ejercicios?.Count ?? 0,
+                CreadorId = r.UsuarioId,
                 CreadorNombre = "Tú",
                 Likes = r.Likes,
-                Estado = r.Estado.ToString()
+                Estado = r.Estado.ToString(),
+                IsLikedPorUsuario = likedIds.Contains(r.Id),
+                EsCopia = r.Nombre.EndsWith("(Copia)") || r.Nombre.Contains("(Copia)")
             }).ToList();
         }
 
@@ -148,21 +160,28 @@ namespace REPS_backend.Services
 
             if (rutina == null) return null;
 
-            // Si tenemos usuarioId, enriquecer con el último peso
-            if (usuarioId > 0 && _entrenamientoRepository != null)
-            {
-                var entrenamientos = await _entrenamientoRepository.GetByUsuarioIdWithSeriesAsync(usuarioId);
-                var ultimosPesos = entrenamientos?
-                    .OrderByDescending(e => e.Fecha)
-                    .SelectMany(e => e.SeriesRealizadas ?? new List<SerieLog>())
-                    .Where(s => s.PesoUsado > 0)
-                    .GroupBy(s => s.EjercicioId)
-                    .ToDictionary(g => g.Key, g => g.First().PesoUsado);
+            var dto = usuarioId > 0 && _entrenamientoRepository != null
+                ? MapToDetalleDto(rutina, await GetUltimosPesosDict(usuarioId))
+                : MapToDetalleDto(rutina);
 
-                return MapToDetalleDto(rutina, ultimosPesos);
+            if (usuarioId > 0)
+            {
+                var likedIds = await _repository.GetLikedRoutineIdsAsync(usuarioId);
+                dto.IsLikedPorUsuario = likedIds.Contains(rutinaId);
             }
 
-            return MapToDetalleDto(rutina);
+            return dto;
+        }
+
+        private async Task<Dictionary<int, decimal>> GetUltimosPesosDict(int usuarioId)
+        {
+            var entrenamientos = await _entrenamientoRepository.GetByUsuarioIdWithSeriesAsync(usuarioId);
+            return entrenamientos?
+                .OrderByDescending(e => e.Fecha)
+                .SelectMany(e => e.SeriesRealizadas ?? new List<SerieLog>())
+                .Where(s => s.PesoUsado > 0)
+                .GroupBy(s => s.EjercicioId)
+                .ToDictionary(g => g.Key, g => g.First().PesoUsado) ?? new Dictionary<int, decimal>();
         }
 
         // --- MÉTODOS PRIVADOS (Los mismos de antes) ---
@@ -237,14 +256,9 @@ namespace REPS_backend.Services
             return MapToDetalleDto(completa ?? rutinaEntidad);
         }
 
-        public async Task<int> LikeRutinaAsync(int rutinaId)
+        public async Task<int> LikeRutinaAsync(int rutinaId, int usuarioId)
         {
-            var rutina = await _repository.GetByIdAsync(rutinaId);
-            if (rutina == null) return 0;
-
-            rutina.Likes++;
-            await _repository.UpdateAsync(rutina);
-            return rutina.Likes;
+            return await _repository.ToggleLikeAsync(rutinaId, usuarioId);
         }
 
         public async Task<RutinaDetalleDto> CopiarRutinaAsync(int rutinaId, int usuarioId)
@@ -257,6 +271,7 @@ namespace REPS_backend.Services
                 Nombre = $"{original.Nombre} (Copia)",
                 Nivel = original.Nivel,
                 DuracionMinutos = original.DuracionMinutos,
+                ImagenUrl = original.ImagenUrl,
                 Estado = EstadoRutina.Privada,
                 UsuarioId = usuarioId,
                 Ejercicios = original.Ejercicios?.Select(e => new RutinaEjercicio
@@ -286,6 +301,7 @@ namespace REPS_backend.Services
                 DuracionMinutos = r.DuracionMinutos,
                 UrlImagen = r.ImagenUrl ?? string.Empty,
                 Estado = r.Estado.ToString(),
+                Likes = r.Likes,
                 Ejercicios = r.Ejercicios?.Select(e => new RutinaEjercicioDto
                 {
                     EjercicioId = e.EjercicioId,

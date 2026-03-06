@@ -132,7 +132,7 @@ namespace REPS_backend.Controllers
         }
 
         // 2. RESPONDER (Aceptar o Rechazar)
-        public class RespuestaSolicitudDto { public string CodigoAmigo { get; set; } public bool Aceptar { get; set; } }
+        public class RespuestaSolicitudDto { public string? CodigoAmigo { get; set; } public int? SolicitanteId { get; set; } public bool Aceptar { get; set; } }
 
         [HttpPost("amigos/responder")]
         public async Task<IActionResult> ResponderSolicitud([FromBody] RespuestaSolicitudDto dto)
@@ -140,7 +140,7 @@ namespace REPS_backend.Controllers
             var userIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (!int.TryParse(userIdStr, out int userId)) return Unauthorized();
 
-            var exito = await _usuarioService.ResponderSolicitudAsync(userId, dto.CodigoAmigo, dto.Aceptar);
+            var exito = await _usuarioService.ResponderSolicitudAsync(userId, dto.CodigoAmigo, dto.SolicitanteId, dto.Aceptar);
 
             if (!exito) return BadRequest("No se encontró la solicitud.");
 

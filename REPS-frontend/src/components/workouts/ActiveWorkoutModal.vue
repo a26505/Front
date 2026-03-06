@@ -572,11 +572,15 @@ const onFinalizar = async () => {
     const entrenamientoId = res.data?.id;
 
     const recordsPersonal = res.data?.recordsPersonal || [];
+    const musculosConRecord = new Set();
     recordsPersonal.forEach((rec: any) => {
       const rawMuscle = rec.grupoMuscular || 'Otro';
       const normalizedMuscle = normalizeMuscle(rawMuscle);
-      // Añadir bonus de 30 pts al músculo del récord
-      localMuscleBreakdown[normalizedMuscle] = (localMuscleBreakdown[normalizedMuscle] || 0) + 30;
+      
+      if (!musculosConRecord.has(normalizedMuscle)) {
+        musculosConRecord.add(normalizedMuscle);
+        localMuscleBreakdown['Bonus Récords'] = (localMuscleBreakdown['Bonus Récords'] || 0) + 100;
+      }
     });
 
     // Usar puntos del servidor si están disponibles, si no calcular local

@@ -95,7 +95,7 @@
         </div>
 
         <!-- 4️⃣ GRID ESTADÍSTICAS -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-[16px] mb-[24px]">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-[16px] mb-[24px]">
           <div v-for="stat in stats" :key="stat.label" class="bg-[rgba(17,24,39,0.5)] border border-[#1F2937] rounded-[12px] p-[24px]">
             <div class="mb-3" :class="stat.color">
                <RankIcon v-if="stat.label === 'Rango General'" :rank="rangoGeneral" :size="40" />
@@ -118,37 +118,30 @@
             
             <div class="flex flex-col gap-3 mb-4">
               <div v-for="friend in friends" :key="friend.name" class="flex items-center gap-3 bg-[rgba(31,41,55,0.5)] border border-[#374151] rounded-[12px] p-3 transition-all duration-300 hover:border-[#4B5563]">
-                <div class="w-[48px] h-[48px] rounded-full bg-gradient-to-br from-red-600/30 to-red-900/30 border border-red-600/20 flex items-center justify-center text-[24px]">
-                  {{ friend.emoji }}
+                <div class="w-[48px] h-[48px] rounded-full border border-red-600/20 overflow-hidden">
+                  <img :src="getAvatarUrl(friend.avatarId)" class="w-full h-full object-cover" />
                 </div>
                 <div class="flex-1">
                   <div class="text-[14px] font-semibold text-white mb-1">{{ friend.name }}</div>
                   <div class="flex gap-3 text-[12px] text-[#9CA3AF]">
-                    <div class="flex items-center gap-1">
+                    <div class="flex items-center gap-1 text-[#F97316]">
                       <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <circle cx="12" cy="8" r="7"/><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"/>
-                      </svg>
-                      {{ friend.level }} pts
-                    </div>
-                      {{ friend.workouts }} entrenamientos
-                    <div class="flex items-center gap-1">
-                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#F97316" stroke-width="2">
                         <path d="M15.362 5.214A8.252 8.252 0 0 1 12 21 8.25 8.25 0 0 1 6.038 7.047 8.287 8.287 0 0 0 9 9.601a8.983 8.983 0 0 1 3.361-6.867 8.21 8.21 0 0 0 3 2.48Z"/><path d="M12 18a3.75 3.75 0 0 0 .495-7.468 5.99 5.99 0 0 0-1.925 3.547 5.975 5.975 0 0 1-2.133-1.001A3.75 3.75 0 0 0 12 18Z"/>
                       </svg>
-                      <span class="text-[#F97316]">{{ friend.streak }}d</span>
+                      {{ friend.streak }}d
                     </div>
                   </div>
                 </div>
-                <button class="text-[12px] text-[#DC2626] hover:text-[#EF4444] cursor-pointer transition-colors">Ver perfil</button>
+                <router-link to="/community" class="text-[12px] text-[#DC2626] hover:text-[#EF4444] cursor-pointer transition-colors">Ver Perfil</router-link>
               </div>
             </div>
 
-            <button class="w-full mt-4 border border-[#374151] text-white rounded-[8px] py-[10px] flex items-center justify-center gap-2 hover:border-[#DC2626] hover:text-[#DC2626] transition-all duration-200">
+            <router-link to="/community" class="w-full mt-4 border border-[#374151] text-white rounded-[8px] py-[10px] flex items-center justify-center gap-2 hover:border-[#DC2626] hover:text-[#DC2626] transition-all duration-200">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/>
               </svg>
               Ver todos los amigos
-            </button>
+            </router-link>
           </div>
 
           <!-- LOGROS -->
@@ -243,7 +236,6 @@ import Sidebar from './Sidebar.vue';
 import RankIcon from './common/RankIcon.vue';
 import { useAuthStore } from '../stores/auth';
 import { usuariosApi, recordsApi, progresoApi, logrosApi } from '../api';
-
 import { useRouter } from 'vue-router';
 
 const authStore = useAuthStore();
@@ -322,9 +314,13 @@ const avatarUrl = computed(() => {
   if (selectedAvatarId.value?.startsWith('http')) {
     return selectedAvatarId.value;
   }
-  const avatar = availableAvatars.find(a => a.id === selectedAvatarId.value);
-  return avatar ? avatar.url : availableAvatars[0].url;
+  return getAvatarUrl(selectedAvatarId.value);
 });
+
+const getAvatarUrl = (id?: string) => {
+  const avatar = availableAvatars.find(a => a.id === id);
+  return avatar ? avatar.url : availableAvatars[0].url;
+};
 
 const showAvatarDropdown = ref(false);
 
@@ -364,26 +360,19 @@ const stats = computed(() => [
     color: 'text-[#3B82F6]',
     detail: `(${ (authStore.profile?.puntosTotales ?? 0) - (authStore.profile?.puntosLogros ?? 0) } Rango + ${authStore.profile?.puntosLogros ?? 0} Logros)`,
     icon: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>`
-  },
-  { 
-    label: 'Récords', value: String(personalRecords.value.length), color: 'text-[#EAB308]',
-    icon: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="7"/><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"/></svg>`
   }
 ]);
 
 // --- AMIGOS ---
 const friends = ref<any[]>([]);
-const emojis = ['💪', '🔥', '🚀', '🏆', '⚡', '🎯'];
 
 const loadAmigos = async () => {
   try {
     const res = await usuariosApi.getMisAmigos();
-    friends.value = (res.data as any[]).map((f: any, i: number) => ({
-      name: f.nombre ?? f.name ?? 'Atleta',
-      level: 0,
-      workouts: 0,
-      streak: 0,
-      emoji: emojis[i % emojis.length]
+    friends.value = (res.data as any[]).map((f: any) => ({
+      name: f.nombre ?? 'Atleta',
+      avatarId: f.avatarId,
+      streak: f.rachaDias ?? 0
     }));
   } catch (e) {
     console.warn('No se pudieron cargar amigos', e);

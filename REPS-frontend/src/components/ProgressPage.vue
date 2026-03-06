@@ -131,7 +131,7 @@
               </div>
               
               <div class="mt-6 text-center relative z-10">
-                <p class="text-sm text-gray-400 font-medium">Mediana: <span class="text-white">{{ formatNumber(averagePoints) }} pts</span></p>
+                <p class="text-sm text-gray-400 font-medium">Puntos Musculares: <span class="text-white">{{ formatNumber(averagePoints) }} pts</span></p>
               </div>
             </section>
 
@@ -239,43 +239,32 @@ const errorText = ref('');
 // Ranking de rango por nombre
 const rankOrder = ['Bronce', 'Plata', 'Oro', 'Platino', 'Diamante', 'Leyenda'];
 
-// Mediana de puntos: solo músculos que tienen puntos > 0 (no diluye con ceros)
-const medianPoints = computed(() => {
+// Suma de puntos: total de los músculos entrenados (puntos > 0)
+const averagePoints = computed(() => {
   const withPoints = muscleRanks.value.filter((m: any) => (m.points || 0) > 0);
   if (withPoints.length === 0) return 0;
-  const sorted = [...withPoints].map((m: any) => m.points || 0).sort((a, b) => a - b);
-  const mid = Math.floor(sorted.length / 2);
-  if (sorted.length % 2 === 0) {
-    return Math.round((sorted[mid - 1] + sorted[mid]) / 2);
-  }
-  return sorted[mid];
+  return withPoints.reduce((acc, m) => acc + (m.points || 0), 0);
 });
 
-// Calcular mediana de los rangos (no puntos)
+// Calcular promedio de los rangos para determinar el rango general
 const calculatedRangoGeneral = computed(() => {
   const withRanks = muscleRanks.value.filter((m: any) => (m.points || 0) > 0);
   if (withRanks.length === 0) return 'Bronce';
   
-  // Convertir rangos a indices numericos y ordenar
+  // Convertir rangos a indices numericos
   const rankIndices = withRanks.map((m: any) => {
     const idx = rankOrder.indexOf(m.rank);
     return idx >= 0 ? idx : 0;
-  }).sort((a, b) => a - b);
+  });
   
-  // Calcular mediana de indices
-  const mid = Math.floor(rankIndices.length / 2);
-  let medianIndex;
-  if (rankIndices.length % 2 === 0) {
-    medianIndex = Math.round((rankIndices[mid - 1] + rankIndices[mid]) / 2);
-  } else {
-    medianIndex = rankIndices[mid];
-  }
+  // Calcular promedio de indices
+  const sum = rankIndices.reduce((acc, idx) => acc + idx, 0);
+  const averageIndex = Math.round(sum / rankIndices.length);
   
-  return rankOrder[medianIndex] || 'Bronce';
+  return rankOrder[averageIndex] || 'Bronce';
 });
 
-// Para mantener compatibilidad con el display de puntos
-const averagePoints = medianPoints;
+// El cálculo anterior ya define averagePoints directamente.
 
 // Puntos de logros desbloqueados (suma real de puntos de logros)
 const logrosPoints = ref(0);

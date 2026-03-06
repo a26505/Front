@@ -10,6 +10,7 @@ namespace REPS_backend.DTOs.Rutinas
         
         public int DuracionMinutos { get; set; }
         public string UrlImagen { get; set; } = string.Empty;
+        public int CreadorId { get; set; }
         public string CreadorNombre { get; set; } = string.Empty;
         public int Likes { get; set; }
         
@@ -18,5 +19,7 @@ namespace REPS_backend.DTOs.Rutinas
         public int TotalEjercicios { get; set; } 
 
         public string Estado { get; set; } = string.Empty;
+        public bool IsLikedPorUsuario { get; set; }
+        public bool EsCopia { get; set; }
     }
 }

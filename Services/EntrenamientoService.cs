@@ -101,7 +101,7 @@ namespace REPS_backend.Services
                                 if (!musculosConRecord.Contains(musculo))
                                 {
                                     musculosConRecord.Add(musculo);
-                                    puntosGanados += 30; // Bonus por batir récord en este músculo
+                                    puntosGanados += 100; // Bonus por batir récord en este músculo
                                 }
                             }
                         }

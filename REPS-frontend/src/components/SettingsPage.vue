@@ -23,23 +23,7 @@
             <h2 class="text-[20px] font-semibold text-white">Perfil</h2>
           </div>
           <div class="flex flex-col gap-[16px]">
-            <!-- Avatar Selection -->
-            <div>
-              <label class="text-[14px] font-semibold text-white mb-[12px] block">Selecciona tu Avatar</label>
-              <div class="flex flex-wrap gap-[12px]">
-                <button 
-                  v-for="avatar in availableAvatars" 
-                  :key="avatar.id"
-                  @click="profile.avatar_id = avatar.id"
-                  role="button"
-                  tabindex="0"
-                  class="w-[60px] h-[60px] rounded-full border-2 transition-all overflow-hidden bg-[#1F2937] p-0"
-                  :class="profile.avatar_id === avatar.id ? 'border-[#DC2626] scale-110 shadow-[0_0_10px_rgba(220,38,38,0.5)]' : 'border-transparent opacity-60 hover:opacity-100'"
-                >
-                  <img :src="avatar.url" class="w-full h-full object-cover pointer-events-none" />
-                </button>
-              </div>
-            </div>
+
 
             <div>
               <label class="text-[14px] font-semibold text-white mb-[8px] block">Nombre</label>
@@ -49,10 +33,7 @@
               <label class="text-[14px] font-semibold text-white mb-[8px] block">Correo Electrónico</label>
               <input type="email" v-model="profile.email" class="w-full bg-[#1F2937] border border-[#374151] rounded-[8px] py-[10px] px-[12px] text-[14px] text-white transition-colors duration-200 focus:border-[#DC2626] focus:outline-none" />
             </div>
-            <div>
-              <label class="text-[14px] font-semibold text-white mb-[8px] block">Biografía</label>
-              <input type="text" v-model="profile.bio" class="w-full bg-[#1F2937] border border-[#374151] rounded-[8px] py-[10px] px-[12px] text-[14px] text-white transition-colors duration-200 focus:border-[#DC2626] focus:outline-none" />
-            </div>
+
             <button @click="saveProfile" class="bg-[#DC2626] hover:bg-[#B91C1C] border-none rounded-[8px] py-[10px] px-[20px] text-[14px] font-semibold text-white cursor-pointer mt-[8px] self-start transition-colors duration-200 active:scale-95">Guardar Cambios</button>
           </div>
         </div>
@@ -106,9 +87,7 @@
             <button class="w-full bg-transparent border border-[#374151] rounded-[8px] py-[10px] px-[20px] text-[14px] font-semibold text-white cursor-pointer transition-colors duration-200 hover:border-[#DC2626] hover:text-[#DC2626] active:scale-95 text-center">
               Cambiar Contraseña
             </button>
-            <button class="w-full bg-transparent border border-[#374151] rounded-[8px] py-[10px] px-[20px] text-[14px] font-semibold text-white cursor-pointer transition-colors duration-200 hover:border-[#DC2626] hover:text-[#DC2626] active:scale-95 text-center">
-              Autenticación de Dos Factores
-            </button>
+
           </div>
         </div>
 
@@ -145,13 +124,8 @@ const profile = ref({
   avatar_id: ''
 });
 
-const availableAvatars = [
-  { id: 'avatar_default', url: 'https://res.cloudinary.com/dgtahwqpj/image/upload/v1772035659/unnamed_t93s8g.jpg' },
-  { id: 'avatar_robot', url: 'https://res.cloudinary.com/dgtahwqpj/image/upload/v1772035494/unnamed_l44n9h.jpg' },
-  { id: 'avatar_gymbro', url: 'https://res.cloudinary.com/dgtahwqpj/image/upload/v1772034939/unnamed_w3uwac.jpg' },
-  { id: 'avatar_mujerfit', url: 'https://res.cloudinary.com/dgtahwqpj/image/upload/v1772024580/unnamed_kfdzjz.jpg' },
-  { id: 'avatar_hombrefit', url: 'https://res.cloudinary.com/dgtahwqpj/image/upload/v1772024079/unnamed_ojydo4.png' }
-];
+/* Removed availableAvatars as it's no longer used in template */
+
 
 const privacyList = ref([
   { id: 'EsPerfilPublico', title: 'Perfil Público', desc: 'Permite que otros usuarios vean tu perfil', value: true },

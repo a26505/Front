@@ -51,7 +51,8 @@ namespace REPS_backend.Controllers
         [HttpGet("comunidad")]
         public async Task<ActionResult<List<RutinaItemDto>>> GetRutinasPublicas()
         {
-            var rutinas = await _rutinaService.ObtenerRutinasPublicasAsync();
+            int usuarioId = GetUserId();
+            var rutinas = await _rutinaService.ObtenerRutinasPublicasAsync(usuarioId);
             return Ok(rutinas);
         }
 
@@ -192,7 +193,8 @@ namespace REPS_backend.Controllers
         [HttpPost("{id}/like")]
         public async Task<ActionResult<int>> LikeRutina(int id)
         {
-            var likes = await _rutinaService.LikeRutinaAsync(id);
+            int usuarioId = GetUserId();
+            var likes = await _rutinaService.LikeRutinaAsync(id, usuarioId);
             return Ok(likes);
         }
 

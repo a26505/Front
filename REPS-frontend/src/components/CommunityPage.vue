@@ -53,20 +53,19 @@
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
                 </div>
                 <div>
-                  <div class="text-[14px] font-semibold text-white">{{ req.nombre ?? req.name }}</div>
-                  <div class="text-[12px] text-[#9CA3AF]">{{ req.rangoGeneral ?? '' }}</div>
+                  <div class="text-[14px] font-semibold text-white">{{ req.nombre }}</div>
                 </div>
               </div>
               <div class="flex items-center gap-2">
-                <button @click="responderSolicitud(req.codigoAmigo, true)" class="bg-[#22C55E] hover:bg-[#16A34A] p-2 rounded-md text-white"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></button>
-                <button @click="responderSolicitud(req.codigoAmigo, false)" class="border border-[#374151] hover:border-[#DC2626] hover:text-[#DC2626] p-2 rounded-md text-[#9CA3AF]"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+                <button @click="responderSolicitud(req.codigoAmigo || null, req.id, true)" class="bg-[#22C55E] hover:bg-[#16A34A] p-2 rounded-md text-white"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></button>
+                <button @click="responderSolicitud(req.codigoAmigo || null, req.id, false)" class="border border-[#374151] hover:border-[#DC2626] hover:text-[#DC2626] p-2 rounded-md text-[#9CA3AF]"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
               </div>
             </div>
           </div>
 
           <!-- LISTA AMIGOS (ESTILO RUTINAS/ENTRENAMIENTOS) -->
           <div v-if="friendsList.length > 0" class="px-6 flex flex-col gap-4">
-            <div v-for="friend in friendsList" :key="friend.name" 
+            <div v-for="friend in friendsList" :key="friend.codigoAmigo" 
                  class="bg-[#111827]/50 border border-[#1F2937] rounded-[14px] p-5 flex flex-col md:flex-row md:items-center justify-between gap-6 transition-all duration-300 hover:border-[#DC2626] group">
               
               <!-- IZQUIERDA: AVATAR + INFO BÁSICA -->
@@ -88,18 +87,9 @@
               <!-- CENTRO: STATS -->
               <div class="flex-1 flex items-center justify-around md:justify-center md:gap-24 border-l border-[#1F2937]/50 px-4">
                 <div class="flex flex-col items-center">
-                  <span class="text-[20px] font-extrabold text-white">{{ friend.workouts }}</span>
-                  <span class="text-[11px] text-[#9CA3AF] uppercase tracking-widest font-bold italic">Entrenos</span>
-                </div>
-                <div class="flex flex-col items-center">
                   <span class="text-[20px] font-extrabold text-white">{{ friend.streak }}d</span>
                   <span class="text-[11px] text-[#9CA3AF] uppercase tracking-widest font-bold italic">Racha</span>
                 </div>
-              </div>
-
-              <!-- BIO (MÓVIL OCULTO O TRUNCADO) -->
-              <div class="hidden lg:block flex-1 max-w-[300px]">
-                <p class="text-[13px] text-[#6B7280] italic line-clamp-2">"{{ friend.bio }}"</p>
               </div>
 
               <!-- DERECHA: ACCIONES -->
@@ -437,16 +427,10 @@
                 </h2>
                 <div class="text-[14px] text-[#DC2626] font-bold uppercase tracking-widest mt-1 mb-4">{{ selectedFriend.statusText }}</div>
                 
-                <p v-if="selectedFriend.bio" class="text-[14px] text-[#9CA3AF] italic mb-6">"{{ selectedFriend.bio }}"</p>
-                
-                <div class="grid grid-cols-2 gap-4">
+                <div class="grid grid-cols-1 gap-4">
                     <div class="bg-[#111827]/50 border border-[#374151] rounded-[12px] p-4 flex flex-col items-center">
-                        <span class="text-[24px] font-extrabold text-[#FBBF24]">{{ selectedFriend.streak }}</span>
+                        <span class="text-[24px] font-extrabold text-[#F97316]">{{ selectedFriend.streak }}</span>
                         <span class="text-[12px] text-[#9CA3AF] uppercase font-bold tracking-wider">Días Racha</span>
-                    </div>
-                    <div class="bg-[#111827]/50 border border-[#374151] rounded-[12px] p-4 flex flex-col items-center">
-                        <span class="text-[24px] font-extrabold text-[#38BDF8]">{{ selectedFriend.workouts }}</span>
-                        <span class="text-[12px] text-[#9CA3AF] uppercase font-bold tracking-wider">Entrenos</span>
                     </div>
                 </div>
             </div>
@@ -523,6 +507,13 @@ const router = useRouter();
 
 onMounted(async () => {
   document.title = 'Comunidad | REPS - Conecta y Compite';
+  
+  // Handle tab from query parameter
+  const tab = router.currentRoute.value.query.tab as string;
+  if (tab && mainTabs.some(t => t.id === tab)) {
+    activeTab.value = tab;
+  }
+
   if (!authStore.profile) {
     await authStore.fetchProfile();
   }
@@ -619,13 +610,12 @@ const loadAmigos = async () => {
   try {
     const res = await usuariosApi.getMisAmigos();
     friendsList.value = (res.data as any[]).map((f: any) => ({
-      name: f.nombre ?? 'Atleta',
+      name: f.nombre,
       avatarId: f.avatarId,
       online: false,
-      statusText: `${f.rangoGeneral ?? 'Bronce'}`,
-      workouts: 0,
+      statusText: `${f.rangoGeneral}`,
       streak: f.rachaDias ?? 0,
-      bio: ''
+      codigoAmigo: f.codigoAmigo
     }));
   } catch (e) {
     console.warn('No se pudieron cargar amigos', e);
@@ -642,9 +632,9 @@ const loadSolicitudes = async () => {
   }
 };
 
-const responderSolicitud = async (codigoAmigo: string, aceptar: boolean) => {
+const responderSolicitud = async (codigoAmigo: string | null, solicitanteId: number | undefined, aceptar: boolean) => {
   try {
-    await usuariosApi.responderSolicitud(codigoAmigo, aceptar);
+    await usuariosApi.responderSolicitud(codigoAmigo, solicitanteId, aceptar);
     await loadSolicitudes();
     await loadAmigos();
   } catch (e) {
@@ -720,7 +710,7 @@ const loadRutinasComunidad = async () => {
             description: r.descripcion || `Rutina de ${r.cantidadEjercicios} ejercicios.`,
             tags: r.musculosPrincipales?.length ? r.musculosPrincipales : ['Cuerpo Completo'],
             likes: r.likes || 0,
-            liked: r.liked || false,
+            liked: r.isLikedPorUsuario || false,
             copied: false
         }));
     } catch(e) {

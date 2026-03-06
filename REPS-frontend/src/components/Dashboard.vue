@@ -70,7 +70,7 @@
 
 
             <div class="text-[36px] leading-[40px] text-[#FACC15] font-black mb-[10px]">{{ calculatedRangoGeneral.toUpperCase() }}</div>
-            <div class="text-[14px] leading-[20px] text-[#9CA3AF]">Mediana: {{ averagePoints }} pts</div>
+            <div class="text-[14px] leading-[20px] text-[#9CA3AF]">Puntos Rango: {{ averagePoints }} pts</div>
           </div>
 
           <!-- CARD 3: LOGROS (Usado para Ranking Puntos según pedido) -->
@@ -278,46 +278,26 @@ const muscleRanks = ref<any[]>([]);
 const records = ref<any[]>([]);
 const unlockedCount = ref(0);
 
-// Ranking de rango por nombre
-const rankOrder = ['Bronce', 'Plata', 'Oro', 'Platino', 'Diamante', 'Leyenda'];
+/* rankOrder removed to fix lint */
 
-// Mediana de puntos: solo músculos que tienen puntos > 0 (no diluye con ceros)
-const medianPoints = computed(() => {
+// Suma total de puntos del catálogo muscular entrenado (Sincronizado con backend)
+const averagePoints = computed(() => {
   const withPoints = muscleRanks.value.filter((m: any) => (m.puntosActuales || 0) > 0);
   if (withPoints.length === 0) return 0;
-  const sorted = [...withPoints].map((m: any) => m.puntosActuales || 0).sort((a, b) => a - b);
-  const mid = Math.floor(sorted.length / 2);
-  if (sorted.length % 2 === 0) {
-    return Math.round((sorted[mid - 1] + sorted[mid]) / 2);
-  }
-  return sorted[mid];
+  
+  return withPoints.reduce((acc: number, m: any) => acc + (m.puntosActuales || 0), 0);
 });
 
-// Calcular mediana de los rangos (no puntos)
+// Calcular rango basado en el promedio de puntos (Sincronizado con Backend)
 const calculatedRangoGeneral = computed(() => {
-  const withRanks = muscleRanks.value.filter((m: any) => (m.puntosActuales || 0) > 0);
-  if (withRanks.length === 0) return 'Bronce';
-  
-  // Convertir rangos a indices numericos y ordenar
-  const rankIndices = withRanks.map((m: any) => {
-    const idx = rankOrder.indexOf(m.rango || 'Bronce');
-    return idx >= 0 ? idx : 0;
-  }).sort((a, b) => a - b);
-  
-  // Calcular mediana de indices
-  const mid = Math.floor(rankIndices.length / 2);
-  let medianIndex;
-  if (rankIndices.length % 2 === 0) {
-    medianIndex = Math.round((rankIndices[mid - 1] + rankIndices[mid]) / 2);
-  } else {
-    medianIndex = rankIndices[mid];
-  }
-  
-  return rankOrder[medianIndex] || 'Bronce';
+  const points = averagePoints.value;
+  if (points >= 8000) return 'Leyenda';
+  if (points >= 5000) return 'Diamante';
+  if (points >= 3000) return 'Platino';
+  if (points >= 1500) return 'Oro';
+  if (points >= 500) return 'Plata';
+  return 'Bronce';
 });
-
-// Para mantener compatibilidad
-const averagePoints = medianPoints;
 
 // Puntos de logros desbloqueados (suma real de puntos de logros)
 const logrosPoints = ref(0);

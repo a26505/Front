@@ -57,8 +57,8 @@ export const usuariosApi = {
     agregarAmigo: (codigo: string) => api.post(`/Usuarios/amigos/agregar/${codigo}`),
     getMisAmigos: () => api.get('/Usuarios/amigos'),
     getSolicitudes: () => api.get('/Usuarios/amigos/solicitudes'),
-    responderSolicitud: (codigoAmigo: string, aceptar: boolean) =>
-        api.post('/Usuarios/amigos/responder', { codigoAmigo, aceptar }),
+    responderSolicitud: (codigoAmigo: string | null, solicitanteId: number | undefined, aceptar: boolean) =>
+        api.post('/Usuarios/amigos/responder', { codigoAmigo, solicitanteId, aceptar }),
     updatePlan: (planId: number) => api.put('/Usuarios/plan', { planId }),
 };
 
@@ -123,7 +123,7 @@ export const adminApi = {
     getUsuarios: () => api.get('/Usuarios/admin/todos'),
     cambiarEstadoUsuario: (id: number, estado: boolean) => api.put(`/Usuarios/admin/estado/${id}`, estado, { headers: { 'Content-Type': 'application/json' } }),
     eliminarUsuario: (id: number) => api.delete(`/Usuarios/admin/eliminar/${id}`),
-    
+
     getRutinasEnRevision: () => api.get('/Rutinas/admin/pendientes'),
     getTodasRutinas: () => api.get('/Rutinas/admin/todas'),
     validarRutina: (id: number) => api.put(`/Rutinas/admin/${id}/validar`),

@@ -96,5 +96,43 @@ namespace REPS_backend.Repositories
                 await _context.SaveChangesAsync();
             }
         }
+
+        public async Task<int> ToggleLikeAsync(int rutinaId, int usuarioId)
+        {
+            var existingLikes = await _context.Likes
+                .Where(l => l.RutinaId == rutinaId && l.UsuarioId == usuarioId)
+                .ToListAsync();
+            
+            var rutina = await _context.Rutinas.FindAsync(rutinaId);
+            if (rutina == null) return 0;
+
+            if (existingLikes.Any())
+            {
+                _context.Likes.RemoveRange(existingLikes);
+                rutina.Likes = Math.Max(0, rutina.Likes - 1);
+            }
+            else
+            {
+                var newLike = new Like
+                {
+                    RutinaId = rutinaId,
+                    UsuarioId = usuarioId,
+                    FechaLike = DateTime.UtcNow
+                };
+                await _context.Likes.AddAsync(newLike);
+                rutina.Likes++;
+            }
+
+            await _context.SaveChangesAsync();
+            return rutina.Likes;
+        }
+
+        public async Task<List<int>> GetLikedRoutineIdsAsync(int usuarioId)
+        {
+            return await _context.Likes
+                .Where(l => l.UsuarioId == usuarioId)
+                .Select(l => l.RutinaId)
+                .ToListAsync();
+        }
     }
 }
