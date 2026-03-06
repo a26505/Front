@@ -249,6 +249,24 @@ import { useRouter } from 'vue-router';
 const authStore = useAuthStore();
 const router = useRouter();
 
+// Calcular rango general como mediana de rangos musculares (igual que ProgressPage/Dashboard)
+const rankOrder = ['Bronce', 'Plata', 'Oro', 'Platino', 'Diamante', 'Leyenda'];
+const muscleRanksData = ref<any[]>([]);
+
+const calculatedRangoGeneral = computed(() => {
+  const withRanks = muscleRanksData.value.filter((m: any) => (m.puntosActuales || 0) > 0);
+  if (withRanks.length === 0) return authStore.profile?.rangoGeneral ?? 'Bronce';
+  const rankIndices = withRanks.map((m: any) => {
+    const idx = rankOrder.indexOf(m.rango || 'Bronce');
+    return idx >= 0 ? idx : 0;
+  }).sort((a: number, b: number) => a - b);
+  const mid = Math.floor(rankIndices.length / 2);
+  const medianIndex = rankIndices.length % 2 === 0
+    ? Math.round((rankIndices[mid - 1] + rankIndices[mid]) / 2)
+    : rankIndices[mid];
+  return rankOrder[medianIndex] || 'Bronce';
+});
+
 const goToSettings = () => {
   router.push('/settings');
 };
@@ -258,10 +276,16 @@ onMounted(async () => {
   if (!authStore.profile) {
     await authStore.fetchProfile();
   }
-  await loadAmigos();
-  await loadRecords();
+  await Promise.all([loadAmigos(), loadRecords()]);
   if (authStore.profile?.id) {
      await loadLogros(authStore.profile.id);
+  }
+  // Cargar rangos musculares para calcular rango general consistente
+  try {
+    const muscularRes = await progresoApi.getMuscular();
+    muscleRanksData.value = muscularRes.data || [];
+  } catch (e) {
+    console.warn('No se pudieron cargar rangos musculares en perfil', e);
   }
 });
 
@@ -275,7 +299,7 @@ const fechaRegistro = computed(() => {
   const d = new Date(f);
   return `Miembro desde ${d.toLocaleDateString('es-ES', { month: 'long', year: 'numeric' })}`;
 });
-const rangoGeneral = computed(() => authStore.profile?.rangoGeneral ?? 'Bronce');
+const rangoGeneral = computed(() => calculatedRangoGeneral.value);
 const esPro = computed(() => authStore.profile?.esPro ?? false);
 const rachaDias = computed(() => authStore.profile?.rachaDias ?? 0);
 

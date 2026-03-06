@@ -70,7 +70,7 @@
 
 
             <div class="text-[36px] leading-[40px] text-[#FACC15] font-black mb-[10px]">{{ calculatedRangoGeneral.toUpperCase() }}</div>
-            <div class="text-[14px] leading-[20px] text-[#9CA3AF]">Mediana: {{ averagePoints }} pts</div>
+            <div class="text-[14px] leading-[20px] text-[#9CA3AF]">Media de puntos: {{ averagePoints }} pts</div>
           </div>
 
           <!-- CARD 3: LOGROS (Usado para Ranking Puntos según pedido) -->
@@ -279,6 +279,7 @@ const records = ref<any[]>([]);
 const unlockedCount = ref(0);
 
 // Ranking de rango por nombre
+// Umbrales (backend): Bronce 0–999, Plata 1000–2499, Oro 2500–4999, Platino 5000–9999, Diamante 10000–19999, Leyenda 20000+
 const rankOrder = ['Bronce', 'Plata', 'Oro', 'Platino', 'Diamante', 'Leyenda'];
 
 // Mediana de puntos: solo músculos que tienen puntos > 0 (no diluye con ceros)

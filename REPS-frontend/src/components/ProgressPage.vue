@@ -131,7 +131,7 @@
               </div>
               
               <div class="mt-6 text-center relative z-10">
-                <p class="text-sm text-gray-400 font-medium">Mediana: <span class="text-white">{{ formatNumber(averagePoints) }} pts</span></p>
+                <p class="text-sm text-gray-400 font-medium">Media de puntos: <span class="text-white">{{ formatNumber(averagePoints) }} pts</span></p>
               </div>
             </section>
 
@@ -237,6 +237,7 @@ const hasError = ref(false);
 const errorText = ref('');
 
 // Ranking de rango por nombre
+// Umbrales (backend): Bronce 0–999, Plata 1000–2499, Oro 2500–4999, Platino 5000–9999, Diamante 10000–19999, Leyenda 20000+
 const rankOrder = ['Bronce', 'Plata', 'Oro', 'Platino', 'Diamante', 'Leyenda'];
 
 // Mediana de puntos: solo músculos que tienen puntos > 0 (no diluye con ceros)
@@ -417,6 +418,7 @@ onMounted(async () => {
     errorText.value = getErrorMessage(e);
     
     // Fallback a datos de muestra si back no disponible o error
+    // Umbrales más exigentes: Bronce→Plata 1000, Plata→Oro 2500, Oro→Platino 5000, Platino→Diamante 10000, Diamante→Leyenda 20000
     muscleRanks.value = [
       { name: 'Pecho', rank: 'Bronce', points: 0, progress: 0, workouts: 0, nextRank: 'Plata', nextTarget: 1000, isMax: false },
       { name: 'Espalda', rank: 'Bronce', points: 0, progress: 0, workouts: 0, nextRank: 'Plata', nextTarget: 1000 },

@@ -408,20 +408,22 @@ const mapToCard = (r: any) => ({
   downloads: 0,
   public: r.estado === 'Publicada',
   isGeneradaPorIA: r.esGeneradaPorIA || r.nombre?.startsWith('IA -'),
-  isCopia: r.esCopia || (r.creadorId && Number(r.creadorId) !== Number(authStore.userId))
+  // isCopia: usar esCopia del backend primero; fallback a comparación de creadorId
+  isCopia: r.esCopia === true
 });
 
 const loadRutinas = async () => {
   isLoading.value = true;
   try {
-    const [misRes] = await Promise.all([
-      rutinasApi.getMisRutinas(),
-    ]);
+    const misRes = await rutinasApi.getMisRutinas();
     const allMy = (misRes.data as any[]).map(mapToCard);
     
-    // Separar IA de normales usando el flag isGeneradaPorIA o el prefijo
+    // Separar por flags del backend:
+    // esCopia=true  → guardada de comunidad
+    // esGeneradaPorIA=true o nombre empieza por "IA -" → IA
+    // resto → rutina propia
     myWorkouts.value = allMy.filter(r => !r.isGeneradaPorIA && !r.isCopia);
-    communitySavedWorkouts.value = allMy.filter(r => r.isCopia);
+    communitySavedWorkouts.value = allMy.filter(r => r.isCopia && !r.isGeneradaPorIA);
     aiWorkouts.value = allMy.filter(r => r.isGeneradaPorIA);
   } catch (e) {
     console.error('Error cargando rutinas', e);
