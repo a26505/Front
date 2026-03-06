@@ -173,8 +173,14 @@
                   </div>
                   <span class="hidden md:inline text-[#1F2937]">|</span>
                   <div class="flex items-center gap-1.5">
-                    <button @click="likeRoutine(routine)" class="flex items-center gap-1 transition-all hover:scale-110" :class="routine.liked ? 'text-red-500' : 'text-[#9CA3AF] hover:text-red-500'">
-                      <svg width="14" height="14" viewBox="0 0 24 24" :fill="routine.liked ? 'currentColor' : 'none'" stroke="currentColor" stroke-width="2.5" class="drop-shadow-[0_0_4px_currentColor]"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+                    <button 
+                      @click.stop="likeRoutine(routine)" 
+                      :disabled="likingRoutineId === routine.id"
+                      class="flex items-center gap-1 transition-all hover:scale-110 disabled:opacity-50" 
+                      :class="routine.liked ? 'text-red-500' : 'text-[#9CA3AF] hover:text-red-500'"
+                    >
+                      <svg v-if="likingRoutineId !== routine.id" width="14" height="14" viewBox="0 0 24 24" :fill="routine.liked ? 'currentColor' : 'none'" stroke="currentColor" stroke-width="2.5" class="drop-shadow-[0_0_4px_currentColor]"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+                      <span v-else class="w-3.5 h-3.5 border-2 border-current border-t-transparent rounded-full animate-spin"></span>
                       <span class="text-[15px] font-bold" :class="routine.liked ? 'text-white' : ''">{{ routine.likes || 0 }}</span>
                     </button>
                   </div>
@@ -190,13 +196,15 @@
                   Ver
                 </button>
                 <button 
-                  @click="copyRoutine(routine)"
-                  class="flex items-center justify-center gap-2 px-5 py-2.5 rounded-[10px] font-bold text-[14px] transition-all min-w-[120px]"
+                  @click.stop="copyRoutine(routine)"
+                  :disabled="copyingRoutineId === routine.id || routine.copied"
+                  class="flex items-center justify-center gap-2 px-5 py-2.5 rounded-[10px] font-bold text-[14px] transition-all min-w-[120px] disabled:opacity-80"
                   :class="routine.copied ? 'bg-[#22C55E] text-white' : 'bg-[#DC2626] hover:bg-[#B91C1C] text-white'"
                 >
-                  <svg v-if="!routine.copied" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+                  <span v-if="copyingRoutineId === routine.id" class="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+                  <svg v-else-if="!routine.copied" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
                   <svg v-else width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
-                  {{ routine.copied ? 'Guardado' : 'Guardar' }}
+                  {{ copyingRoutineId === routine.id ? 'Guardando...' : (routine.copied ? 'Guardado' : 'Guardar') }}
                 </button>
               </div>
 
@@ -583,14 +591,18 @@ const icons = {
 // --- COMPONENTES GLOBALES Y HELPERS ---
 
 const availableAvatars = [
-  { id: 'avatar_default', url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Jack' },
-  { id: 'avatar_robot', url: 'https://api.dicebear.com/7.x/bottts/svg?seed=robot' },
-  { id: 'avatar_gymbro', url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Felix&accessoriesProbability=100' },
-  { id: 'avatar_mujerfit', url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Aneka&top=longHair' },
-  { id: 'avatar_hombrefit', url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=George' }
+  { id: 'avatar_default', url: 'https://res.cloudinary.com/dgtahwqpj/image/upload/v1772035659/unnamed_t93s8g.jpg' },
+  { id: 'avatar_robot', url: 'https://res.cloudinary.com/dgtahwqpj/image/upload/v1772035494/unnamed_l44n9h.jpg' },
+  { id: 'avatar_gymbro', url: 'https://res.cloudinary.com/dgtahwqpj/image/upload/v1772034939/unnamed_w3uwac.jpg' },
+  { id: 'avatar_mujerfit', url: 'https://res.cloudinary.com/dgtahwqpj/image/upload/v1772024580/unnamed_kfdzjz.jpg' },
+  { id: 'avatar_hombrefit', url: 'https://res.cloudinary.com/dgtahwqpj/image/upload/v1772024079/unnamed_ojydo4.png' }
 ];
 
 const getAvatarUrl = (id?: string) => {
+  // If it's already a full URL (http), return as-is
+  if (id?.startsWith('http')) {
+    return id;
+  }
   const avatar = availableAvatars.find(a => a.id === id);
   return avatar ? avatar.url : availableAvatars[0].url;
 };
@@ -761,29 +773,55 @@ const loadLogros = async (userId: string | number) => {
 
 // ACTIONS
 const isCopying = ref(false);
+const copyingRoutineId = ref<number | null>(null);
+
 const copyRoutine = async (routine: any) => {
   if (!routine.id || isCopying.value) return;
   isCopying.value = true;
+  copyingRoutineId.value = routine.id;
   try {
       await rutinasApi.copiar(routine.id);
       routine.copied = true;
-      alert("¡Rutina guardada! Te redirigimos a tus rutinas de comunidad.");
-      router.push({ path: '/workouts', query: { tab: 'community_saved' } });
-  } catch (e) {
+      
+      // Remove from the list since it's now saved
+      setTimeout(() => {
+        sharedRoutines.value = sharedRoutines.value.filter(r => r.id !== routine.id);
+      }, 1500);
+      
+      // Close the detail modal if it's open
+      if (selectedRoutineForView.value?.id === routine.id) {
+        selectedRoutineForView.value = null;
+      }
+  } catch (e: any) {
       console.error(e);
-      alert("No se pudo guardar la rutina.");
+      const errorMsg = e?.response?.data?.message || e?.response?.data || "No se pudo guardar la rutina. Puede que ya la tengas guardada.";
+      alert(errorMsg);
   } finally {
       isCopying.value = false;
+      copyingRoutineId.value = null;
   }
 };
 
+const likingRoutineId = ref<number | null>(null);
+
 const likeRoutine = async (routine: any) => {
+    if (likingRoutineId.value === routine.id) return; // Prevent double-click
+    likingRoutineId.value = routine.id;
+    
+    // Optimistic update
+    const wasLiked = routine.liked;
+    routine.liked = !wasLiked;
+    routine.likes += routine.liked ? 1 : -1;
+    
     try {
         await rutinasApi.like(routine.id);
-        routine.liked = !routine.liked;
-        routine.likes += routine.liked ? 1 : -1;
     } catch (e) {
         console.error('Error al dar like:', e);
+        // Revert optimistic update on error
+        routine.liked = wasLiked;
+        routine.likes += wasLiked ? 1 : -1;
+    } finally {
+        likingRoutineId.value = null;
     }
 };
 

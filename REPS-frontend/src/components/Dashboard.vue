@@ -70,7 +70,7 @@
 
 
             <div class="text-[36px] leading-[40px] text-[#FACC15] font-black mb-[10px]">{{ calculatedRangoGeneral.toUpperCase() }}</div>
-            <div class="text-[14px] leading-[20px] text-[#9CA3AF]">Promedio: {{ averagePoints }} pts</div>
+            <div class="text-[14px] leading-[20px] text-[#9CA3AF]">Mediana: {{ averagePoints }} pts</div>
           </div>
 
           <!-- CARD 3: LOGROS (Usado para Ranking Puntos según pedido) -->
@@ -278,27 +278,53 @@ const muscleRanks = ref<any[]>([]);
 const records = ref<any[]>([]);
 const unlockedCount = ref(0);
 
-// Promedio de puntos: solo músculos que tienen puntos > 0 (no diluye con ceros)
-const averagePoints = computed(() => {
+// Ranking de rango por nombre
+const rankOrder = ['Bronce', 'Plata', 'Oro', 'Platino', 'Diamante', 'Leyenda'];
+
+// Mediana de puntos: solo músculos que tienen puntos > 0 (no diluye con ceros)
+const medianPoints = computed(() => {
   const withPoints = muscleRanks.value.filter((m: any) => (m.puntosActuales || 0) > 0);
   if (withPoints.length === 0) return 0;
-  const total = withPoints.reduce((acc: number, m: any) => acc + (m.puntosActuales || 0), 0);
-  return Math.round(total / withPoints.length);
+  const sorted = [...withPoints].map((m: any) => m.puntosActuales || 0).sort((a, b) => a - b);
+  const mid = Math.floor(sorted.length / 2);
+  if (sorted.length % 2 === 0) {
+    return Math.round((sorted[mid - 1] + sorted[mid]) / 2);
+  }
+  return sorted[mid];
 });
 
+// Calcular mediana de los rangos (no puntos)
 const calculatedRangoGeneral = computed(() => {
-  const pts = averagePoints.value;
-  if (pts >= 1000) return 'Leyenda';
-  if (pts >= 700) return 'Diamante';
-  if (pts >= 400) return 'Platino';
-  if (pts >= 250) return 'Oro';
-  if (pts >= 100) return 'Plata';
-  return 'Bronce';
+  const withRanks = muscleRanks.value.filter((m: any) => (m.puntosActuales || 0) > 0);
+  if (withRanks.length === 0) return 'Bronce';
+  
+  // Convertir rangos a indices numericos y ordenar
+  const rankIndices = withRanks.map((m: any) => {
+    const idx = rankOrder.indexOf(m.rango || 'Bronce');
+    return idx >= 0 ? idx : 0;
+  }).sort((a, b) => a - b);
+  
+  // Calcular mediana de indices
+  const mid = Math.floor(rankIndices.length / 2);
+  let medianIndex;
+  if (rankIndices.length % 2 === 0) {
+    medianIndex = Math.round((rankIndices[mid - 1] + rankIndices[mid]) / 2);
+  } else {
+    medianIndex = rankIndices[mid];
+  }
+  
+  return rankOrder[medianIndex] || 'Bronce';
 });
 
-// Ranking = promedio del rango general + puntos de logros desbloqueados
+// Para mantener compatibilidad
+const averagePoints = medianPoints;
+
+// Puntos de logros desbloqueados (suma real de puntos de logros)
+const logrosPoints = ref(0);
+
+// Ranking = mediana de puntos del rango general + puntos totales de logros desbloqueados
 const calculatedRankingPts = computed(() => {
-    return Math.round(averagePoints.value + unlockedCount.value);
+    return Math.round(averagePoints.value + logrosPoints.value);
 });
 
 // --- Estado de datos ---
@@ -415,7 +441,10 @@ const loadData = async () => {
     if (authStore.profile?.id) {
         try {
             const logsRes = await logrosApi.getMisLogros(authStore.profile.id);
-            unlockedCount.value = (logsRes.data || []).filter((l: any) => l.desbloqueado).length;
+            const unlockedLogros = (logsRes.data || []).filter((l: any) => l.desbloqueado);
+            unlockedCount.value = unlockedLogros.length;
+            // Sumar los puntos reales de los logros desbloqueados
+            logrosPoints.value = unlockedLogros.reduce((acc: number, l: any) => acc + (l.puntos || 0), 0);
         } catch (e) {
             console.warn("No se pudieron cargar logros", e);
         }

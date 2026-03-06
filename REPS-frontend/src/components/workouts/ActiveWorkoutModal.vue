@@ -580,10 +580,16 @@ const onFinalizar = async () => {
     });
 
     // Usar puntos del servidor si están disponibles, si no calcular local
-    const serverPoints = res.data?.puntosGanados;
-    const totalPoints = (serverPoints != null && serverPoints > 0)
-      ? serverPoints
-      : Object.values(localMuscleBreakdown).reduce((acc: number, pts: any) => acc + Number(pts), 0);
+    // Incluir también los puntos de los logros desbloqueados
+    const serverPoints = res.data?.puntosGanados ?? 0;
+    const logrosBonus = (res.data?.logrosDesbloqueados || []).reduce((acc: number, l: any) => acc + (l.puntos || 0), 0);
+    const localTotal = Object.values(localMuscleBreakdown).reduce((acc: number, pts: any) => acc + Number(pts), 0);
+    
+    // Si el servidor devuelve puntos, usamos esos + bonus de logros
+    // Si no, usamos el cálculo local
+    const totalPoints = (serverPoints > 0)
+      ? serverPoints + logrosBonus
+      : localTotal + logrosBonus;
 
     summaryData.value = {
       puntos: totalPoints,
