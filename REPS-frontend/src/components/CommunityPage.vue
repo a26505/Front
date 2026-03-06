@@ -793,7 +793,7 @@ const copyRoutine = async (routine: any) => {
         selectedRoutineForView.value = null;
       }
   } catch (e: any) {
-      console.error(e);
+      console.error('Error copying routine:', e);
       const errorMsg = e?.response?.data?.message || e?.response?.data || "No se pudo guardar la rutina. Puede que ya la tengas guardada.";
       alert(errorMsg);
   } finally {

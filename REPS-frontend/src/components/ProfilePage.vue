@@ -253,6 +253,18 @@ const router = useRouter();
 const rankOrder = ['Bronce', 'Plata', 'Oro', 'Platino', 'Diamante', 'Leyenda'];
 const muscleRanksData = ref<any[]>([]);
 
+// Mediana de puntos
+const medianPoints = computed(() => {
+  const withPoints = muscleRanksData.value.filter((m: any) => (m.puntosActuales || 0) > 0);
+  if (withPoints.length === 0) return 0;
+  const sorted = [...withPoints].map((m: any) => m.puntosActuales || 0).sort((a: number, b: number) => a - b);
+  const mid = Math.floor(sorted.length / 2);
+  if (sorted.length % 2 === 0) {
+    return Math.round((sorted[mid - 1] + sorted[mid]) / 2);
+  }
+  return sorted[mid];
+});
+
 const calculatedRangoGeneral = computed(() => {
   const withRanks = muscleRanksData.value.filter((m: any) => (m.puntosActuales || 0) > 0);
   if (withRanks.length === 0) return authStore.profile?.rangoGeneral ?? 'Bronce';
@@ -266,6 +278,9 @@ const calculatedRangoGeneral = computed(() => {
     : rankIndices[mid];
   return rankOrder[medianIndex] || 'Bronce';
 });
+
+// Puntos de logros desbloqueados
+const puntosLogrosCalculated = ref(0);
 
 const goToSettings = () => {
   router.push('/settings');
@@ -384,9 +399,9 @@ const stats = computed(() => [
   },
   { 
     label: 'Puntos totales', 
-    value: String(authStore.profile?.puntosTotales ?? 0), 
+    value: String(medianPoints.value + puntosLogrosCalculated.value), 
     color: 'text-[#3B82F6]',
-    detail: `(${ (authStore.profile?.puntosTotales ?? 0) - (authStore.profile?.puntosLogros ?? 0) } Rango + ${authStore.profile?.puntosLogros ?? 0} Logros)`,
+    detail: `(${medianPoints.value} Rango + ${puntosLogrosCalculated.value} Logros)`,
     icon: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>`
   },
   { 
@@ -439,6 +454,10 @@ const loadLogros = async (userId: number) => {
     try {
         const res = await logrosApi.getMisLogros(userId);
         if (res.data && res.data.length > 0) {
+            const unlockedLogros = res.data.filter((l: any) => l.desbloqueado);
+            // Sumar puntos de logros desbloqueados
+            puntosLogrosCalculated.value = unlockedLogros.reduce((acc: number, l: any) => acc + (l.puntos || 0), 0);
+            
             achievements.value = res.data.map((l: any) => ({
                 title: l.titulo || l.logroNombre,
                 desc: l.descripcion,
