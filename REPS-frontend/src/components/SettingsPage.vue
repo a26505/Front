@@ -36,7 +36,7 @@
                   class="w-[60px] h-[60px] rounded-full border-2 transition-all overflow-hidden bg-[#1F2937] p-0"
                   :class="profile.avatar_id === avatar.id ? 'border-[#DC2626] scale-110 shadow-[0_0_10px_rgba(220,38,38,0.5)]' : 'border-transparent opacity-60 hover:opacity-100'"
                 >
-                  <img :src="avatar.url" class="w-full h-full object-cover pointer-events-none" />
+                  <img :src="avatar.url" :style="{ transform: avatar.id === 'avatar_gymbro' ? 'scale(2.5)' : (avatar.id === 'avatar_robot' ? 'scale(1.3)' : 'scale(1.4)') }" class="w-full h-full object-cover pointer-events-none" />
                 </button>
               </div>
             </div>
@@ -125,7 +125,18 @@
           </button>
         </div>
 
+
       </main>
+    </div>
+
+    <!-- TOAST PERSONALIZADO -->
+    <div v-if="toast.show" class="fixed top-20 right-4 md:right-8 z-[200] px-4 py-3 rounded-xl border font-bold text-sm shadow-2xl transition-all animate-in slide-in-from-top-5 duration-300" 
+         :class="toast.type === 'error' ? 'bg-[#DC2626]/10 text-[#FCA5A5] border-[#DC2626]/30' : 'bg-[#22C55E]/10 text-green-400 border-green-500/30'">
+         <div class="flex items-center gap-2">
+             <svg v-if="toast.type === 'error'" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+             <svg v-else width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+             {{ toast.message }}
+         </div>
     </div>
   </div>
 </template>
@@ -144,6 +155,13 @@ const profile = ref({
   bio: '',
   avatar_id: ''
 });
+
+const toast = ref({ show: false, message: '', type: 'success' });
+
+const showToast = (message: string, type: 'success' | 'error' = 'success') => {
+    toast.value = { show: true, message, type };
+    setTimeout(() => toast.value.show = false, 3000);
+};
 
 const availableAvatars = [
   { id: 'avatar_default', url: 'https://res.cloudinary.com/dgtahwqpj/image/upload/v1772035659/unnamed_t93s8g.jpg' },
@@ -190,10 +208,10 @@ const saveProfile = async () => {
             authStore.profile.biografia = profile.value.bio;
             authStore.profile.avatarId = profile.value.avatar_id;
         }
-        alert('Perfil guardado exitosamente');
+        showToast('Perfil guardado exitosamente', 'success');
     } catch (e) {
         console.error(e);
-        alert('Error al guardar el perfil');
+        showToast('Error al guardar el perfil', 'error');
     }
 };
 

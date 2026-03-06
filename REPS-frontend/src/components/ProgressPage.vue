@@ -189,7 +189,7 @@
                 
                 <div class="relative z-10 flex justify-between items-center mb-6">
                   <div class="w-10 h-10 rounded-xl bg-black/30 border border-white/5 group-hover:border-white/10 transition-all flex items-center justify-center shadow-inner shrink-0 relative overflow-hidden">
-                    <RankIcon v-if="stat.label === 'Rango'" :rank="rangoGeneral" :size="32" class="p-1" />
+                    <RankIcon v-if="stat.label === 'Rango'" :rank="calculatedRangoGeneral" :size="32" class="p-1" />
                     <div v-else v-html="stat.icon" :class="['w-6 h-6 drop-shadow-glow transition-transform group-hover:rotate-6 duration-300', stat.iconColor]"></div>
                   </div>
                   <div class="text-2xl sm:text-3xl font-black tracking-tighter transition-all duration-300 drop-shadow-sm group-hover:scale-105 ml-2" :class="stat.accentColor">

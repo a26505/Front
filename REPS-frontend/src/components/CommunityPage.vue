@@ -73,7 +73,7 @@
               <div class="flex items-center gap-4 min-w-[250px]">
                 <div class="relative">
                   <div class="w-16 h-16 rounded-full bg-[#1F2937] border-2 border-[#DC2626]/20 flex items-center justify-center overflow-hidden">
-                    <img :src="getAvatarUrl(friend.avatarId)" class="w-full h-full object-cover" />
+                    <img :src="getAvatarUrl(friend.avatarId)" :style="{ transform: friend.avatarId === 'avatar_gymbro' ? 'scale(2.5)' : (friend.avatarId === 'avatar_robot' ? 'scale(1.3)' : 'scale(1.4)') }" class="w-full h-full object-cover" />
                   </div>
                   <span class="absolute bottom-0 right-0 w-4 h-4 rounded-full border-2 border-[#111827]" :class="friend.online ? 'bg-[#22C55E]' : 'bg-[#6B7280]'"></span>
                 </div>
@@ -278,7 +278,7 @@
              <div class="flex flex-col items-center w-1/3 max-w-[150px]">
                <div class="relative">
                  <div class="w-16 h-16 rounded-full border-3 border-[#D1D5DB] bg-[#1F2937] flex items-center justify-center overflow-hidden">
-                    <img v-if="rankingTop3[1]?.avatarId" :src="getAvatarUrl(rankingTop3[1].avatarId)" class="w-full h-full object-cover" />
+                    <img v-if="rankingTop3[1]?.avatarId" :src="getAvatarUrl(rankingTop3[1].avatarId)" :style="{ transform: rankingTop3[1].avatarId === 'avatar_gymbro' ? 'scale(2.5)' : (rankingTop3[1].avatarId === 'avatar_robot' ? 'scale(1.3)' : 'scale(1.4)') }" class="w-full h-full object-cover" />
                  </div>
                  <div class="absolute -bottom-2 translate-x-1/2 right-1/2 bg-[#D1D5DB] text-black text-[14px] font-bold w-6 h-6 rounded-full flex items-center justify-center border-2 border-black">2</div>
                </div>
@@ -290,7 +290,7 @@
              <div class="flex flex-col items-center w-1/3 max-w-[150px] -translate-y-4">
                <div class="relative">
                  <div class="w-20 h-20 rounded-full border-3 border-[#FBBF24] bg-[#1F2937] flex items-center justify-center overflow-hidden shadow-[0_0_20px_rgba(251,191,36,0.4)]">
-                    <img v-if="rankingTop3[0]?.avatarId" :src="getAvatarUrl(rankingTop3[0].avatarId)" class="w-full h-full object-cover" />
+                    <img v-if="rankingTop3[0]?.avatarId" :src="getAvatarUrl(rankingTop3[0].avatarId)" :style="{ transform: rankingTop3[0].avatarId === 'avatar_gymbro' ? 'scale(2.5)' : (rankingTop3[0].avatarId === 'avatar_robot' ? 'scale(1.3)' : 'scale(1.4)') }" class="w-full h-full object-cover" />
                  </div>
                  <div class="absolute -bottom-2 translate-x-1/2 right-1/2 bg-[#FBBF24] text-black text-[18px] font-bold w-8 h-8 rounded-full flex items-center justify-center border-2 border-black">1</div>
                </div>
@@ -302,7 +302,7 @@
              <div class="flex flex-col items-center w-1/3 max-w-[150px]">
                <div class="relative">
                  <div class="w-16 h-16 rounded-full border-3 border-[#F97316] bg-[#1F2937] flex items-center justify-center overflow-hidden">
-                    <img v-if="rankingTop3[2]?.avatarId" :src="getAvatarUrl(rankingTop3[2].avatarId)" class="w-full h-full object-cover" />
+                    <img v-if="rankingTop3[2]?.avatarId" :src="getAvatarUrl(rankingTop3[2].avatarId)" :style="{ transform: rankingTop3[2].avatarId === 'avatar_gymbro' ? 'scale(2.5)' : (rankingTop3[2].avatarId === 'avatar_robot' ? 'scale(1.3)' : 'scale(1.4)') }" class="w-full h-full object-cover" />
                  </div>
                  <div class="absolute -bottom-2 translate-x-1/2 right-1/2 bg-[#F97316] text-black text-[14px] font-bold w-6 h-6 rounded-full flex items-center justify-center border-2 border-black">3</div>
                </div>
@@ -318,7 +318,7 @@
                <div class="flex items-center gap-4">
                  <div class="w-8 text-center text-[18px] font-bold text-[#9CA3AF]">{{ item.rank }}</div>
                  <div class="w-12 h-12 rounded-full bg-[#1F2937] flex items-center justify-center overflow-hidden border border-[#374151]">
-                    <img v-if="item.avatarId" :src="getAvatarUrl(item.avatarId)" class="w-full h-full object-cover" />
+                    <img v-if="item.avatarId" :src="getAvatarUrl(item.avatarId)" :style="{ transform: item.avatarId === 'avatar_gymbro' ? 'scale(2.5)' : (item.avatarId === 'avatar_robot' ? 'scale(1.3)' : 'scale(1.4)') }" class="w-full h-full object-cover" />
                  </div>
                  <div>
                    <div class="text-[15px] font-semibold text-white">{{ item.name }}</div>
@@ -376,7 +376,7 @@
                 <!-- Resultado búsqueda -->
                 <div v-if="searchResult" class="bg-[#1F2937]/50 border border-[#374151] rounded-[12px] p-5 flex gap-4 animate-in fade-in slide-in-from-top-2">
                     <div class="w-16 h-16 rounded-full bg-[#1F2937] border border-[#374151] flex items-center justify-center overflow-hidden">
-                        <img :src="getAvatarUrl(searchResult.avatarId)" class="w-full h-full object-cover" />
+                        <img :src="getAvatarUrl(searchResult.avatarId)" :style="{ transform: searchResult.avatarId === 'avatar_gymbro' ? 'scale(2.5)' : (searchResult.avatarId === 'avatar_robot' ? 'scale(1.3)' : 'scale(1.4)') }" class="w-full h-full object-cover" />
                     </div>
                     <div>
                         <div class="text-[18px] font-bold text-white">{{ searchResult.name }}</div>
@@ -415,7 +415,7 @@
         <div class="relative bg-gradient-to-b from-[#1F2937] to-[#111827] border border-[#374151] rounded-[16px] w-full max-w-[400px] overflow-hidden shadow-2xl animate-in zoom-in-95 duration-200">
             <header class="p-6 border-b border-[#374151]/50 flex justify-between items-start relative z-10">
                 <div class="w-20 h-20 rounded-full border-4 border-[#111827] bg-[#1F2937] flex items-center justify-center overflow-hidden shadow-xl">
-                    <img :src="getAvatarUrl(selectedFriend.avatarId)" class="w-full h-full object-cover" />
+                    <img :src="getAvatarUrl(selectedFriend.avatarId)" :style="{ transform: selectedFriend.avatarId === 'avatar_gymbro' ? 'scale(2.5)' : (selectedFriend.avatarId === 'avatar_robot' ? 'scale(1.3)' : 'scale(1.4)') }" class="w-full h-full object-cover" />
                 </div>
                 <button @click="selectedFriend = null" class="text-[#9CA3AF] hover:text-white transition-colors bg-black/20 rounded-full p-1">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
@@ -507,11 +507,11 @@ const icons = {
 // --- COMPONENTES GLOBALES Y HELPERS ---
 
 const availableAvatars = [
-  { id: 'avatar_default', url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Jack' },
-  { id: 'avatar_robot', url: 'https://api.dicebear.com/7.x/bottts/svg?seed=robot' },
-  { id: 'avatar_gymbro', url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Felix&accessoriesProbability=100' },
-  { id: 'avatar_mujerfit', url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Aneka&top=longHair' },
-  { id: 'avatar_hombrefit', url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=George' }
+  { id: 'avatar_default', url: 'https://res.cloudinary.com/dgtahwqpj/image/upload/v1772035659/unnamed_t93s8g.jpg' },
+  { id: 'avatar_robot', url: 'https://res.cloudinary.com/dgtahwqpj/image/upload/v1772035494/unnamed_l44n9h.jpg' },
+  { id: 'avatar_gymbro', url: 'https://res.cloudinary.com/dgtahwqpj/image/upload/v1772034939/unnamed_w3uwac.jpg' },
+  { id: 'avatar_mujerfit', url: 'https://res.cloudinary.com/dgtahwqpj/image/upload/v1772024580/unnamed_kfdzjz.jpg' },
+  { id: 'avatar_hombrefit', url: 'https://res.cloudinary.com/dgtahwqpj/image/upload/v1772024079/unnamed_ojydo4.png' }
 ];
 
 const getAvatarUrl = (id?: string) => {
