@@ -103,6 +103,7 @@
             </div>
             <div class="text-[32px] font-bold text-white mb-1">{{ stat.value }}</div>
             <div class="text-[14px] text-[#9CA3AF]">{{ stat.label }}</div>
+            <div v-if="stat.detail" class="text-[11px] text-[#9CA3AF]/70 mt-1">{{ stat.detail }}</div>
           </div>
         </div>
 
@@ -358,7 +359,10 @@ const stats = computed(() => [
     icon: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="7"/><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"/></svg>`
   },
   { 
-    label: 'Puntos totales', value: String(authStore.profile?.puntosTotales ?? 0), color: 'text-[#3B82F6]',
+    label: 'Puntos totales', 
+    value: String(authStore.profile?.puntosTotales ?? 0), 
+    color: 'text-[#3B82F6]',
+    detail: `(${ (authStore.profile?.puntosTotales ?? 0) - (authStore.profile?.puntosLogros ?? 0) } Rango + ${authStore.profile?.puntosLogros ?? 0} Logros)`,
     icon: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>`
   },
   { 

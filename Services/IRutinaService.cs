@@ -12,7 +12,12 @@ namespace REPS_backend.Services
         Task<int> LikeRutinaAsync(int rutinaId);
         Task<RutinaDetalleDto> CopiarRutinaAsync(int rutinaId, int usuarioId);
         Task<bool> EliminarRutinaAsync(int id, int usuarioId);
+        Task<bool> EliminarRutinaAdminAsync(int id);
         Task<bool> PublicarRutinaAsync(int id, int usuarioId);
+        Task<bool> ValidarRutinaAsync(int id);
+        Task<bool> RechazarRutinaAsync(int id);
+        Task<List<RutinaItemDto>> ObtenerRutinasEnRevisionAsync();
+        Task<List<RutinaItemDto>> ObtenerTodasRutinasAdminAsync();
         Task<RutinaDetalleDto> ActualizarRutinaAsync(int id, RutinaCreateDto dto, int usuarioId);
     }
 }

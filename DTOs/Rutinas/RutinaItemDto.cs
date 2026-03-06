@@ -16,5 +16,7 @@ namespace REPS_backend.DTOs.Rutinas
         // ponemos el número total para que sepan si es larga o corta.
         public int CantidadEjercicios { get; set; } 
         public int TotalEjercicios { get; set; } 
+
+        public string Estado { get; set; } = string.Empty;
     }
 }

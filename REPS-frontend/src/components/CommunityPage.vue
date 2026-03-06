@@ -185,7 +185,7 @@
 
               <!-- BOTONES DERECHA -->
               <div class="flex items-center gap-3">
-                <button class="flex items-center justify-center gap-2 bg-[#1F2937]/50 hover:bg-[#374151] border border-[#374151] text-white px-5 py-2.5 rounded-[10px] font-bold text-[14px] transition-all">
+                <button @click="verRutina(routine)" class="flex items-center justify-center gap-2 bg-[#1F2937]/50 hover:bg-[#374151] border border-[#374151] text-white px-5 py-2.5 rounded-[10px] font-bold text-[14px] transition-all">
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
                   Ver
                 </button>
@@ -270,10 +270,10 @@
         </section>
 
         <!-- TAB 4: RANKING -->
-        <section v-if="activeTab === 'ranking'" class="animate-in fade-in duration-300 pt-4">
+        <section v-if="activeTab === 'ranking'" class="animate-in fade-in duration-300 pt-20">
 
            <!-- TOP 3 PODIO -->
-           <div class="flex justify-center items-end gap-3 sm:gap-4 mb-10 px-6">
+           <div class="flex justify-center items-end gap-3 sm:gap-4 mb-20 px-6 mt-16">
              <!-- 2ndo Puesto -->
              <div class="flex flex-col items-center w-1/3 max-w-[150px]">
                <div class="relative">
@@ -444,6 +444,61 @@
             </div>
         </div>
     </div>
+
+    <!-- MODAL: VER DETALLE RUTINA -->
+    <div v-if="selectedRoutineForView" class="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div @click="selectedRoutineForView = null" class="absolute inset-0 bg-black/80 backdrop-blur-sm"></div>
+        <div class="relative bg-[#111827] border border-[#1F2937] rounded-[16px] w-full max-w-[600px] max-h-[85vh] overflow-hidden shadow-2xl animate-in zoom-in-95 duration-200 flex flex-col">
+            <header class="p-6 border-b border-[#1F2937]/50 flex justify-between items-center bg-black/20">
+                <div>
+                    <h2 class="text-[22px] font-bold text-white">{{ selectedRoutineForView.title }}</h2>
+                    <p class="text-sm text-[#9CA3AF]">Por {{ selectedRoutineForView.author }} • {{ selectedRoutineForView.difficulty }}</p>
+                </div>
+                <button @click="selectedRoutineForView = null" class="text-[#9CA3AF] hover:text-white transition-colors bg-[#1F2937] p-2 rounded-full">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </button>
+            </header>
+            
+            <div class="p-6 overflow-y-auto flex-1 custom-scrollbar">
+                <div v-if="isLoadingDetail" class="flex flex-col items-center py-16">
+                    <div class="w-12 h-12 border-4 border-[#DC2626]/20 border-t-[#DC2626] rounded-full animate-spin mb-4"></div>
+                    <p class="text-[#9CA3AF] font-medium tracking-wide">Cargando ejercicios...</p>
+                </div>
+                <div v-else class="space-y-4">
+                    <div v-if="selectedRoutineForView.description" class="bg-[#1F2937]/30 border border-[#374151]/50 rounded-xl p-4 mb-6">
+                        <p class="text-[#9CA3AF] italic text-sm">"{{ selectedRoutineForView.description }}"</p>
+                    </div>
+
+                    <div v-for="(ej, idx) in routineDetailExercises" :key="idx" class="bg-[#1F2937]/50 border border-[#374151] rounded-xl p-5 flex items-center gap-5 transition-all hover:border-[#DC2626]/50">
+                        <div class="w-12 h-12 bg-gradient-to-br from-[#DC2626] to-[#991B1B] rounded-xl flex items-center justify-center text-white font-black text-xl shadow-lg shadow-red-900/20">
+                          {{ idx + 1 }}
+                        </div>
+                        <div class="flex-1">
+                            <h4 class="text-white font-bold text-[16px] mb-1">{{ ej.nombreEjercicio }}</h4>
+                            <div class="flex gap-4 text-[13px] font-medium">
+                                <span class="text-[#9CA3AF] flex items-center gap-1.5">
+                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/></svg>
+                                    {{ ej.series }} series
+                                </span>
+                                <span class="text-[#9CA3AF] flex items-center gap-1.5">
+                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+                                    {{ ej.repeticiones }} reps
+                                </span>
+                                <span class="text-[#DC2626] flex items-center gap-1.5">
+                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                                    {{ ej.descansoSegundos }}s
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <footer class="p-6 border-t border-[#1F2937] flex justify-end gap-3 bg-black/20">
+                <button @click="selectedRoutineForView = null" class="px-6 py-2.5 border border-[#374151] text-white rounded-lg font-bold hover:bg-white/5 transition-all">Cerrar</button>
+                <button @click="copyRoutine(selectedRoutineForView)" class="bg-[#DC2626] hover:bg-[#B91C1C] text-white px-8 py-2.5 rounded-lg font-bold transition-all shadow-lg shadow-red-900/30">Guardar en mis Rutinas</button>
+            </footer>
+        </div>
+    </div>
   </div>
 </template>
 
@@ -476,6 +531,27 @@ const activeTab = ref('friends');
 const searchQuery = ref('');
 const filterDifficulty = ref('all');
 const pendingRequests = ref<any[]>([]);
+
+// State para ver detalle de rutina
+const selectedRoutineForView = ref<any>(null);
+const routineDetailExercises = ref<any[]>([]);
+const isLoadingDetail = ref(false);
+
+const verRutina = async (routine: any) => {
+    selectedRoutineForView.value = routine;
+    isLoadingDetail.value = true;
+    try {
+        const res = await rutinasApi.getById(routine.id);
+        routineDetailExercises.value = res.data?.ejercicios || [];
+    } catch (e) {
+        console.error("No se pudo cargar el detalle", e);
+        alert("No se pudo cargar la información de los ejercicios.");
+        selectedRoutineForView.value = null;
+    } finally {
+        isLoadingDetail.value = false;
+    }
+};
+
 const mainTabs = [
   { id: 'friends', label: 'Amigos' },
   { id: 'routines', label: 'Comunidad' },

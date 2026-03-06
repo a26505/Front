@@ -25,6 +25,24 @@ namespace REPS_backend.Repositories
             return await _context.Rutinas
                 .Where(r => r.Estado == EstadoRutina.Publicada)
                 .Include(r => r.Ejercicios)
+                .Include(r => r.Usuario)
+                .ToListAsync();
+        }
+
+        public async Task<List<Rutina>> GetAllEnRevisionAsync()
+        {
+            return await _context.Rutinas
+                .Where(r => r.Estado == EstadoRutina.EnRevision)
+                .Include(r => r.Ejercicios)
+                .Include(r => r.Usuario)
+                .ToListAsync();
+        }
+
+        public async Task<List<Rutina>> GetAllAdminAsync()
+        {
+            return await _context.Rutinas
+                .Include(r => r.Ejercicios)
+                .Include(r => r.Usuario)
                 .ToListAsync();
         }
 

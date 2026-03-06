@@ -126,6 +126,49 @@ namespace REPS_backend.Controllers
             }
         }
 
+        [HttpGet("admin/pendientes")]
+        [Microsoft.AspNetCore.Authorization.Authorize(Roles = "Admin")]
+        public async Task<ActionResult<List<RutinaItemDto>>> GetRutinasEnRevision()
+        {
+            var rutinas = await _rutinaService.ObtenerRutinasEnRevisionAsync();
+            return Ok(rutinas);
+        }
+
+        [HttpGet("admin/todas")]
+        [Microsoft.AspNetCore.Authorization.Authorize(Roles = "Admin")]
+        public async Task<ActionResult<List<RutinaItemDto>>> GetTodasRutinasAdmin()
+        {
+            var rutinas = await _rutinaService.ObtenerTodasRutinasAdminAsync();
+            return Ok(rutinas);
+        }
+
+        [HttpPut("admin/{id}/validar")]
+        [Microsoft.AspNetCore.Authorization.Authorize(Roles = "Admin")]
+        public async Task<IActionResult> ValidarRutinaAdmin(int id)
+        {
+            var resultado = await _rutinaService.ValidarRutinaAsync(id);
+            if (!resultado) return NotFound($"Rutina con ID {id} no encontrada.");
+            return NoContent();
+        }
+
+        [HttpPut("admin/{id}/rechazar")]
+        [Microsoft.AspNetCore.Authorization.Authorize(Roles = "Admin")]
+        public async Task<IActionResult> RechazarRutinaAdmin(int id)
+        {
+            var resultado = await _rutinaService.RechazarRutinaAsync(id);
+            if (!resultado) return NotFound($"Rutina con ID {id} no encontrada.");
+            return NoContent();
+        }
+
+        [HttpDelete("admin/{id}")]
+        [Microsoft.AspNetCore.Authorization.Authorize(Roles = "Admin")]
+        public async Task<IActionResult> EliminarRutinaAdmin(int id)
+        {
+            var resultado = await _rutinaService.EliminarRutinaAdminAsync(id);
+            if (!resultado) return NotFound($"Rutina con ID {id} no encontrada.");
+            return NoContent();
+        }
+
         [HttpPut("{id}")]
         public async Task<ActionResult<RutinaDetalleDto>> ActualizarRutina(int id, [FromBody] RutinaCreateDto dto)
         {
@@ -144,6 +187,21 @@ namespace REPS_backend.Controllers
                 if (e.Message == "Rutina no encontrada.") return NotFound(e.Message);
                 return BadRequest(e.Message);
             }
+        }
+
+        [HttpPost("{id}/like")]
+        public async Task<ActionResult<int>> LikeRutina(int id)
+        {
+            var likes = await _rutinaService.LikeRutinaAsync(id);
+            return Ok(likes);
+        }
+
+        [HttpPost("{id}/copiar")]
+        public async Task<ActionResult<RutinaDetalleDto>> CopiarRutina(int id)
+        {
+            int usuarioId = GetUserId();
+            var copia = await _rutinaService.CopiarRutinaAsync(id, usuarioId);
+            return Ok(copia);
         }
     }
 }

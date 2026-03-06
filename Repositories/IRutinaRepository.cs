@@ -14,6 +14,12 @@ namespace REPS_backend.Repositories
         // Obtener por Usuario
         Task<List<Rutina>> GetByUsuarioIdAsync(int usuarioId);
 
+        // Obtener en revisión (Admin)
+        Task<List<Rutina>> GetAllEnRevisionAsync();
+
+        // Obtener todas (Admin)
+        Task<List<Rutina>> GetAllAdminAsync();
+
         // Crear
         Task AddAsync(Rutina rutina);
         Task UpdateAsync(Rutina rutina);

@@ -82,7 +82,44 @@ namespace REPS_backend.Services
                 CantidadEjercicios = r.Ejercicios?.Count ?? 0,
                 TotalEjercicios = r.Ejercicios?.Count ?? 0,
                 CreadorNombre = r.Usuario != null ? r.Usuario.Nombre : "Sistema",
-                Likes = r.Likes
+                Likes = r.Likes,
+                Estado = r.Estado.ToString()
+            }).ToList();
+        }
+
+        public async Task<List<RutinaItemDto>> ObtenerRutinasEnRevisionAsync()
+        {
+            var rutinas = await _repository.GetAllEnRevisionAsync();
+            return rutinas.Select(r => new RutinaItemDto
+            {
+                Id = r.Id,
+                Nombre = r.Nombre,
+                Nivel = r.Nivel.ToString(),
+                DuracionMinutos = r.DuracionMinutos,
+                UrlImagen = r.ImagenUrl,
+                CantidadEjercicios = r.Ejercicios?.Count ?? 0,
+                TotalEjercicios = r.Ejercicios?.Count ?? 0,
+                CreadorNombre = r.Usuario != null ? r.Usuario.Nombre : "Sistema",
+                Likes = r.Likes,
+                Estado = r.Estado.ToString()
+            }).ToList();
+        }
+
+        public async Task<List<RutinaItemDto>> ObtenerTodasRutinasAdminAsync()
+        {
+            var rutinas = await _repository.GetAllAdminAsync();
+            return rutinas.Select(r => new RutinaItemDto
+            {
+                Id = r.Id,
+                Nombre = r.Nombre,
+                Nivel = r.Nivel.ToString(),
+                DuracionMinutos = r.DuracionMinutos,
+                UrlImagen = r.ImagenUrl,
+                CantidadEjercicios = r.Ejercicios?.Count ?? 0,
+                TotalEjercicios = r.Ejercicios?.Count ?? 0,
+                CreadorNombre = r.Usuario != null ? r.Usuario.Nombre : "Sistema",
+                Likes = r.Likes,
+                Estado = r.Estado.ToString()
             }).ToList();
         }
 
@@ -100,7 +137,8 @@ namespace REPS_backend.Services
                 CantidadEjercicios = r.Ejercicios?.Count ?? 0,
                 TotalEjercicios = r.Ejercicios?.Count ?? 0,
                 CreadorNombre = "Tú",
-                Likes = r.Likes
+                Likes = r.Likes,
+                Estado = r.Estado.ToString()
             }).ToList();
         }
 
@@ -275,6 +313,15 @@ namespace REPS_backend.Services
             return true;
         }
 
+        public async Task<bool> EliminarRutinaAdminAsync(int id)
+        {
+            var rutina = await _repository.GetByIdAsync(id);
+            if (rutina == null) return false;
+
+            await _repository.DeleteAsync(id);
+            return true;
+        }
+
         public async Task<bool> PublicarRutinaAsync(int id, int usuarioId)
         {
             var rutina = await _repository.GetByIdAsync(id);
@@ -283,7 +330,28 @@ namespace REPS_backend.Services
             if (rutina.UsuarioId != usuarioId)
                 throw new UnauthorizedAccessException("No tienes permisos para publicar esta rutina.");
 
+            // Va a revisión en lugar de publicación directa
+            rutina.Estado = EstadoRutina.EnRevision;
+            await _repository.UpdateAsync(rutina);
+            return true;
+        }
+
+        public async Task<bool> ValidarRutinaAsync(int id)
+        {
+            var rutina = await _repository.GetByIdAsync(id);
+            if (rutina == null) return false;
+
             rutina.Estado = EstadoRutina.Publicada;
+            await _repository.UpdateAsync(rutina);
+            return true;
+        }
+
+        public async Task<bool> RechazarRutinaAsync(int id)
+        {
+            var rutina = await _repository.GetByIdAsync(id);
+            if (rutina == null) return false;
+
+            rutina.Estado = EstadoRutina.Rechazada;
             await _repository.UpdateAsync(rutina);
             return true;
         }

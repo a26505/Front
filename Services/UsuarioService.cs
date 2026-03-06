@@ -29,6 +29,8 @@ namespace REPS_backend.Services
                 FechaRegistro = user.FechaRegistro,
                 Rol = user.Rol,
                 PuntosTotales = user.PuntosTotales,
+                PuntosRangoGeneral = user.PuntosTotales - user.PuntosLogros,
+                PuntosLogros = user.PuntosLogros,
                 RachaDias = user.RachaDias,
                 RangoGeneral = user.RangoGeneral.ToString(),
                 Biografia = user.Biografia,
