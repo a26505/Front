@@ -268,8 +268,8 @@ const generalStats = computed(() => [
     label: 'Rango',
     value: rangoGeneral.value,
     icon: ConsistenciaIcon,
-    iconColor: getRankTextColor(rangoGeneral.value).replace('text-', ''),
-    accentColor: getRankTextColor(rangoGeneral.value),
+    iconColor: computed(() => getRankTextColor(rangoGeneral.value).replace('text-', '')),
+    accentColor: computed(() => getRankTextColor(rangoGeneral.value)),
     gradient: 'linear-gradient(152.983deg, rgba(59, 130, 246, 0.2) 0%, rgba(29, 78, 216, 0.15) 100%)',
     borderColor: 'rgba(59, 130, 246, 0.4)',
     glowColor: '#3B82F6'

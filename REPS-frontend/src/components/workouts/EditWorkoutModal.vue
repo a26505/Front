@@ -252,7 +252,7 @@ const onFileSelected = async (event: any) => {
   try {
     const formData = new FormData();
     formData.append('file', file);
-    formData.append('upload_preset', 'reps_unsigned');
+    formData.append('upload_preset', 'ml_default');
     
     const response = await fetch('https://api.cloudinary.com/v1_1/dgtahwqpj/upload', {
       method: 'POST',

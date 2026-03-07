@@ -16,7 +16,7 @@
           <!-- AVATAR SECCIÓN -->
           <div class="relative">
             <div class="w-[128px] h-[128px] rounded-full border-4 border-white/20 overflow-hidden bg-[#1F2937]">
-              <img :src="avatarUrl" :style="{ transform: selectedAvatarId === 'avatar_gymbro' ? 'scale(2.5)' : (selectedAvatarId === 'avatar_robot' ? 'scale(1.3)' : 'scale(1.4)') }" alt="Avatar" class="w-full h-full object-cover" />
+              <img :src="avatarUrl" alt="Avatar" class="w-full h-full object-cover" />
             </div>
             <button @click="showAvatarDropdown = !showAvatarDropdown" class="absolute bottom-0 right-0 bg-black border-2 border-white/20 rounded-full w-[40px] h-[40px] flex items-center justify-center cursor-pointer transition-all duration-200 hover:bg-[#1F2937]">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -30,7 +30,7 @@
                <button v-for="avatar in availableAvatars" :key="avatar.id" @click="selectAvatar(avatar.id)" 
                   class="w-12 h-12 rounded-full border-2 overflow-hidden hover:scale-110 transition-transform"
                   :class="selectedAvatarId === avatar.id ? 'border-[#DC2626]' : 'border-transparent'">
-                  <img :src="avatar.url" :style="{ transform: avatar.id === 'avatar_gymbro' ? 'scale(2.5)' : (avatar.id === 'avatar_robot' ? 'scale(1.3)' : 'scale(1.4)') }" class="w-full h-full object-cover bg-[#1F2937]" />
+                  <img :src="avatar.url" class="w-full h-full object-cover bg-[#1F2937]" />
                </button>
             </div>
           </div>
@@ -98,7 +98,7 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-[16px] mb-[24px]">
           <div v-for="stat in stats" :key="stat.label" class="bg-[rgba(17,24,39,0.5)] border border-[#1F2937] rounded-[12px] p-[24px]">
             <div class="mb-3" :class="stat.color">
-               <RankIcon v-if="stat.label === 'Rango General'" :rank="calculatedRangoGeneral" :size="40" />
+               <RankIcon v-if="stat.label === 'Rango General'" :rank="rangoGeneral" :size="40" />
                <div v-else v-html="stat.icon"></div>
             </div>
             <div class="text-[32px] font-bold text-white mb-1">{{ stat.value }}</div>
@@ -242,7 +242,7 @@ import { ref, h, onMounted, computed, watch } from 'vue';
 import Sidebar from './Sidebar.vue';
 import RankIcon from './common/RankIcon.vue';
 import { useAuthStore } from '../stores/auth';
-import { usuariosApi, recordsApi, progresoApi, logrosApi, dashboardApi } from '../api';
+import { usuariosApi, recordsApi, progresoApi, logrosApi } from '../api';
 
 import { useRouter } from 'vue-router';
 
@@ -258,28 +258,6 @@ onMounted(async () => {
   if (!authStore.profile) {
     await authStore.fetchProfile();
   }
-  
-  // Cargar datos reales
-  try {
-      const [dashRes, progRes, muscleRes] = await Promise.all([
-          dashboardApi.getHome(),
-          progresoApi.getGeneral(),
-          progresoApi.getMuscular()
-      ]);
-      rachaDias.value = dashRes.data.rachaDias ?? (authStore.profile?.rachaDias ?? 0);
-      rangoGeneral.value = progRes.data.rangoGeneral ?? (authStore.profile?.rangoGeneral ?? 'Bronce');
-      puntosTotales.value = progRes.data.puntosTotales ?? (authStore.profile?.puntosTotales ?? 0);
-      
-      muscleRanks.value = (muscleRes.data as any[]).map((m: any) => ({
-        points: m.puntosActuales || 0
-      }));
-  } catch (e) {
-      console.warn("Fallo al obtener estado fresco de progreso", e);
-      rachaDias.value = authStore.profile?.rachaDias ?? 0;
-      rangoGeneral.value = authStore.profile?.rangoGeneral ?? 'Bronce';
-      puntosTotales.value = authStore.profile?.puntosTotales ?? 0;
-  }
-
   await loadAmigos();
   await loadRecords();
   if (authStore.profile?.id) {
@@ -297,31 +275,9 @@ const fechaRegistro = computed(() => {
   const d = new Date(f);
   return `Miembro desde ${d.toLocaleDateString('es-ES', { month: 'long', year: 'numeric' })}`;
 });
+const rangoGeneral = computed(() => authStore.profile?.rangoGeneral ?? 'Bronce');
 const esPro = computed(() => authStore.profile?.esPro ?? false);
-
-// Estadísticas en tiempo real
-const rachaDias = ref(0);
-const rangoGeneral = ref('Bronce');
-const puntosTotales = ref(0);
-const muscleRanks = ref<any[]>([]);
-
-// Lógica para rango calculado (igual que en ProgressPage/Dashboard)
-const averagePoints = computed(() => {
-  const withPoints = muscleRanks.value.filter((m: any) => (m.points || 0) > 0);
-  if (withPoints.length === 0) return 0;
-  const total = withPoints.reduce((acc: number, m: any) => acc + (m.points || 0), 0);
-  return Math.round(total / withPoints.length);
-});
-
-const calculatedRangoGeneral = computed(() => {
-  const pts = averagePoints.value;
-  if (pts >= 1000) return 'Leyenda';
-  if (pts >= 700) return 'Diamante';
-  if (pts >= 400) return 'Platino';
-  if (pts >= 250) return 'Oro';
-  if (pts >= 100) return 'Plata';
-  return 'Bronce'; // Default to backend's general rank if no points, or Bronce
-});
+const rachaDias = computed(() => authStore.profile?.rachaDias ?? 0);
 
 // Icons as components for the copy logic
 const CopyIcon = h('svg', { 
@@ -400,11 +356,14 @@ const stats = computed(() => [
     icon: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15.362 5.214A8.252 8.252 0 0 1 12 21 8.25 8.25 0 0 1 6.038 7.047 8.287 8.287 0 0 0 9 9.601a8.983 8.983 0 0 1 3.361-6.867 8.21 8.21 0 0 0 3 2.48Z"/><path d="M12 18a3.75 3.75 0 0 0 .495-7.468 5.99 5.99 0 0 0-1.925 3.547 5.975 5.975 0 0 1-2.133-1.001A3.75 3.75 0 0 0 12 18Z"/></svg>`
   },
   { 
-    label: 'Rango General', value: calculatedRangoGeneral.value, color: 'text-[#EAB308]',
+    label: 'Rango General', value: rangoGeneral.value, color: 'text-[#EAB308]',
     icon: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="7"/><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"/></svg>`
   },
   { 
-    label: 'Puntos totales', value: String(authStore.profile?.puntosTotales ?? 0), color: 'text-[#3B82F6]',
+    label: 'Puntos totales', 
+    value: String(authStore.profile?.puntosTotales ?? 0), 
+    color: 'text-[#3B82F6]',
+    detail: `(${ (authStore.profile?.puntosTotales ?? 0) - (authStore.profile?.puntosLogros ?? 0) } Rango + ${authStore.profile?.puntosLogros ?? 0} Logros)`,
     icon: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>`
   },
   { 

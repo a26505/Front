@@ -234,7 +234,7 @@ const onFileSelected = async (event: any) => {
   try {
     const formData = new FormData();
     formData.append('file', file);
-    formData.append('upload_preset', 'reps_unsigned'); 
+    formData.append('upload_preset', 'ml_default'); // Intentamos con el preset por defecto de Cloudinary
     
     // Cloudinary upload API
     const response = await fetch('https://api.cloudinary.com/v1_1/dgtahwqpj/upload', {
