@@ -10,7 +10,7 @@ namespace REPS_backend.Services.AI
     public class GeminiService : IAIService
     {
         private readonly string _apiKey;
-        private readonly string _baseUrl = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent";
+        private readonly string _baseUrl = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent";
         private readonly HttpClient _httpClient;
         private readonly ApplicationDbContext _context;
 
@@ -63,39 +63,51 @@ namespace REPS_backend.Services.AI
             var ejerciciosDb = await _context.Ejercicios.Select(e => new { e.Id, e.Nombre }).ToListAsync();
             var ejerciciosLista = string.Join(", ", ejerciciosDb.Select(e => $"{e.Id}:{e.Nombre}"));
 
-            var prompt = $@"
-Act as a professional personal trainer. Create a workout routine based on the following criteria:
-Goal: {dto.Goal}
-Level: {dto.Level}
-Duration: {dto.Duration} 
-Focus Areas: {string.Join(", ", dto.Muscles ?? new List<string>())}
-Equipment: {string.Join(", ", dto.Equipment ?? new List<string>())}
+            var officialExercises = "Press de Banca, Sentadilla, Peso Muerto, Dominadas, Remo Barra, Press Militar, Curl Bíceps, Fondos Tríceps, Zancadas, Plancha, Press Inclinado, Aperturas con Mancuernas, Cruce de Poleas, Prensa de Piernas, Curl Femoral, Extensiones de Cuádriceps, Elevaciones de Gemelos, Jalón al Pecho, Remo Gironda, Pull-over, Elevaciones Laterales, Pájaros (Deltoides Posterior), Encogimientos de Hombros, Curl Martillo, Curl Predicador, Extensión de Tríceps Polea, Press Francés, Crunch Abdominal, Elevación de Piernas Colgado, Russian Twists";
 
-IMPORTANT:
-1. Use ONLY exercises from this list if possible (ID:Name): [{ejerciciosLista}]. If you MUST use others, use ID 0.
-2. Return a JSON object strictly following this structure:
+            var prompt = $@"
+Genera una rutina de entrenamiento personalizada en formato JSON basándote en:
+- Objetivo: {dto.Goal}
+- Nivel: {dto.Level}
+- Días: {dto.Days}
+- Duración: {dto.Duration}
+- Músculos: {string.Join(", ", dto.Muscles)}
+- Equipo: {string.Join(", ", dto.Equipment)}
+- Notas: {dto.Notes}
+
+Usa EXCLUSIVAMENTE estos nombres de ejercicio si es posible: {officialExercises}.
+Si necesitas uno fuera de la lista, usa un nombre descriptivo estándar.
+
+Responde ÚNICAMENTE con el objeto JSON siguiendo esta estructura (usa minúsculas para las claves):
 {{
-  ""Nombre"": ""Routine Name"",
-  ""Nivel"": ""Principiante o Intermedio o Avanzado"",
-  ""DuracionMinutos"": 60,
-  ""Ejercicios"": [
+  ""nombre"": ""Nombre creativo de la rutina"",
+  ""nivel"": ""{dto.Level}"",
+  ""duracionMinutos"": 60,
+  ""ejercicios"": [
     {{
-      ""EjercicioId"": 123, 
-      ""NombreEjercicio"": ""Exercise Name"",
-      ""Series"": 3,
-      ""Repeticiones"": ""12""
+      ""ejercicioId"": 0, 
+      ""nombreEjercicio"": ""Nombre exacto del ejercicio"",
+      ""series"": 3,
+      ""repeticiones"": ""12""
     }}
   ]
 }}
-Do NOT wrap the JSON in markdown code blocks. Just return the raw JSON string.
 ";
 
             var jsonResponse = await CallGeminiApiAsync(prompt);
-            jsonResponse = jsonResponse.Replace("```json", "").Replace("```", "").Trim();
+            
+            // Limpieza robusta: buscar el primer '{' y el último '}' por si hay markdown
+            int firstBrace = jsonResponse.IndexOf('{');
+            int lastBrace = jsonResponse.LastIndexOf('}');
+            if (firstBrace != -1 && lastBrace != -1 && lastBrace > firstBrace) {
+                jsonResponse = jsonResponse.Substring(firstBrace, lastBrace - firstBrace + 1);
+            }
 
             if (string.IsNullOrEmpty(jsonResponse)) throw new Exception("AI returned empty response.");
 
             var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+            options.Converters.Add(new System.Text.Json.Serialization.JsonStringEnumConverter());
+
             try
             {
                 Console.WriteLine($"[Gemini JSON Payload]:\n{jsonResponse}");

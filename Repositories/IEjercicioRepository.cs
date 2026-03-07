@@ -6,6 +6,7 @@ namespace REPS_backend.Repositories
         Task<List<Ejercicio>> GetAllAsync();
         Task<List<Ejercicio>> GetAllPersonalizadosAsync(int userId);
         Task<Ejercicio?> GetByIdAsync(int id);
+        Task<Ejercicio?> GetByNameAsync(string name);
         Task AddAsync(Ejercicio ejercicio);
         Task UpdateAsync(Ejercicio ejercicio);
         Task DeleteAsync(int id);

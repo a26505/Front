@@ -33,6 +33,11 @@ namespace REPS_backend.Repositories
         {
             return await _context.Ejercicios.FindAsync(id);
         }
+        public async Task<Ejercicio?> GetByNameAsync(string name)
+        {
+            return await _context.Ejercicios
+                .FirstOrDefaultAsync(e => e.Nombre.ToLower() == name.ToLower());
+        }
         public async Task AddAsync(Ejercicio ejercicio)
         {
             await _context.Ejercicios.AddAsync(ejercicio);

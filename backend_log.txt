@@ -1,0 +1,281 @@
+Usando la configuración de inicio de C:\CLASE\REPS\Front\Properties\launchSettings.json...
+Compilando...
+C:\CLASE\REPS\Front\REPS-backend.csproj : warning NU1902: El paquete "System.IdentityModel.Tokens.Jwt" 7.0.3 tiene una vulnerabilidad de gravedad moderada conocida, https://github.com/advisories/GHSA-59j7-ghrg-fj52
+C:\CLASE\REPS\Front\REPS-backend.csproj : warning NU1902: El paquete "System.IdentityModel.Tokens.Jwt" 7.0.3 tiene una vulnerabilidad de gravedad moderada conocida, https://github.com/advisories/GHSA-59j7-ghrg-fj52
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (4ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT CASE WHEN COUNT(*) = 0 THEN FALSE ELSE TRUE END
+FROM information_schema.tables
+WHERE table_type = 'BASE TABLE' AND table_schema = 'reps_db'
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT `u`.`Id`, `u`.`AvatarId`, `u`.`Biografia`, `u`.`CodigoAmigo`, `u`.`Email`, `u`.`EsPerfilPublico`, `u`.`EstaActivo`, `u`.`EstaBorrado`, `u`.`FechaFinSuscripcion`, `u`.`FechaRegistro`, `u`.`FechaUltimaActividad`, `u`.`MostrarEstadisticas`, `u`.`Nombre`, `u`.`PasswordHash`, `u`.`PlanActual`, `u`.`PuntosLogros`, `u`.`PuntosRecords`, `u`.`PuntosTotales`, `u`.`RachaDias`, `u`.`RangoGeneral`, `u`.`RankingVisible`, `u`.`Rol`
+      FROM `Usuarios` AS `u`
+      WHERE `u`.`Email` = 'Dani@gmail.com'
+      LIMIT 1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT `u`.`Id`, `u`.`AvatarId`, `u`.`Biografia`, `u`.`CodigoAmigo`, `u`.`Email`, `u`.`EsPerfilPublico`, `u`.`EstaActivo`, `u`.`EstaBorrado`, `u`.`FechaFinSuscripcion`, `u`.`FechaRegistro`, `u`.`FechaUltimaActividad`, `u`.`MostrarEstadisticas`, `u`.`Nombre`, `u`.`PasswordHash`, `u`.`PlanActual`, `u`.`PuntosLogros`, `u`.`PuntosRecords`, `u`.`PuntosTotales`, `u`.`RachaDias`, `u`.`RangoGeneral`, `u`.`RankingVisible`, `u`.`Rol`
+      FROM `Usuarios` AS `u`
+      WHERE `u`.`Email` = 'hola@gmail.com'
+      LIMIT 1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (16ms) [Parameters=[@p1='?' (DbType = Int32), @p0='?' (Size = 4000)], CommandType='Text', CommandTimeout='30']
+      SET AUTOCOMMIT = 1;
+      UPDATE `Usuarios` SET `PasswordHash` = @p0
+      WHERE `Id` = @p1;
+      SELECT ROW_COUNT();
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__ejercicio_Nombre_0='?' (Size = 4000)], CommandType='Text', CommandTimeout='30']
+      SELECT EXISTS (
+          SELECT 1
+          FROM `Ejercicios` AS `e`
+          WHERE `e`.`Nombre` = @__ejercicio_Nombre_0)
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__ejercicio_Nombre_0='?' (Size = 4000)], CommandType='Text', CommandTimeout='30']
+      SELECT EXISTS (
+          SELECT 1
+          FROM `Ejercicios` AS `e`
+          WHERE `e`.`Nombre` = @__ejercicio_Nombre_0)
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__ejercicio_Nombre_0='?' (Size = 4000)], CommandType='Text', CommandTimeout='30']
+      SELECT EXISTS (
+          SELECT 1
+          FROM `Ejercicios` AS `e`
+          WHERE `e`.`Nombre` = @__ejercicio_Nombre_0)
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__ejercicio_Nombre_0='?' (Size = 4000)], CommandType='Text', CommandTimeout='30']
+      SELECT EXISTS (
+          SELECT 1
+          FROM `Ejercicios` AS `e`
+          WHERE `e`.`Nombre` = @__ejercicio_Nombre_0)
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__ejercicio_Nombre_0='?' (Size = 4000)], CommandType='Text', CommandTimeout='30']
+      SELECT EXISTS (
+          SELECT 1
+          FROM `Ejercicios` AS `e`
+          WHERE `e`.`Nombre` = @__ejercicio_Nombre_0)
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__ejercicio_Nombre_0='?' (Size = 4000)], CommandType='Text', CommandTimeout='30']
+      SELECT EXISTS (
+          SELECT 1
+          FROM `Ejercicios` AS `e`
+          WHERE `e`.`Nombre` = @__ejercicio_Nombre_0)
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__ejercicio_Nombre_0='?' (Size = 4000)], CommandType='Text', CommandTimeout='30']
+      SELECT EXISTS (
+          SELECT 1
+          FROM `Ejercicios` AS `e`
+          WHERE `e`.`Nombre` = @__ejercicio_Nombre_0)
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__ejercicio_Nombre_0='?' (Size = 4000)], CommandType='Text', CommandTimeout='30']
+      SELECT EXISTS (
+          SELECT 1
+          FROM `Ejercicios` AS `e`
+          WHERE `e`.`Nombre` = @__ejercicio_Nombre_0)
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__ejercicio_Nombre_0='?' (Size = 4000)], CommandType='Text', CommandTimeout='30']
+      SELECT EXISTS (
+          SELECT 1
+          FROM `Ejercicios` AS `e`
+          WHERE `e`.`Nombre` = @__ejercicio_Nombre_0)
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__ejercicio_Nombre_0='?' (Size = 4000)], CommandType='Text', CommandTimeout='30']
+      SELECT EXISTS (
+          SELECT 1
+          FROM `Ejercicios` AS `e`
+          WHERE `e`.`Nombre` = @__ejercicio_Nombre_0)
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__ejercicio_Nombre_0='?' (Size = 4000)], CommandType='Text', CommandTimeout='30']
+      SELECT EXISTS (
+          SELECT 1
+          FROM `Ejercicios` AS `e`
+          WHERE `e`.`Nombre` = @__ejercicio_Nombre_0)
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__ejercicio_Nombre_0='?' (Size = 4000)], CommandType='Text', CommandTimeout='30']
+      SELECT EXISTS (
+          SELECT 1
+          FROM `Ejercicios` AS `e`
+          WHERE `e`.`Nombre` = @__ejercicio_Nombre_0)
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__ejercicio_Nombre_0='?' (Size = 4000)], CommandType='Text', CommandTimeout='30']
+      SELECT EXISTS (
+          SELECT 1
+          FROM `Ejercicios` AS `e`
+          WHERE `e`.`Nombre` = @__ejercicio_Nombre_0)
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__ejercicio_Nombre_0='?' (Size = 4000)], CommandType='Text', CommandTimeout='30']
+      SELECT EXISTS (
+          SELECT 1
+          FROM `Ejercicios` AS `e`
+          WHERE `e`.`Nombre` = @__ejercicio_Nombre_0)
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__ejercicio_Nombre_0='?' (Size = 4000)], CommandType='Text', CommandTimeout='30']
+      SELECT EXISTS (
+          SELECT 1
+          FROM `Ejercicios` AS `e`
+          WHERE `e`.`Nombre` = @__ejercicio_Nombre_0)
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__ejercicio_Nombre_0='?' (Size = 4000)], CommandType='Text', CommandTimeout='30']
+      SELECT EXISTS (
+          SELECT 1
+          FROM `Ejercicios` AS `e`
+          WHERE `e`.`Nombre` = @__ejercicio_Nombre_0)
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__ejercicio_Nombre_0='?' (Size = 4000)], CommandType='Text', CommandTimeout='30']
+      SELECT EXISTS (
+          SELECT 1
+          FROM `Ejercicios` AS `e`
+          WHERE `e`.`Nombre` = @__ejercicio_Nombre_0)
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__ejercicio_Nombre_0='?' (Size = 4000)], CommandType='Text', CommandTimeout='30']
+      SELECT EXISTS (
+          SELECT 1
+          FROM `Ejercicios` AS `e`
+          WHERE `e`.`Nombre` = @__ejercicio_Nombre_0)
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__ejercicio_Nombre_0='?' (Size = 4000)], CommandType='Text', CommandTimeout='30']
+      SELECT EXISTS (
+          SELECT 1
+          FROM `Ejercicios` AS `e`
+          WHERE `e`.`Nombre` = @__ejercicio_Nombre_0)
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__ejercicio_Nombre_0='?' (Size = 4000)], CommandType='Text', CommandTimeout='30']
+      SELECT EXISTS (
+          SELECT 1
+          FROM `Ejercicios` AS `e`
+          WHERE `e`.`Nombre` = @__ejercicio_Nombre_0)
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__ejercicio_Nombre_0='?' (Size = 4000)], CommandType='Text', CommandTimeout='30']
+      SELECT EXISTS (
+          SELECT 1
+          FROM `Ejercicios` AS `e`
+          WHERE `e`.`Nombre` = @__ejercicio_Nombre_0)
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__ejercicio_Nombre_0='?' (Size = 4000)], CommandType='Text', CommandTimeout='30']
+      SELECT EXISTS (
+          SELECT 1
+          FROM `Ejercicios` AS `e`
+          WHERE `e`.`Nombre` = @__ejercicio_Nombre_0)
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__ejercicio_Nombre_0='?' (Size = 4000)], CommandType='Text', CommandTimeout='30']
+      SELECT EXISTS (
+          SELECT 1
+          FROM `Ejercicios` AS `e`
+          WHERE `e`.`Nombre` = @__ejercicio_Nombre_0)
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__ejercicio_Nombre_0='?' (Size = 4000)], CommandType='Text', CommandTimeout='30']
+      SELECT EXISTS (
+          SELECT 1
+          FROM `Ejercicios` AS `e`
+          WHERE `e`.`Nombre` = @__ejercicio_Nombre_0)
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__ejercicio_Nombre_0='?' (Size = 4000)], CommandType='Text', CommandTimeout='30']
+      SELECT EXISTS (
+          SELECT 1
+          FROM `Ejercicios` AS `e`
+          WHERE `e`.`Nombre` = @__ejercicio_Nombre_0)
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__ejercicio_Nombre_0='?' (Size = 4000)], CommandType='Text', CommandTimeout='30']
+      SELECT EXISTS (
+          SELECT 1
+          FROM `Ejercicios` AS `e`
+          WHERE `e`.`Nombre` = @__ejercicio_Nombre_0)
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__ejercicio_Nombre_0='?' (Size = 4000)], CommandType='Text', CommandTimeout='30']
+      SELECT EXISTS (
+          SELECT 1
+          FROM `Ejercicios` AS `e`
+          WHERE `e`.`Nombre` = @__ejercicio_Nombre_0)
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__ejercicio_Nombre_0='?' (Size = 4000)], CommandType='Text', CommandTimeout='30']
+      SELECT EXISTS (
+          SELECT 1
+          FROM `Ejercicios` AS `e`
+          WHERE `e`.`Nombre` = @__ejercicio_Nombre_0)
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__ejercicio_Nombre_0='?' (Size = 4000)], CommandType='Text', CommandTimeout='30']
+      SELECT EXISTS (
+          SELECT 1
+          FROM `Ejercicios` AS `e`
+          WHERE `e`.`Nombre` = @__ejercicio_Nombre_0)
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__ejercicio_Nombre_0='?' (Size = 4000)], CommandType='Text', CommandTimeout='30']
+      SELECT EXISTS (
+          SELECT 1
+          FROM `Ejercicios` AS `e`
+          WHERE `e`.`Nombre` = @__ejercicio_Nombre_0)
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__logro_Titulo_0='?' (Size = 4000)], CommandType='Text', CommandTimeout='30']
+      SELECT EXISTS (
+          SELECT 1
+          FROM `Logros` AS `l`
+          WHERE `l`.`Titulo` = @__logro_Titulo_0)
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__logro_Titulo_0='?' (Size = 4000)], CommandType='Text', CommandTimeout='30']
+      SELECT EXISTS (
+          SELECT 1
+          FROM `Logros` AS `l`
+          WHERE `l`.`Titulo` = @__logro_Titulo_0)
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__logro_Titulo_0='?' (Size = 4000)], CommandType='Text', CommandTimeout='30']
+      SELECT EXISTS (
+          SELECT 1
+          FROM `Logros` AS `l`
+          WHERE `l`.`Titulo` = @__logro_Titulo_0)
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__logro_Titulo_0='?' (Size = 4000)], CommandType='Text', CommandTimeout='30']
+      SELECT EXISTS (
+          SELECT 1
+          FROM `Logros` AS `l`
+          WHERE `l`.`Titulo` = @__logro_Titulo_0)
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__logro_Titulo_0='?' (Size = 4000)], CommandType='Text', CommandTimeout='30']
+      SELECT EXISTS (
+          SELECT 1
+          FROM `Logros` AS `l`
+          WHERE `l`.`Titulo` = @__logro_Titulo_0)
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__logro_Titulo_0='?' (Size = 4000)], CommandType='Text', CommandTimeout='30']
+      SELECT EXISTS (
+          SELECT 1
+          FROM `Logros` AS `l`
+          WHERE `l`.`Titulo` = @__logro_Titulo_0)
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__logro_Titulo_0='?' (Size = 4000)], CommandType='Text', CommandTimeout='30']
+      SELECT EXISTS (
+          SELECT 1
+          FROM `Logros` AS `l`
+          WHERE `l`.`Titulo` = @__logro_Titulo_0)
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__logro_Titulo_0='?' (Size = 4000)], CommandType='Text', CommandTimeout='30']
+      SELECT EXISTS (
+          SELECT 1
+          FROM `Logros` AS `l`
+          WHERE `l`.`Titulo` = @__logro_Titulo_0)
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__logro_Titulo_0='?' (Size = 4000)], CommandType='Text', CommandTimeout='30']
+      SELECT EXISTS (
+          SELECT 1
+          FROM `Logros` AS `l`
+          WHERE `l`.`Titulo` = @__logro_Titulo_0)
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__logro_Titulo_0='?' (Size = 4000)], CommandType='Text', CommandTimeout='30']
+      SELECT EXISTS (
+          SELECT 1
+          FROM `Logros` AS `l`
+          WHERE `l`.`Titulo` = @__logro_Titulo_0)
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__logro_Titulo_0='?' (Size = 4000)], CommandType='Text', CommandTimeout='30']
+      SELECT EXISTS (
+          SELECT 1
+          FROM `Logros` AS `l`
+          WHERE `l`.`Titulo` = @__logro_Titulo_0)
+info: Microsoft.Hosting.Lifetime[14]
+      Now listening on: http://localhost:5148
+info: Microsoft.Hosting.Lifetime[0]
+      Application started. Press Ctrl+C to shut down.
+info: Microsoft.Hosting.Lifetime[0]
+      Hosting environment: Development
+info: Microsoft.Hosting.Lifetime[0]
+      Content root path: C:\CLASE\REPS\Front

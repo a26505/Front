@@ -236,12 +236,34 @@ namespace REPS_backend.Services
             {
                 foreach (var ejDto in rutinaIA_Dto.Ejercicios)
                 {
+                    // Resolución resiliente del ejercicio
+                    int finalEjercicioId = 0;
+                    
+                    // 1. Intentar por ID directo
+                    var exerciseById = await _ejercicioRepository.GetByIdAsync(ejDto.EjercicioId);
+                    if (exerciseById != null) {
+                        finalEjercicioId = exerciseById.Id;
+                        Console.WriteLine($"[IA Resolve]: Encontrado por ID {ejDto.EjercicioId} -> {exerciseById.Nombre}");
+                    } else {
+                        // 2. Intentar por nombre exacto
+                        var exerciseByName = await _ejercicioRepository.GetByNameAsync(ejDto.NombreEjercicio);
+                        if (exerciseByName != null) {
+                            finalEjercicioId = exerciseByName.Id;
+                            Console.WriteLine($"[IA Resolve]: Encontrado por NOMBRE '{ejDto.NombreEjercicio}' -> ID {exerciseByName.Id}");
+                        }
+                    }
+
+                    if (finalEjercicioId == 0) {
+                        Console.WriteLine($"[IA Resolve]: OMITIENDO ejercicio '{ejDto.NombreEjercicio}' (No encontrado en BD)");
+                        continue; 
+                    }
+
                     var re = new RutinaEjercicio
                     {
-                        EjercicioId = ejDto.EjercicioId,
+                        EjercicioId = finalEjercicioId,
                         Orden = orden++,
                         Series = ejDto.Series,
-                        DescansoSegundos = 90, // Valor por defecto
+                        DescansoSegundos = 90,
                         Repeticiones = ejDto.Repeticiones.ToString(),
                         Tipo = TipoSerie.Normal,
                         PorcentajeDelPeso = 1.0m,
