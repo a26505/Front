@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using REPS_backend.DTOs.Entrenamientos;
 using REPS_backend.Services;
+using REPS_backend.Services.AI;
 using System.Security.Claims;
 
 namespace REPS_backend.Controllers
@@ -13,11 +14,13 @@ namespace REPS_backend.Controllers
     {
         private readonly IEntrenamientoService _entrenamientoService;
         private readonly IRankingService _rankingService;
+        private readonly IAIService _aiService;
 
-        public EntrenamientosController(IEntrenamientoService entrenamientoService, IRankingService rankingService)
+        public EntrenamientosController(IEntrenamientoService entrenamientoService, IRankingService rankingService, IAIService aiService)
         {
             _entrenamientoService = entrenamientoService;
             _rankingService = rankingService;
+            _aiService = aiService;
         }
 
         [HttpPost("finalizar")]
@@ -43,6 +46,17 @@ namespace REPS_backend.Controllers
 
             var historial = await _entrenamientoService.ObtenerHistorialUsuarioAsync(userId);
             return Ok(historial);
+        }
+
+        [HttpGet("tips")]
+        public async Task<IActionResult> GetWorkoutTips([FromQuery] string workoutName, [FromQuery] string? muscles)
+        {
+            var muscleList = string.IsNullOrEmpty(muscles)
+                ? new List<string>()
+                : muscles.Split(',').Select(m => m.Trim()).ToList();
+
+            var tips = await _aiService.GetWorkoutTipsAsync(workoutName ?? "Entrenamiento", muscleList);
+            return Ok(new { tips });
         }
 
         private int GetCurrentUserId()

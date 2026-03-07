@@ -143,6 +143,21 @@
                 />
              </div>
 
+             <div v-if="activeTab === 'community'">
+                <div v-if="filteredCommunityWorkouts.length === 0" class="flex flex-col items-center justify-center py-12 px-6 bg-[rgba(31,41,55,0.2)] border border-dashed border-[#374151] rounded-[12px] mt-6">
+                  <p class="text-[#9CA3AF] text-center font-medium">La comunidad aún no tiene rutinas compatibles.<br>¡Sé el primero en compartir tu entrenamiento desde la pestaña "Mis Rutinas"!</p>
+                </div>
+                <WorkoutCard 
+                   v-for="workout in filteredCommunityWorkouts" 
+                   :key="workout.id" 
+                   :workout="workout" 
+                   type="community"
+                   @click="openDetail(workout)"
+                   @like="likeWorkout"
+                   @save="copyWorkout"
+                />
+             </div>
+
 
 
              <div v-if="activeTab === 'ai'">
@@ -302,15 +317,18 @@ const filterWorkouts = (list: any[]) => {
 
 const filteredMyWorkouts = computed(() => filterWorkouts(myWorkouts.value));
 const filteredAiWorkouts = computed(() => filterWorkouts(aiWorkouts.value));
+const filteredCommunityWorkouts = computed(() => filterWorkouts(communityWorkouts.value));
 
 const tabs = [
   { id: 'my', name: 'Mis Rutinas' },
+  { id: 'community', name: 'Comunidad' },
   { id: 'ai', name: 'Entrenamientos IA' }
 ];
 
 // --- DATOS REALES ---
 const myWorkouts = ref<any[]>([]);
 const aiWorkouts = ref<any[]>([]);
+const communityWorkouts = ref<any[]>([]);
 const isLoading = ref(false);
 
 const muscleGroupMap: Record<number, string> = {
@@ -360,14 +378,18 @@ const mapToCard = (r: any) => ({
 const loadRutinas = async () => {
   isLoading.value = true;
   try {
-    const [misRes] = await Promise.all([
+    const [misRes, comRes] = await Promise.all([
       rutinasApi.getMisRutinas(),
+      rutinasApi.getComunidad().catch(() => ({ data: [] })) // Fallback si falla el endpoint comunidad
     ]);
     const allMy = (misRes.data as any[]).map(mapToCard);
     
     // Las rutinas normales van a myWorkouts, y las copias también.
     myWorkouts.value = allMy.filter(r => !r.isGeneradaPorIA);
     aiWorkouts.value = allMy.filter(r => r.isGeneradaPorIA);
+    
+    // Mapear grid comunidad
+    communityWorkouts.value = (comRes.data as any[] || []).map(mapToCard);
   } catch (e) {
     console.error('Error cargando rutinas', e);
   } finally {
@@ -433,6 +455,7 @@ const openDetail = async (workout: any) => {
 
     selectedWorkout.value = {
         ...workout,
+        image: detail.urlImagen || workout.image, // Mantener o actualizar imagen
         muscles: musclesFromDetail.length > 0 ? musclesFromDetail : workout.muscles,
         exercises: detail.ejercicios ? detail.ejercicios.length : 0,
         exerciseList: (detail.ejercicios || []).map((e: any) => {
@@ -533,6 +556,32 @@ const publishWorkout = async (id: number) => {
         uiStore.showToast('No se pudo publicar la rutina.', 'error');
     } finally {
         isPublishing.value = false;
+    }
+};
+
+const likeWorkout = async (id: number) => {
+    try {
+        await rutinasApi.like(id);
+        // Toggle heart shape status localmente
+        const w = communityWorkouts.value.find(c => c.id === id);
+        if (w) {
+            w.liked = !w.liked;
+            w.likes += w.liked ? 1 : -1;
+        }
+    } catch (e) {
+        console.error('Error toggling like:', e);
+        uiStore.showToast('Error al dar Me Gusta', 'error');
+    }
+};
+
+const copyWorkout = async (id: number) => {
+    try {
+        await rutinasApi.copiar(id);
+        uiStore.showToast('¡Rutina guardada en Mis Entrenamientos!', 'success');
+        await loadRutinas(); // Refrescar para que asome en Mis Rutinas
+    } catch (e) {
+        console.error('Error copiando rutina:', e);
+        uiStore.showToast('Hubo un error al guardar la rutina', 'error');
     }
 };
 

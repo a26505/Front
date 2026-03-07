@@ -4,15 +4,20 @@
     {
         public int Id { get; set; }
         public int? SesionId { get; set; }
-        public int EjercicioId { get; set; } 
+        public virtual Sesion? Sesion { get; set; }
+
+        public int? EntrenamientoId { get; set; }
+        public virtual Entrenamiento? Entrenamiento { get; set; }
+
+        public int EjercicioId { get; set; }
         public virtual Ejercicio Ejercicio { get; set; } = null!;
-        
-        public int NumeroSerie { get; set; } 
+
+        public int NumeroSerie { get; set; }
         public decimal PesoUsado { get; set; }
-        public decimal Peso => PesoUsado; 
+        public decimal Peso => PesoUsado;
         public int RepsRealizadas { get; set; }
         public int Repeticiones => RepsRealizadas; // Alias for compatibility
-        
-        public bool Completada { get; set; } = true; 
+
+        public bool Completada { get; set; } = true;
     }
 }

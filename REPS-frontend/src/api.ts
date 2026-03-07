@@ -95,6 +95,8 @@ export const entrenamientosApi = {
     getHistorial: () => api.get('/Entrenamientos'),
     finalizar: (data: any) => api.post('/Entrenamientos/finalizar', data),
     getMejorasIA: (entrenamientoId: number) => api.get(`/Entrenamientos/${entrenamientoId}/ejes-ia`),
+    getTips: (workoutName: string, muscles: string[]) =>
+        api.get(`/Entrenamientos/tips?workoutName=${encodeURIComponent(workoutName)}&muscles=${encodeURIComponent(muscles.join(','))}`),
 };
 
 // ─── PROGRESO ────────────────────────────────────────────────────────

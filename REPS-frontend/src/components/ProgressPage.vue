@@ -362,8 +362,38 @@ onMounted(async () => {
     }));
 
     if (analiticaRes.data) {
-        barChartSeries.value = [{ name: 'Peso (kg)', data: analiticaRes.data.pesos }];
-        lineChartSeries.value = [{ name: 'Volumen', data: analiticaRes.data.volumen }];
+        // Grafica de Barras (Pesos recientes)
+        barChartSeries.value = [{ 
+            name: 'Peso (kg)', 
+            data: analiticaRes.data.pesos || [0, 0, 0, 0, 0, 0, 0] 
+        }];
+        
+        // Determinar max dinámicamente o dejarlo auto
+        let maxPeso = Math.max(...(analiticaRes.data.pesos || [0]));
+        let yaxisMax = maxPeso > 0 ? Math.ceil(maxPeso * 1.2) : 100;
+        
+        barChartOptions.value = {
+            ...barChartOptions.value,
+            yaxis: { ...barChartOptions.value.yaxis, max: yaxisMax }
+        };
+        
+        // Grafica de Lineas (Volumen mensual)
+        lineChartSeries.value = [{ 
+            name: 'Volumen', 
+            data: analiticaRes.data.volumen || [0, 0, 0, 0, 0, 0] 
+        }];
+        
+        // Actualizar meses del eje X según el backend
+        if (analiticaRes.data.actividadMensual && analiticaRes.data.actividadMensual.length === 6) {
+             const meses = analiticaRes.data.actividadMensual.map((a: any) => a.name);
+             lineChartOptions.value = {
+                 ...lineChartOptions.value,
+                 xaxis: {
+                     ...lineChartOptions.value.xaxis,
+                     categories: meses
+                 }
+             };
+        }
     }
   } catch (e: any) {
     console.error('Error cargando progreso', e);
@@ -388,14 +418,14 @@ onMounted(async () => {
   }
 });
 
-// --- CHARTS CONFIG (estáticos de momento) ---
-const barChartSeries = ref([{ name: 'Peso (kg)', data: [80, 82.5, 82.5, 85, 85, 87.5, 90] }]);
-const barChartOptions = {
+// --- CHARTS CONFIG (reactivos) ---
+const barChartSeries = ref([{ name: 'Peso (kg)', data: [0, 0, 0, 0, 0, 0, 0] }]);
+const barChartOptions = ref({
   chart: { toolbar: { show: false }, background: 'transparent' },
   colors: ['#DC2626'],
   plotOptions: { bar: { borderRadius: 6, columnWidth: '40%' } },
   xaxis: {
-    categories: ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'],
+    categories: ['Serie 1', 'Serie 2', 'Serie 3', 'Serie 4', 'Serie 5', 'Serie 6', 'Serie 7'],
     labels: { style: { colors: '#9CA3AF', fontWeight: 600 } },
     axisBorder: { show: false },
     axisTicks: { show: false }
@@ -404,10 +434,10 @@ const barChartOptions = {
   grid: { borderColor: 'rgba(255, 255, 255, 0.05)', strokeDashArray: 0, xaxis: { lines: { show: false } }, yaxis: { lines: { show: true } } },
   tooltip: { theme: 'dark', x: { show: true } },
   dataLabels: { enabled: false }
-};
+});
 
-const lineChartSeries = ref([{ name: 'Volumen', data: [45000, 52000, 48000, 61000, 55000, 67000] }]);
-const lineChartOptions = {
+const lineChartSeries = ref([{ name: 'Volumen', data: [0, 0, 0, 0, 0, 0] }]);
+const lineChartOptions = ref({
   chart: { toolbar: { show: false }, background: 'transparent' },
   colors: ['#DC2626'],
   stroke: { curve: 'smooth', width: 4 },
@@ -416,12 +446,20 @@ const lineChartOptions = {
     labels: { style: { colors: '#9CA3AF', fontWeight: 600 } },
     axisBorder: { show: false }
   },
-  yaxis: { labels: { style: { colors: '#9CA3AF' } } },
+  yaxis: { 
+      labels: { 
+          style: { colors: '#9CA3AF' },
+          formatter: (value: number) => {
+              if (value >= 1000) return (value / 1000).toFixed(1) + 'k';
+              return value.toString();
+          }
+      } 
+  },
   grid: { borderColor: 'rgba(255, 255, 255, 0.05)', strokeDashArray: 0, xaxis: { lines: { show: false } } },
   markers: { size: 4, colors: ['#DC2626'], strokeColors: '#000', strokeWidth: 2, hover: { size: 6 } },
   tooltip: { theme: 'dark' },
   dataLabels: { enabled: false }
-};
+});
 
 // --- HELPERS ---
 const getRankGradient = (rank: string) => {

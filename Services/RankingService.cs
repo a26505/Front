@@ -24,7 +24,7 @@ namespace REPS_backend.Services
         private readonly IEntrenamientoRepository _entrenamientoRepository;
 
         public RankingService(
-            IUsuarioRepository usuarioRepository, 
+            IUsuarioRepository usuarioRepository,
             ILogroRepository logroRepository,
             IRecordPersonalRepository recordRepository,
             IEntrenamientoRepository entrenamientoRepository)
@@ -42,7 +42,7 @@ namespace REPS_backend.Services
 
             usuario.PuntosRecords += points;
             await _usuarioRepository.UpdateUsuarioAsync(usuario);
-            
+
             // Recalcular puntos totales y ranks
             await UpdateUserRankAsync(userId);
         }
@@ -60,14 +60,14 @@ namespace REPS_backend.Services
             // 2. Calcular Puntos por Músculo
             var records = await _recordRepository.GetByUserIdAsync(userId);
             var entrenamientos = await _entrenamientoRepository.GetByUsuarioIdWithSeriesAsync(userId);
-            
+
             var seriesCompletadas = entrenamientos?
                 .SelectMany(e => e.SeriesRealizadas ?? new List<SerieLog>())
                 .Where(s => s.Completada && s.Ejercicio != null)
                 .ToList() ?? new List<SerieLog>();
 
             var puntosPorMusculo = new Dictionary<GrupoMuscular, int>();
-            
+
             foreach (var s in seriesCompletadas)
             {
                 var grupo = s.Ejercicio!.GrupoMuscular;
@@ -75,7 +75,7 @@ namespace REPS_backend.Services
                 puntosPorMusculo[grupo] += 10;
             }
 
-            foreach(var r in records.Where(r => r.Ejercicio != null))
+            foreach (var r in records.Where(r => r.Ejercicio != null))
             {
                 var grupo = r.Ejercicio!.GrupoMuscular;
                 if (!puntosPorMusculo.ContainsKey(grupo)) puntosPorMusculo[grupo] = 0;
@@ -84,12 +84,12 @@ namespace REPS_backend.Services
 
             var gruposValidos = Enum.GetValues(typeof(GrupoMuscular)).Cast<GrupoMuscular>()
                    .Where(g => g != GrupoMuscular.Otro && g != GrupoMuscular.FullBody && g != GrupoMuscular.Cardio).ToList();
-            
+
             double sumPuntosMusculos = 0;
-            foreach(var grupo in gruposValidos)
+            foreach (var grupo in gruposValidos)
             {
-               if(puntosPorMusculo.ContainsKey(grupo))
-                  sumPuntosMusculos += puntosPorMusculo[grupo];
+                if (puntosPorMusculo.ContainsKey(grupo))
+                    sumPuntosMusculos += puntosPorMusculo[grupo];
             }
 
             // 3. Actualizar Total: Puntos del Rango General (Suma Muscular) + Puntos de Logros
@@ -104,18 +104,18 @@ namespace REPS_backend.Services
 
         private Rango ConvertPuntosARango(int puntos)
         {
-            if (puntos < 4000) return Rango.Bronce;
-            if (puntos < 12000) return Rango.Plata;
-            if (puntos < 25000) return Rango.Oro;
-            if (puntos < 50000) return Rango.Platino;
-            if (puntos < 80000) return Rango.Diamante;
-            return Rango.Leyenda;
+            if (puntos < 100) return Rango.Bronce;    // ~10 series
+            if (puntos < 300) return Rango.Plata;     // ~30 series
+            if (puntos < 600) return Rango.Oro;       // ~60 series
+            if (puntos < 1000) return Rango.Platino;  // ~100 series
+            if (puntos < 2000) return Rango.Diamante; // ~200 series
+            return Rango.Leyenda;                      // 200+ series
         }
 
         public async Task<List<REPS_backend.DTOs.Ranking.LeaderboardItemDto>> GetLeaderboardAsync()
         {
             var users = await _usuarioRepository.GetAllAsync();
-            
+
             var topUsers = users
                 .OrderByDescending(u => u.PuntosTotales)
                 .Take(50)
@@ -164,7 +164,7 @@ namespace REPS_backend.Services
                 .SelectMany(e => e.SeriesRealizadas ?? new List<SerieLog>())
                 .Where(s => s.Completada && s.Ejercicio != null)
                 .ToList() ?? new List<SerieLog>();
-            
+
             var puntosPorMusculo = new Dictionary<GrupoMuscular, int>();
             foreach (var s in seriesCompletadas)
             {
@@ -173,7 +173,7 @@ namespace REPS_backend.Services
                 puntosPorMusculo[grupo] += 10;
             }
 
-            foreach(var r in records.Where(r => r.Ejercicio != null))
+            foreach (var r in records.Where(r => r.Ejercicio != null))
             {
                 var grupo = r.Ejercicio!.GrupoMuscular;
                 if (!puntosPorMusculo.ContainsKey(grupo)) puntosPorMusculo[grupo] = 0;
@@ -225,7 +225,7 @@ namespace REPS_backend.Services
             {
                 GrupoMuscular = grupo.ToString(),
                 RangoActual = rangoActual,
-                CurrentPoints = puntos, 
+                CurrentPoints = puntos,
                 NextRankThreshold = nextThreshold,
                 NextRank = nextRank,
                 ProgressPercentage = Math.Round(Math.Max(0, Math.Min(100, progressPct)), 1)

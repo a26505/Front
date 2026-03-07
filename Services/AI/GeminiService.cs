@@ -10,7 +10,7 @@ namespace REPS_backend.Services.AI
     public class GeminiService : IAIService
     {
         private readonly string _apiKey;
-        private readonly string _baseUrl = "https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent";
+        private readonly string _baseUrl = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent";
         private readonly HttpClient _httpClient;
         private readonly ApplicationDbContext _context;
 
@@ -38,6 +38,24 @@ namespace REPS_backend.Services.AI
             }
 
             return await CallGeminiApiAsync(prompt);
+        }
+
+        public async Task<string> GetWorkoutTipsAsync(string workoutName, List<string> muscles)
+        {
+            var musclesList = muscles != null && muscles.Any() ? string.Join(", ", muscles) : "muscles generales";
+            var prompt = $"Eres un entrenador personal experto. El usuario acaba de terminar un entrenamiento de '{workoutName}' trabajando: {musclesList}. " +
+                         $"Dame exactamente 2 consejos breves y motivadores en ESPAÑOL. " +
+                         $"Formato: devuelve solo los 2 consejos separados por punto y aparte, sin numeraci\u00f3n, sin emojis, sin intro. " +
+                         $"M\u00e1ximo 25 palabras por consejo.";
+
+            try
+            {
+                return await CallGeminiApiAsync(prompt);
+            }
+            catch
+            {
+                return string.Empty;
+            }
         }
 
         public async Task<RutinaDetalleDto> GenerateRoutineAsync(RutinaIARequestDto dto)

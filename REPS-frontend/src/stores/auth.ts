@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
-import { authApi, usuariosApi } from '../api';
+import { authApi, usuariosApi, progresoApi } from '../api';
 
 export interface UserProfile {
     id: number;
@@ -48,11 +48,21 @@ export const useAuthStore = defineStore('auth', () => {
         }
     });
 
-    // Carga el perfil desde el back
+    // Carga el perfil desde el back y sincroniza el rangoGeneral real
     async function fetchProfile() {
         try {
-            const res = await usuariosApi.getMiPerfil();
-            profile.value = res.data;
+            const [perfilRes, progresoRes] = await Promise.allSettled([
+                usuariosApi.getMiPerfil(),
+                progresoApi.getGeneral()
+            ]);
+            if (perfilRes.status === 'fulfilled') {
+                profile.value = perfilRes.value.data;
+                // Sobrescribir rangoGeneral con el valor calculado y persistido en BD
+                // Esta es la fuente única de verdad usada por Dashboard y ProgressPage
+                if (progresoRes.status === 'fulfilled' && progresoRes.value.data?.rangoGeneral) {
+                    profile.value.rangoGeneral = progresoRes.value.data.rangoGeneral;
+                }
+            }
         } catch (e) {
             console.warn('No se pudo cargar el perfil', e);
         }

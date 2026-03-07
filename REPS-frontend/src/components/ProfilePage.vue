@@ -98,7 +98,7 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-[16px] mb-[24px]">
           <div v-for="stat in stats" :key="stat.label" class="bg-[rgba(17,24,39,0.5)] border border-[#1F2937] rounded-[12px] p-[24px]">
             <div class="mb-3" :class="stat.color">
-               <RankIcon v-if="stat.label === 'Rango General'" :rank="calculatedRangoGeneral" :size="40" />
+               <RankIcon v-if="stat.label === 'Rango General'" :rank="rangoGeneral" :size="40" />
                <div v-else v-html="stat.icon"></div>
             </div>
             <div class="text-[32px] font-bold text-white mb-1">{{ stat.value }}</div>
@@ -305,23 +305,7 @@ const rangoGeneral = ref('Bronce');
 const puntosTotales = ref(0);
 const muscleRanks = ref<any[]>([]);
 
-// Lógica para rango calculado (igual que en ProgressPage/Dashboard)
-const averagePoints = computed(() => {
-  const withPoints = muscleRanks.value.filter((m: any) => (m.points || 0) > 0);
-  if (withPoints.length === 0) return 0;
-  const total = withPoints.reduce((acc: number, m: any) => acc + (m.points || 0), 0);
-  return Math.round(total / withPoints.length);
-});
-
-const calculatedRangoGeneral = computed(() => {
-  const pts = averagePoints.value;
-  if (pts >= 1000) return 'Leyenda';
-  if (pts >= 700) return 'Diamante';
-  if (pts >= 400) return 'Platino';
-  if (pts >= 250) return 'Oro';
-  if (pts >= 100) return 'Plata';
-  return 'Bronce'; // Default to backend's general rank if no points, or Bronce
-});
+// El rango general viene directamente del backend (igual que en ProgressPage y Dashboard)
 
 // Icons as components for the copy logic
 const CopyIcon = h('svg', { 
@@ -400,7 +384,7 @@ const stats = computed(() => [
     icon: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15.362 5.214A8.252 8.252 0 0 1 12 21 8.25 8.25 0 0 1 6.038 7.047 8.287 8.287 0 0 0 9 9.601a8.983 8.983 0 0 1 3.361-6.867 8.21 8.21 0 0 0 3 2.48Z"/><path d="M12 18a3.75 3.75 0 0 0 .495-7.468 5.99 5.99 0 0 0-1.925 3.547 5.975 5.975 0 0 1-2.133-1.001A3.75 3.75 0 0 0 12 18Z"/></svg>`
   },
   { 
-    label: 'Rango General', value: calculatedRangoGeneral.value, color: 'text-[#EAB308]',
+    label: 'Rango General', value: rangoGeneral.value, color: 'text-[#EAB308]',
     icon: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="7"/><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"/></svg>`
   },
   { 

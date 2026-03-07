@@ -23,6 +23,7 @@ builder.Services.AddScoped<IRutinaEjercicioRepository, RutinaEjercicioRepository
 builder.Services.AddScoped<IRecordPersonalRepository, RecordPersonalRepository>();
 builder.Services.AddScoped<ILogroRepository, LogroRepository>();
 builder.Services.AddScoped<IEntrenamientoRepository, EntrenamientoRepository>();
+builder.Services.AddScoped<ISesionRepository, SesionRepository>();
 
 // 3. Servicios
 builder.Services.AddScoped<IAuthService, AuthService>();

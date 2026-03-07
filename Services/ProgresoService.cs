@@ -8,44 +8,54 @@ namespace REPS_backend.Services
         private readonly IEntrenamientoRepository _entrenamientoRepository;
         private readonly IRecordPersonalRepository _recordRepository;
         private readonly IUsuarioRepository _usuarioRepository;
+        private readonly ISesionRepository _sesionRepository;
         private readonly Microsoft.Extensions.Logging.ILogger<ProgresoService> _logger;
 
         // Constantes de Puntos
         private const int PUNTOS_POR_SERIE = 10;
         private const int PUNTOS_POR_RECORD = 100;
 
-        // Umbrales de Rango
-        private const int UMBRAL_BRONCE = 500;
-        private const int UMBRAL_PLATA = 1500;
-        private const int UMBRAL_ORO = 3000;
-        private const int UMBRAL_PLATINO = 5000;
-        private const int UMBRAL_DIAMANTE = 8000;
-        private const int UMBRAL_LEYENDA = 12000;
+        // Umbrales de Rango (reducidos para pruebas)
+        private const int UMBRAL_BRONCE = 30;     // ~3 series
+        private const int UMBRAL_PLATA = 100;     // ~10 series
+        private const int UMBRAL_ORO = 300;       // ~30 series
+        private const int UMBRAL_PLATINO = 600;   // ~60 series
+        private const int UMBRAL_DIAMANTE = 1000; // ~100 series
+        private const int UMBRAL_LEYENDA = 2000;  // ~200 series
 
         public ProgresoService(
-            IEntrenamientoRepository entrenamientoRepository, 
+            IEntrenamientoRepository entrenamientoRepository,
             IRecordPersonalRepository recordRepository,
             IUsuarioRepository usuarioRepository,
+            ISesionRepository sesionRepository,
             Microsoft.Extensions.Logging.ILogger<ProgresoService> logger)
         {
             _entrenamientoRepository = entrenamientoRepository;
             _recordRepository = recordRepository;
             _usuarioRepository = usuarioRepository;
+            _sesionRepository = sesionRepository;
             _logger = logger;
         }
 
         public async Task<List<ProgresoMuscularDto>> ObtenerProgresoMuscularAsync(int usuarioId)
         {
-            try 
+            try
             {
-                // 1. Obtener todo el historial
+                // 1. Obtener todo el historial de ambas fuentes
                 var entrenamientos = await _entrenamientoRepository.GetByUsuarioIdWithSeriesAsync(usuarioId);
+                var sesiones = await _sesionRepository.GetByUsuarioIdAsync(usuarioId);
 
-                // 2. Agrupar series por grupo muscular
-                var todasLasSeries = entrenamientos?
-                    .SelectMany(e => e.SeriesRealizadas ?? new List<SerieLog>())
+                // 2. Agrupar todas las series completadas
+                var seriesEntrenos = (entrenamientos ?? new List<Entrenamiento>())
+                    .SelectMany(e => e.SeriesRealizadas ?? new List<SerieLog>());
+
+                var seriesSesiones = (sesiones ?? new List<Sesion>())
+                    .SelectMany(s => s.SeriesRealizadas ?? new List<SerieLog>());
+
+                var todasLasSeries = seriesEntrenos
+                    .Concat(seriesSesiones)
                     .Where(s => s.Completada && s.Ejercicio != null)
-                    .ToList() ?? new List<SerieLog>();
+                    .ToList();
 
                 // 3. Calcular puntos por grupo
                 var puntosPorGrupo = todasLasSeries
@@ -66,18 +76,27 @@ namespace REPS_backend.Services
                     puntosPorGrupo[grupo] += PUNTOS_POR_RECORD;
                 }
 
-                // 4. Contar entrenamientos por grupo
+                // 4. Contar actividad por grupo (Entrenamientos + Sesiones)
                 var entrenosPorGrupo = new Dictionary<GrupoMuscular, int>();
+
+                // Procesar Entrenamientos
                 foreach (var e in entrenamientos ?? new List<Entrenamiento>())
                 {
                     if (e.SeriesRealizadas == null) continue;
+                    var grupos = e.SeriesRealizadas.Where(s => s.Completada && s.Ejercicio != null).Select(s => s.Ejercicio!.GrupoMuscular).Distinct();
+                    foreach (var g in grupos)
+                    {
+                        if (!entrenosPorGrupo.ContainsKey(g)) entrenosPorGrupo[g] = 0;
+                        entrenosPorGrupo[g]++;
+                    }
+                }
 
-                    var gruposEnEsteEntreno = e.SeriesRealizadas
-                        .Where(s => s.Completada && s.Ejercicio != null)
-                        .Select(s => s.Ejercicio!.GrupoMuscular)
-                        .Distinct();
-
-                    foreach (var g in gruposEnEsteEntreno)
+                // Procesar Sesiones
+                foreach (var s in sesiones ?? new List<Sesion>())
+                {
+                    if (s.SeriesRealizadas == null) continue;
+                    var grupos = s.SeriesRealizadas.Where(ser => ser.Completada && ser.Ejercicio != null).Select(ser => ser.Ejercicio!.GrupoMuscular).Distinct();
+                    foreach (var g in grupos)
                     {
                         if (!entrenosPorGrupo.ContainsKey(g)) entrenosPorGrupo[g] = 0;
                         entrenosPorGrupo[g]++;
@@ -153,44 +172,73 @@ namespace REPS_backend.Services
         public async Task<AnaliticaDto> ObtenerAnaliticaAsync(int usuarioId)
         {
             var entrenamientos = await _entrenamientoRepository.GetByUsuarioIdWithSeriesAsync(usuarioId);
+            var sesiones = await _sesionRepository.GetByUsuarioIdAsync(usuarioId);
 
-            var pesosList = entrenamientos?
-                .SelectMany(e => e.SeriesRealizadas ?? new List<SerieLog>())
-                .Where(s => s.Peso > 0)
-                .Select(s => (double)s.Peso)
+            // Estructura temporal para unificar series con su fecha respectiva
+            var seriesConFecha = new List<(DateTime Fecha, SerieLog Serie)>();
+
+            if (entrenamientos != null)
+            {
+                foreach (var e in entrenamientos)
+                {
+                    if (e.SeriesRealizadas != null)
+                        seriesConFecha.AddRange(e.SeriesRealizadas.Select(s => (e.Fecha, s)));
+                }
+            }
+
+            if (sesiones != null)
+            {
+                foreach (var s in sesiones)
+                {
+                    if (s.SeriesRealizadas != null)
+                        seriesConFecha.AddRange(s.SeriesRealizadas.Select(ser => (s.Fecha, ser)));
+                }
+            }
+
+            // 1. Métricas Recientes (últimas 7 series completadas)
+            // Tomamos el peso, y si el peso es 0 (ej. calistenia), tomamos las repeticiones.
+            var pesosList = seriesConFecha
+                .Where(x => x.Serie.Completada)
+                .OrderBy(x => x.Serie.Id)
+                .Select(x => x.Serie.Peso > 0 ? (double)x.Serie.Peso : (double)x.Serie.Repeticiones)
                 .TakeLast(7)
-                .ToList() ?? new List<double>();
+                .ToList();
 
-            if (!pesosList.Any()) pesosList = new List<double> { 0, 0, 0, 0, 0, 0, 0 };
+            while (pesosList.Count < 7)
+            {
+                pesosList.Insert(0, 0.0);
+            }
 
+            // 2. Volumen Mensual y Actividad (últimos 6 meses)
             var volumenList = new List<double>();
             var actividad = new List<ActividadMensualDto>();
             var mesesTexto = new[] { "Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic" };
-            
-            for (int i = 0; i < 6; i++) {
+
+            for (int i = 0; i < 6; i++)
+            {
                 int monthIdx = DateTime.Now.Month - 5 + i;
                 int yearOffset = 0;
-                if (monthIdx <= 0) {
-                    monthIdx += 12;
-                    yearOffset = -1;
-                }
-                
+                if (monthIdx <= 0) { monthIdx += 12; yearOffset = -1; }
+
                 int month = monthIdx;
                 int year = DateTime.Now.Year + yearOffset;
-                
-                int totalEntrenos = (entrenamientos ?? new List<Entrenamiento>()).Count(e => e.Fecha.Year == year && e.Fecha.Month == month);
-                
-                actividad.Add(new ActividadMensualDto {
-                   Name = mesesTexto[month - 1],
-                   Total = totalEntrenos,
-                   Percent = totalEntrenos > 0 ? Math.Min(100, (totalEntrenos * 100) / 20) : 0
+
+                // Contar sesiones únicas en ese mes
+                int totalSesionesMes = (entrenamientos?.Count(e => e.Fecha.Year == year && e.Fecha.Month == month) ?? 0)
+                                     + (sesiones?.Count(s => s.Fecha.Year == year && s.Fecha.Month == month) ?? 0);
+
+                actividad.Add(new ActividadMensualDto
+                {
+                    Name = mesesTexto[month - 1],
+                    Total = totalSesionesMes,
+                    Percent = totalSesionesMes > 0 ? Math.Min(100, (totalSesionesMes * 100) / 20) : 0
                 });
 
-                double volumenMes = entrenamientos?
-                    .Where(e => e.Fecha.Year == year && e.Fecha.Month == month)
-                    .SelectMany(e => e.SeriesRealizadas ?? new List<SerieLog>())
-                    .Sum(s => (double)(s.Peso * s.Repeticiones)) ?? 0;
-                    
+                // Calcular volumen total del mes. Si el peso es 0, el multiplicador será 1 (para contar al menos las repeticiones).
+                double volumenMes = seriesConFecha
+                    .Where(x => x.Fecha.Year == year && x.Fecha.Month == month && x.Serie.Completada)
+                    .Sum(x => (double)((x.Serie.Peso > 0 ? x.Serie.Peso : 1) * x.Serie.Repeticiones));
+
                 volumenList.Add(volumenMes);
             }
 

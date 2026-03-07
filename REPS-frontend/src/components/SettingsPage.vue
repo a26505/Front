@@ -224,17 +224,10 @@ const saveProfile = async () => {
             authStore.profile.biografia = profile.value.bio;
             authStore.profile.avatarId = profile.value.avatar_id;
         }
-<<<<<<< HEAD
         showToast('Perfil guardado exitosamente', 'success');
     } catch (e) {
         console.error(e);
         showToast('Error al guardar el perfil', 'error');
-=======
-        uiStore.showToast('Perfil guardado exitosamente', 'success');
-    } catch (e) {
-        console.error(e);
-        uiStore.showToast('Error al guardar el perfil', 'error');
->>>>>>> 71cbf12ca3ae3ea2a4e179d26b34223356dc672d
     }
 };
 

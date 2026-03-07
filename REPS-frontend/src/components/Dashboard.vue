@@ -61,18 +61,17 @@
           <!-- CARD 2: RANGO -->
           <div class="h-[206px] rounded-[14px] p-[25px] relative transition-all duration-300 hover:brightness-110 border border-[rgba(234,179,8,0.8)]" style="background: linear-gradient(152.983deg, rgba(234, 179, 8, 0.3) 0%, rgba(161, 98, 7, 0.3) 100%)">
             <div class="flex justify-between items-center mb-[40px]">
-              <RankIcon :rank="calculatedRangoGeneral" :size="48" />
+                <RankIcon :rank="rangoGeneral" :size="32" />
+                <span :class="['text-[11px] font-bold uppercase tracking-widest', getRankTextColor(rangoGeneral)]">{{ rangoGeneral }}</span>
             </div>
-
-
-            <div class="text-[36px] leading-[40px] text-[#FACC15] font-black mb-[10px]">{{ calculatedRangoGeneral.toUpperCase() }}</div>
+            <div class="text-[36px] leading-[40px] text-[#FACC15] font-black mb-[10px]">{{ rangoGeneral.toUpperCase() }}</div>
             <div class="text-[14px] leading-[20px] text-[#9CA3AF]">Puntos Musculares: {{ totalPoints }} pts</div>
           </div>
 
           <!-- CARD 3: LOGROS (Usado para Ranking Puntos según pedido) -->
           <div class="h-[206px] rounded-[14px] p-[25px] relative transition-all duration-300 hover:brightness-110 border border-[rgba(152,16,250,0.8)]" style="background: linear-gradient(152.983deg, rgba(152, 16, 250, 0.3) 0%, rgba(89, 22, 139, 0.3) 100%)">
              <div class="flex justify-between items-center mb-[40px]">
-              <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#A855F7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#A855F7" class="w-8 h-8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
               </svg>
               <div class="bg-[#9810FA] rounded-[8px] py-[3px] px-[9px] text-[12px] font-medium text-white h-[22px] flex items-center">
@@ -275,19 +274,10 @@ const records = ref<any[]>([]);
 const unlockedCount = ref(0);
 
 // Puntos Totales: suma de puntos de todos los músculos
-const totalPoints = computed(() => {
-  return muscleRanks.value.reduce((acc: number, m: any) => acc + (m.puntosActuales || 0), 0);
-});
+const totalPoints = ref(0);
 
-const calculatedRangoGeneral = computed(() => {
-  const pts = totalPoints.value;
-  if (pts >= 80000) return 'Leyenda';
-  if (pts >= 50000) return 'Diamante';
-  if (pts >= 25000) return 'Platino';
-  if (pts >= 12000) return 'Oro';
-  if (pts >= 4000) return 'Plata';
-  return 'Bronce';
-});
+// Rango General (fuente única de verdad del servidor)
+const rangoGeneral = ref('Bronce');
 
 // Ranking = suma del rango general + puntos de logros desbloqueados
 const calculatedRankingPts = computed(() => {
@@ -306,6 +296,19 @@ const errorText = ref('');
 
 const showActiveWorkout = ref(false);
 const activeWorkoutData = ref<any>(null);
+
+const getRankTextColor = (rank: string) => {
+  switch (rank.toLowerCase()) {
+    case 'bronce': return 'text-[#CD7F32]';
+    case 'plata': return 'text-[#C0C0C0]';
+    case 'oro': return 'text-[#FFD700]';
+    case 'platino': return 'text-[#E5E4E2]';
+    case 'diamante': return 'text-[#B9F2FF]';
+    case 'maestro': return 'text-[#8A2BE2]';
+    case 'gran maestro': return 'text-[#FF4500]';
+    default: return 'text-[#9CA3AF]';
+  }
+};
 
 const startSuggestedWorkout = async () => {
     if (rutinaSugerida.value) {
@@ -391,15 +394,19 @@ const loadData = async () => {
   isLoading.value = true;
   hasError.value = false;
   try {
-    const [dashRes, recRes, muscleRes] = await Promise.all([
+    const [dashRes, recRes, muscleRes, generalRes] = await Promise.all([
       dashboardApi.getHome(),
       recordsApi.getMisRecords(),
-      progresoApi.getMuscular()
+      progresoApi.getMuscular(),
+      progresoApi.getGeneral() // Nueva llamada para obtener rango general y puntos totales
     ]);
     const data = dashRes.data;
     rachaDias.value = data.rachaDias ?? 0;
     logrosDesbloqueados.value = data.logrosDesbloqueados ?? 0;
     totalLogros.value = data.totalLogros ?? 0;
+    // General
+    rangoGeneral.value = generalRes.data.rangoGeneral || 'Bronce';
+    totalPoints.value = generalRes.data.puntosTotales || 0;
     rutinaSugerida.value = data.rutinaSugerida ?? null;
     ultimosLogros.value = (data.ultimosLogros ?? []).slice(0, 3);
     records.value = recRes.data ?? [];

@@ -4,15 +4,15 @@
     
     <div class="relative w-full max-w-[800px] bg-[#111827] border border-[#1F2937] rounded-2xl overflow-hidden flex flex-col shadow-2xl animate-scale-in">
       <!-- HEADER CON IMAGEN -->
-      <div class="relative h-[200px] w-full">
-        <img :src="workout.image" class="w-full h-full object-cover" alt="workout image">
-        <div class="absolute inset-0 bg-gradient-to-t from-[#111827] to-transparent"></div>
+      <div class="relative h-[200px] w-full bg-[#1F2937]">
+        <img :src="workout.image || 'https://res.cloudinary.com/dgtahwqpj/image/upload/v1772038108/descarga_w22ggj.jpg'" class="w-full h-full object-cover opacity-80" alt="workout image">
+        <div class="absolute inset-0 bg-gradient-to-t from-[#111827] via-transparent to-transparent"></div>
         
         <button @click="$emit('close')" class="absolute top-4 right-4 w-9 h-9 bg-black/50 backdrop-blur-md rounded-full flex items-center justify-center text-white hover:bg-black/70 transition-all">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6L6 18M6 6l12 12"/></svg>
         </button>
 
-        <h2 class="absolute bottom-6 left-6 text-3xl font-bold text-white uppercase tracking-tight">{{ workout.title }}</h2>
+        <h2 class="absolute bottom-6 left-6 text-3xl font-bold text-white uppercase tracking-tight shadow-md">{{ workout.title }}</h2>
         
         <div 
           class="absolute top-4 left-6 px-3 py-1 rounded-lg text-xs font-bold text-white uppercase"

@@ -606,12 +606,15 @@ const onFinalizar = async () => {
       mejorasIA: ''
     };
 
-    if (isPro.value && entrenamientoId) {
+    if (isPro.value) {
       try {
-        const iaRes = await entrenamientosApi.getMejorasIA(entrenamientoId);
-        summaryData.value.mejorasIA = iaRes.data?.mejoras || iaRes.data?.ejes || iaRes.data?.feedback || iaRes.data;
+        // Obtener músculos trabajados para personalizar el consejo
+        const musclesWorked = Object.keys(localMuscleBreakdown);
+        const workoutName = props.workout.title || props.workout.nombre || 'Entrenamiento';
+        const tipsRes = await entrenamientosApi.getTips(workoutName, musclesWorked);
+        summaryData.value.mejorasIA = tipsRes.data?.tips || '';
       } catch {
-        summaryData.value.mejorasIA = 'Excelente trabajo. Mantén este ritmo para ver resultados constantes.';
+        summaryData.value.mejorasIA = '';
       }
     }
 
@@ -628,7 +631,7 @@ const onFinalizar = async () => {
       records: [],
       logros: [],
       resumen: 'Entrenamiento finalizado. Nota: Hubo un problema al sincronizar, los puntos se guardarán en la próxima conexión.',
-      mejorasIA: isPro.value ? 'Sigue así, estás progresando constantemente.' : ''
+      mejorasIA: isPro.value ? '¡Buen trabajo! Sigue con constancia para ver resultados.' : ''
     };
     showSummary.value = true;
   } finally {

@@ -23,7 +23,7 @@ namespace REPS_backend.Controllers
             var userIdString = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (!int.TryParse(userIdString, out int userId)) return Unauthorized();
 
-            try 
+            try
             {
                 var progreso = await _progresoService.ObtenerProgresoMuscularAsync(userId);
                 return Ok(progreso);
@@ -40,7 +40,7 @@ namespace REPS_backend.Controllers
             var userIdString = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (!int.TryParse(userIdString, out int userId)) return Unauthorized();
 
-            try 
+            try
             {
                 var general = await _progresoService.ObtenerProgresoGeneralAsync(userId);
                 return Ok(general);
@@ -57,9 +57,16 @@ namespace REPS_backend.Controllers
             var userIdString = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (!int.TryParse(userIdString, out int userId)) return Unauthorized();
 
-            try 
+            try
             {
                 var analitica = await _progresoService.ObtenerAnaliticaAsync(userId);
+
+                // TEMP LOG:
+                Console.WriteLine($"[ANALITICA] User: {userId}");
+                Console.WriteLine($"[ANALITICA] Pesos count: {analitica.Pesos.Count}, First: {(analitica.Pesos.Any() ? analitica.Pesos.First() : 0)}");
+                Console.WriteLine($"[ANALITICA] Volumen count: {analitica.Volumen.Count}, First: {(analitica.Volumen.Any() ? analitica.Volumen.First() : 0)}");
+                Console.WriteLine($"[ANALITICA] Actividad: {System.Text.Json.JsonSerializer.Serialize(analitica.ActividadMensual)}");
+
                 return Ok(analitica);
             }
             catch (Exception ex)

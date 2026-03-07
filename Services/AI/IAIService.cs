@@ -7,5 +7,6 @@ namespace REPS_backend.Services.AI
     {
         Task<string> AnalyzeWorkoutAsync(Sesion sesion);
         Task<RutinaDetalleDto> GenerateRoutineAsync(RutinaIARequestDto dto);
+        Task<string> GetWorkoutTipsAsync(string workoutName, List<string> muscles);
     }
 }
